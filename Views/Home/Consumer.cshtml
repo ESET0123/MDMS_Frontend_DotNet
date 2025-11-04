@@ -3,7 +3,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-people"></i> Consumer Management</h2>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#consumerModal" onclick="prepareAddConsumer()">
@@ -11,7 +10,6 @@
         </button>
     </div>
 
-    <!-- Loading and Messages -->
     <div id="loadingIndicator" class="text-center my-4" style="display:none;">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -29,7 +27,6 @@
         <span id="successText"></span>
     </div>
 
-    <!-- Consumers Table -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -47,7 +44,6 @@
                         </tr>
                     </thead>
                     <tbody id="consumersTableBody">
-                        <!-- Consumers will load here -->
                     </tbody>
                 </table>
             </div>
@@ -55,7 +51,6 @@
     </div>
 </div>
 
-<!-- Add/Edit Consumer Modal -->
 <div class="modal fade" id="consumerModal" tabindex="-1" aria-labelledby="consumerModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -102,7 +97,6 @@
                             <input type="text" class="form-control" id="createdBy" placeholder="Admin or Staff">
                         </div>
                     </div>
-
                 </form>
             </div>
             <div class="modal-footer">
@@ -134,10 +128,12 @@
                 const res = await fetch(`${STATUS_API_URL}/AllStatuses`);
                 if (!res.ok) throw new Error('Failed to fetch statuses');
                 allStatuses = await res.json();
+
                 const select = document.getElementById('statusId');
                 select.innerHTML = '<option value="">-- Select Status --</option>';
+
                 allStatuses.forEach(s => {
-                    select.innerHTML += `<option value="${s.statusId}">${s.Name}</option>`;
+                    select.innerHTML += `<option value="${s.statusId}">${s.name}</option>`;
                 });
             } catch (err) {
                 showError(err.message);
@@ -168,6 +164,9 @@
             }
 
             allConsumers.forEach(c => {
+                const statusName = c.status?.name || 'Unknown';
+                const badgeClass = statusName.toLowerCase() === 'active' ? 'success' : 'secondary';
+
                 const row = `
                     <tr>
                         <td>${c.consumerId}</td>
@@ -175,11 +174,15 @@
                         <td>${c.email}</td>
                         <td>${c.phone}</td>
                         <td>${c.address}</td>
-                        <td><span class="badge bg-${c.status.Name.toLowerCase() === 'active' ? 'success' : 'secondary'}">${c.status.Name}</span></td>
+                        <td><span class="badge bg-${badgeClass}">${statusName}</span></td>
                         <td>${new Date(c.createdAt).toLocaleDateString()}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-success me-1" onclick="editConsumer(${c.consumerId})"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteConsumer(${c.consumerId}, '${c.name}')"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-sm btn-outline-success me-1" onclick="editConsumer(${c.consumerId})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteConsumer(${c.consumerId}, '${c.name}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </td>
                     </tr>`;
                 tbody.insertAdjacentHTML('beforeend', row);
@@ -195,6 +198,7 @@
         function editConsumer(id) {
             const c = allConsumers.find(x => x.consumerId === id);
             if (!c) return showError('Consumer not found');
+
             document.getElementById('consumerModalLabel').textContent = 'Edit Consumer';
             document.getElementById('isEdit').value = 'true';
             document.getElementById('consumerId').value = c.consumerId;
@@ -204,6 +208,7 @@
             document.getElementById('address').value = c.address;
             document.getElementById('statusId').value = c.statusId;
             document.getElementById('createdBy').value = c.createdBy;
+
             consumerModal.show();
         }
 

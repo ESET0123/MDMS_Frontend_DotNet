@@ -4,7 +4,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Tariff Slab Management</h2>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tariffSlabModal" onclick="prepareAddSlab()">
@@ -12,7 +11,6 @@
         </button>
     </div>
 
-    <!-- Filter by Tariff -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row align-items-center">
@@ -32,7 +30,6 @@
         </div>
     </div>
 
-    <!-- Loading and Error Messages -->
     <div id="loadingIndicator" class="text-center my-4" style="display: none;">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -48,7 +45,6 @@
         <span id="successText"></span>
     </div>
 
-    <!-- Tariff Slabs Table -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -64,7 +60,6 @@
                         </tr>
                     </thead>
                     <tbody id="tariffSlabsTableBody">
-                        <!-- Slabs will be injected here -->
                     </tbody>
                 </table>
             </div>
@@ -72,7 +67,6 @@
     </div>
 </div>
 
-<!-- Add/Edit Tariff Slab Modal -->
 <div class="modal fade" id="tariffSlabModal" tabindex="-1" aria-labelledby="tariffSlabModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -120,7 +114,6 @@
     </div>
 </div>
 
-<!-- View Slab Details Modal -->
 <div class="modal fade" id="viewSlabModal" tabindex="-1" aria-labelledby="viewSlabModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -168,7 +161,6 @@
         let tariffSlabModal;
         let viewSlabModal;
 
-        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             tariffSlabModal = new bootstrap.Modal(document.getElementById('tariffSlabModal'));
             viewSlabModal = new bootstrap.Modal(document.getElementById('viewSlabModal'));
@@ -279,7 +271,6 @@
             const detailsDiv = document.getElementById('selectedTariffDetails');
 
             if (filterTariffId) {
-                // Show selected tariff info
                 const name = selectedOption.dataset.name;
                 const baseRate = parseFloat(selectedOption.dataset.baseRate).toFixed(4);
                 const taxRate = selectedOption.dataset.taxRate;
@@ -290,11 +281,9 @@
                 `;
                 infoDiv.style.display = 'block';
 
-                // Filter slabs
                 const filteredSlabs = allSlabs.filter(slab => slab.tariffId == filterTariffId);
                 renderTariffSlabsTable(filteredSlabs);
             } else {
-                // Show all slabs
                 infoDiv.style.display = 'none';
                 renderTariffSlabsTable(allSlabs);
             }
@@ -305,7 +294,6 @@
             document.getElementById('tariffSlabForm').reset();
             document.getElementById('slabId').value = '';
 
-            // Pre-select the filtered tariff if one is selected
             const filterTariffId = document.getElementById('filterTariffId').value;
             if (filterTariffId) {
                 document.getElementById('tariffId').value = filterTariffId;
@@ -336,7 +324,6 @@
             const toKwh = document.getElementById('toKwh').value;
             const ratePerKwh = document.getElementById('ratePerKwh').value;
 
-            // Validation
             if (!tariffId || !fromKwh || !toKwh || !ratePerKwh) {
                 showError('Please fill in all required fields');
                 return;

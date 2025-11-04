@@ -11,12 +11,10 @@ namespace MDMS_Frontend
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // ✅ Read from environment variable or fallback
             var apiBaseUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
                               ?? builder.Configuration["Api:BaseUrl"]
                               ?? "https://localhost:7272";
 
-            // ✅ Make it available to Razor views via Configuration
             builder.Configuration["ApiBaseUrl"] = apiBaseUrl;
 
             builder.Services.AddControllersWithViews();

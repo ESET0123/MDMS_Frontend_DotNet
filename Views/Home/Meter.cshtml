@@ -1,7 +1,4 @@
-﻿<!-- ============================================ -->
-<!-- Views/Home/Meters.cshtml -->
-<!-- ============================================ -->
-@{
+﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Meters Management";
     ViewData["ActivePage"] = "Meters";
@@ -15,7 +12,6 @@
         </button>
     </div>
 
-    <!-- Loading Spinner -->
     <div id="loadingSpinner" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -23,7 +19,6 @@
         <p class="mt-2">Loading meters data...</p>
     </div>
 
-    <!-- Meters Table -->
     <div id="metersTableContainer" class="card shadow-sm" style="display: none;">
         <div class="card-body">
             <div class="table-responsive">
@@ -44,27 +39,22 @@
                         </tr>
                     </thead>
                     <tbody id="metersTableBody">
-                        <!-- Data will be populated here -->
                     </tbody>
                 </table>
             </div>
 
-            <!-- Pagination -->
             <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center" id="pagination">
-                    <!-- Pagination will be populated here -->
                 </ul>
             </nav>
         </div>
     </div>
 
-    <!-- Error Message -->
     <div id="errorMessage" class="alert alert-danger" role="alert" style="display: none;">
         <i class="bi bi-exclamation-triangle"></i> <span id="errorText"></span>
     </div>
 </div>
 
-<!-- Add/Edit Meter Modal -->
 <div class="modal fade" id="addMeterModal" tabindex="-1" aria-labelledby="addMeterModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -152,13 +142,11 @@
         const itemsPerPage = 10;
         let allMeters = [];
 
-        // Load meters on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadMeters();
             loadDropdowns();
         });
 
-        // Load all meters from API
         async function loadMeters() {
             try {
                 showLoading(true);
@@ -178,7 +166,6 @@
             }
         }
 
-        // Display meters in table
         function displayMeters(page) {
             const startIndex = (page - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
@@ -220,19 +207,16 @@
             displayPagination();
         }
 
-        // Display pagination
         function displayPagination() {
             const totalPages = Math.ceil(allMeters.length / itemsPerPage);
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
 
-            // Previous button
             const prevLi = document.createElement('li');
             prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
             prevLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Previous</a>`;
             pagination.appendChild(prevLi);
 
-            // Page numbers
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
                     const li = document.createElement('li');
@@ -247,14 +231,12 @@
                 }
             }
 
-            // Next button
             const nextLi = document.createElement('li');
             nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
             nextLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Next</a>`;
             pagination.appendChild(nextLi);
         }
 
-        // Change page
         function changePage(page) {
             const totalPages = Math.ceil(allMeters.length / itemsPerPage);
             if (page >= 1 && page <= totalPages) {
@@ -263,23 +245,14 @@
             }
         }
 
-        // Load dropdowns (Manufacturers, Tariffs, Statuses)
         async function loadDropdowns() {
-            // Load Manufacturers (you need to create this endpoint)
-            // For now, using dummy data
             const manufacturerSelect = document.getElementById('manufacturerId');
-            // Example: await fetch and populate
 
-            // Load Tariffs
             const tariffSelect = document.getElementById('tariffId');
-            // Example: await fetch and populate
 
-            // Load Statuses
             const statusSelect = document.getElementById('statusId');
-            // Example: await fetch and populate
         }
 
-        // Edit meter
         async function editMeter(meterId) {
             try {
                 const response = await fetch(`${API_BASE_URL}/Meter/${meterId}`);
@@ -287,7 +260,6 @@
 
                 const meter = await response.json();
 
-                // Populate form
                 document.getElementById('meterId').value = meter.meterId;
                 document.getElementById('consumerId').value = meter.consumerId;
                 document.getElementById('ipaddress').value = meter.ipaddress;
@@ -306,7 +278,6 @@
             }
         }
 
-        // Save meter (Create or Update)
         async function saveMeter() {
             const form = document.getElementById('meterForm');
             if (!form.checkValidity()) {
@@ -353,7 +324,6 @@
             }
         }
 
-        // Delete meter
         async function deleteMeter(meterId) {
             if (!confirm('Are you sure you want to delete this meter?')) return;
 
@@ -371,7 +341,6 @@
             }
         }
 
-        // Helper functions
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });

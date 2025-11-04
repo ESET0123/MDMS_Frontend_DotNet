@@ -4,7 +4,6 @@
 }
 
 <div class="container-fluid">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-people"></i> User Management</h2>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" onclick="prepareAddUser()">
@@ -12,7 +11,6 @@
         </button>
     </div>
 
-    <!-- Loading and Error Messages -->
     <div id="loadingIndicator" class="text-center my-4" style="display: none;">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -28,7 +26,6 @@
         <span id="successText"></span>
     </div>
 
-    <!-- Users Table -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -46,7 +43,6 @@
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
-                        <!-- Users will be injected here -->
                     </tbody>
                 </table>
             </div>
@@ -54,7 +50,6 @@
     </div>
 </div>
 
-<!-- Add/Edit User Modal -->
 <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -136,7 +131,6 @@
     </div>
 </div>
 
-<!-- View User Details Modal -->
 <div class="modal fade" id="viewUserModal" tabindex="-1" aria-labelledby="viewUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -333,7 +327,6 @@
             const active = document.getElementById('active').value === 'true';
             const passwordString = document.getElementById('passwordString').value;
 
-            // Validation
             if (!username || !email || !roleId) {
                 showError('Please fill in all required fields');
                 return;
@@ -378,7 +371,6 @@
                 } else {
                     const errorText = await response.text();
                     console.log(errorText);
-                    // showError(`Failed to save user: ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error saving user:', error);

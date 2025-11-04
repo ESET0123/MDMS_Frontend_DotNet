@@ -26,15 +26,3 @@
 </body>
 </html>
 @* 
-@section Scripts{
-    <script>
-             $('#themeToggle').click(function () {
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
-        localStorage.setItem('theme', newTheme);
-        applyTheme(newTheme);
-        updateThemeIcon(newTheme);
-        });
-    </script>
-} *@
