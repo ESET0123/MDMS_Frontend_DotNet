@@ -1,3 +1,8 @@
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+
 namespace MDMS_Frontend
 {
     public class Program
@@ -6,16 +11,23 @@ namespace MDMS_Frontend
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // ✅ Read from environment variable or fallback
+            var apiBaseUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
+                              ?? builder.Configuration["Api:BaseUrl"]
+                              ?? "https://localhost:7272";
+
+            // ✅ Make it available to Razor views via Configuration
+            builder.Configuration["ApiBaseUrl"] = apiBaseUrl;
+
             builder.Services.AddControllersWithViews();
+            builder.Services.AddRazorPages()
+                   .AddRazorRuntimeCompilation();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -23,7 +35,6 @@ namespace MDMS_Frontend
             app.UseStaticFiles();
 
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.MapControllerRoute(
