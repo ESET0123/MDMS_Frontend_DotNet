@@ -1,0 +1,316 @@
+﻿@* @{
+    ViewData["Title"] = "Tariff SlabS";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Tariff Slabs</h2>
+        <button class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Slab
+        </button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Slab ID</th>
+                        <th>Tariff Type</th>
+                        <th>Min Units</th>
+                        <th>Max Units</th>
+                        <th>Rate ($/kWh)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>S001</td>
+                        <td>Residential</td>
+                        <td>0</td>
+                        <td>100</td>
+                        <td>$0.10</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>S002</td>
+                        <td>Residential</td>
+                        <td>101</td>
+                        <td>300</td>
+                        <td>$0.12</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> *@
+
+
+@{
+    ViewData["Title"] = "Tariff Management";
+}
+
+<div class="container-fluid">
+    <!-- Tariff Header and Add Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Tariff Plans</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
+            <i class="bi bi-plus-circle"></i> Add Tariff
+        </button>
+    </div>
+
+    <div id="loadingIndicator" class="text-center" style="display: none;">Loading tariffs...</div>
+    <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+
+    <!-- Tariff Cards Container -->
+    <div class="row" id="tariffCardsContainer"></div>
+</div>
+
+<!-- Modal for Add/Edit Tariff (Master) -->
+<!-- ... (Keep the Tariff Modal code from the previous response) ... -->
+<!-- Modal for Managing Tariff Slabs (Detail) -->
+<div class="modal fade" id="tariffSlabModal" tabindex="-1" aria-labelledby="tariffSlabModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tariffSlabModalLabel">Manage Slabs for: <span id="currentTariffName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="currentTariffId" />
+
+                <!-- Tariff Slab Form -->
+                <div class="mb-4 p-3 border rounded">
+                    <h6>Add New Slab</h6>
+                    <form id="tariffSlabForm" class="row g-3">
+                        <input type="hidden" id="slabId" value="0" />
+                        <div class="col-md-3">
+                            <label for="startUnit" class="form-label">Start Unit</label>
+                            <input type="number" step="0.01" class="form-control" id="startUnit" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endUnit" class="form-label">End Unit</label>
+                            <input type="number" step="0.01" class="form-control" id="endUnit">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="rate" class="form-label">Rate ($/kWh)</label>
+                            <input type="number" step="0.0001" class="form-control" id="rate" required>
+                        </div>
+                        <div class="col-md-3 align-self-end">
+                            <button type="button" class="btn btn-success w-100" onclick="saveTariffSlab()">Save Slab</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tariff Slab List -->
+                <h6>Existing Slabs</h6>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Start Unit</th>
+                            <th>End Unit</th>
+                            <th>Rate</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tariffSlabsTableBody">
+                        <!-- Slabs will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const TARIFF_API_URL = `${API_BASE_URL}/Tariff`;
+        const SLAB_API_URL = `${API_BASE_URL}/TariffSlab`; // Assumed Slab controller endpoint
+
+        let allTariffs = [];
+        let currentSlabs = []; // Store slabs for the open modal
+
+        // ... (Keep Utility Functions: showLoading, showError, formatDate, formatInputDate from previous response) ...
+
+        // =======================================================
+        // TARIFF (Master) Logic - Same as previous code
+        // =======================================================
+        async function fetchTariffPlans() {
+            try {
+                showLoading(true);
+                showError('');
+                const response = await fetch(`${TARIFF_API_URL}/AllTariffSlabs`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                allTariffs = await response.json();
+                renderTariffCards(allTariffs);
+                showLoading(false);
+
+            } catch (error) {
+                console.error('Error loading tariffs:', error);
+                showError('Failed to load tariffs data: ' + error.message);
+                showLoading(false);
+            }
+        }
+        function renderTariffCards(plans) {
+            // Update button onclick to open Slab modal instead of edit modal directly
+            // ... inside renderTariffCards function ...
+            /*
+            // Old line
+            <button class="btn btn-sm btn-outline-primary" onclick="viewTariffDetails(${plan.tariffId})">View/Edit</button>
+            // New line to manage slabs:
+            <button class="btn btn-sm btn-info text-white" onclick="openSlabManagement(${plan.tariffId}, '${plan.name}')">Manage Slabs</button>
+            */
+        }
+        async function saveTariff() { /* ... (Same code as before) ... */ }
+        function prepareAddTariff() { /* ... (Same code as before) ... */ }
+        function viewTariffDetails(id) { /* ... (Same code as before, for editing Tariff details) ... */ }
+        async function deleteTariff(id, name) { /* ... (Same code as before) ... */ }
+
+
+        // =======================================================
+        // TARIFF SLAB (Detail) Logic - New functionality
+        // =======================================================
+
+        function openSlabManagement(tariffId, tariffName) {
+            document.getElementById('currentTariffId').value = tariffId;
+            document.getElementById('currentTariffName').textContent = tariffName;
+
+            // Reset the slab form
+            document.getElementById('tariffSlabForm').reset();
+            document.getElementById('slabId').value = '0';
+            showError('');
+
+            // Fetch and display existing slabs
+            fetchTariffSlabs(tariffId);
+
+            // Show the modal (assuming Bootstrap 5)
+            var modal = new bootstrap.Modal(document.getElementById('tariffSlabModal'));
+            modal.show();
+        }
+
+        async function fetchTariffSlabs(tariffId) {
+            try {
+                showLoading(true);
+                // Assumed API endpoint: GET api/TariffSlab/ByTariff/{tariffId}
+                const response = await fetch(`${SLAB_API_URL}/ByTariff/${tariffId}`);
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                currentSlabs = await response.json();
+                renderTariffSlabsTable(currentSlabs);
+                showLoading(false);
+
+            } catch (error) {
+                console.error('Error loading slabs:', error);
+                showError('Failed to load tariff slab data: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function renderTariffSlabsTable(slabs) {
+            const tbody = document.getElementById('tariffSlabsTableBody');
+            tbody.innerHTML = '';
+
+            if (slabs && slabs.length > 0) {
+                slabs.forEach(slab => {
+                    const endUnitDisplay = slab.endUnit !== null ? slab.endUnit.toFixed(2) : 'Endless';
+                    const rowHtml = `
+                        <tr data-slab-id="${slab.slabId}">
+                            <td>${slab.startUnit.toFixed(2)}</td>
+                            <td>${endUnitDisplay}</td>
+                            <td>$${slab.rate.toFixed(4)}</td>
+                            <td>
+                                <!-- We don't really need inline edit for table rows, typically done via form/modal -->
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTariffSlab(${slab.slabId})">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4">No slabs defined for this tariff.</td></tr>';
+            }
+        }
+
+        async function saveTariffSlab() {
+            const tariffId = document.getElementById('currentTariffId').value;
+            const slabId = document.getElementById('slabId').value;
+
+            const slabData = {
+                slabId: parseInt(slabId) || null,
+                tariffId: parseInt(tariffId),
+                startUnit: parseFloat(document.getElementById('startUnit').value),
+                endUnit: document.getElementById('endUnit').value ? parseFloat(document.getElementById('endUnit').value) : null,
+                rate: parseFloat(document.getElementById('rate').value)
+            };
+
+            if (!slabData.startUnit && slabData.startUnit !== 0) return showError('Start Unit is required.');
+            if (!slabData.rate && slabData.rate !== 0) return showError('Rate is required.');
+
+            const isUpdate = slabData.slabId > 0;
+            const endpoint = isUpdate ? `${SLAB_API_URL}/Update` : `${SLAB_API_URL}/Create`;
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(slabData),
+                });
+
+                if (response.ok) {
+                    // Refresh the slabs list in the modal
+                    await fetchTariffSlabs(tariffData.tariffId);
+                    // Reset the form for adding another one
+                    document.getElementById('tariffSlabForm').reset();
+                    document.getElementById('slabId').value = '0';
+                    showError('');
+                } else {
+                    const errorText = await response.text();
+                    showError(`Failed to save slab: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error saving slab:', error);
+                showError('An error occurred while communicating with the API.');
+            }
+        }
+
+        async function deleteTariffSlab(id) {
+            if (!confirm(`Are you sure you want to delete this slab?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SLAB_API_URL}/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    const currentTariffId = document.getElementById('currentTariffId').value;
+                    await fetchTariffSlabs(currentTariffId); // Refresh the list
+                } else {
+                    const errorText = await response.text();
+                    showError(`Failed to delete slab: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error deleting slab:', error);
+                showError('An error occurred while communicating with the API.');
+            }
+        }
+    </script>
+}

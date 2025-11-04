@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Time of Day Rules";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Time of Day (TOD) Rules</h2>
+        <button class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Rule
+        </button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Rule ID</th>
+                        <th>Time Slot</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Rate Multiplier</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TOD001</td>
+                        <td>Peak Hours</td>
+                        <td>09:00 AM</td>
+                        <td>05:00 PM</td>
+                        <td>1.5x</td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>TOD002</td>
+                        <td>Off-Peak Hours</td>
+                        <td>11:00 PM</td>
+                        <td>06:00 AM</td>
+                        <td>0.8x</td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

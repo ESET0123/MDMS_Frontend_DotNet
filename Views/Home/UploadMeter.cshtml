@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "Upload Meter";
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4">Upload Meter Data</h2>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="meterFile" class="form-label">Select File</label>
+                            <input class="form-control" type="file" id="meterFile">
+                        </div>
+                        <div class="mb-3">
+                            <label for="fileType" class="form-label">File Type</label>
+                            <select class="form-select" id="fileType">
+                                <option>CSV</option>
+                                <option>Excel</option>
+                                <option>JSON</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Upload History</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">meters_data.csv - 2 hours ago</li>
+                        <li class="list-group-item">readings_oct.xlsx - Yesterday</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

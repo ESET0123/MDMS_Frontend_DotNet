@@ -1,0 +1,59 @@
+﻿
+<aside class="sidebar d-flex flex-column bg-dark text-white vh-100 shadow-lg" style="width: 250px;">
+    
+
+    <nav class="sidebar-nav flex-grow-1 p-3">
+        <a href="@Url.Action("Dashboard", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-grid-3x3-gap"></i>
+            <span class="ms-3">Dashboard</span>
+        </a>
+        <a href="@Url.Action("Meter", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-grid-3x3-gap"></i>
+            <span class="ms-3">Meter</span>
+        </a>
+        <a href="@Url.Action("UploadMeter", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-upload"></i>
+            <span class="ms-3">uploadmeter</span>
+        </a>
+
+        <a href="@Url.Action("Consumer", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-house-door"></i>
+            <span class="ms-3">Consumer</span>
+        </a>
+
+        <a href="@Url.Action("OrgUnit", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-building"></i>
+            <span class="ms-3">Org Unit</span>
+        </a>
+        <a href="@Url.Action("Tariff", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-tag"></i>
+            <span class="ms-3">Tariff</span>
+        </a>
+        <a href="@Url.Action("TariffSlab", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-cash-stack"></i>
+            <span class="ms-3">Tariff Slabs</span>
+        </a>
+        <a href="@Url.Action("TODRule", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-file-text"></i>
+            <span class="ms-3">TOD Rules</span>
+        </a>
+        <a href="@Url.Action("User", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+            <i class="bi bi-people"></i>
+            <span class="ms-3">User</span>
+        </a>
+    </nav>
+</aside>
+
+<!-- Add a small CSS snippet to make the active and hover states look nice -->
+<style>
+    .hover-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white !important;
+    }
+
+    .active-link {
+        background-color: #0d6efd; /* Bootstrap primary color */
+        color: white !important;
+        font-weight: bold;
+    }
+</style>

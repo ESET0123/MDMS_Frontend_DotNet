@@ -1,0 +1,260 @@
+﻿@{
+    ViewData["Title"] = "Tariff Management";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Tariff Plans</h2>
+        <!-- Button to open the Add Tariff Modal -->
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
+            <i class="bi bi-plus-circle"></i> Add Tariff
+        </button>
+    </div>
+
+    <div id="loadingIndicator" class="text-center" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+
+    <!-- Container for the tariff cards -->
+    <div class="row" id="tariffCardsContainer">
+        <!-- Cards will be injected here by JavaScript -->
+    </div>
+</div>
+
+<!-- Modal for Add/Edit Tariff -->
+<div class="modal fade" id="tariffModal" tabindex="-1" aria-labelledby="tariffModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tariffModalLabel">Add New Tariff</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="tariffForm">
+                    <!-- Hidden input for TariffId for update operations -->
+                    <input type="hidden" id="tariffId" name="TariffId" value="0" />
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tariff Name</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="effectiveFrom" class="form-label">Effective From</label>
+                        <input type="date" class="form-control" id="effectiveFrom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="effectiveTo" class="form-label">Effective To (Optional)</label>
+                        <input type="date" class="form-control" id="effectiveTo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="baseRate" class="form-label">Base Rate ($/kWh)</label>
+                        <input type="number" step="0.0001" class="form-control" id="baseRate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="taxRate" class="form-label">Tax Rate (%)</label>
+                        <input type="number" step="0.01" class="form-control" id="taxRate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveTariff()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const TARIFF_API_URL = `${API_BASE_URL}/Tariff`;
+        let allTariffs = []; // Store the tariffs locally for quick access
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            fetchTariffPlans();
+        });
+
+        // --- Utility Functions ---
+        function showLoading(isLoading) {
+            document.getElementById('loadingIndicator').style.display = isLoading ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = message ? 'block' : 'none';
+        }
+
+        // Helper function to format DateOnly (which comes as a string "YYYY-MM-DD")
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString + 'T00:00:00').toLocaleDateString(undefined, {
+                year: 'numeric', month: 'long', day: 'numeric'
+            });
+        }
+
+        // Helper to format dates for input fields (to "YYYY-MM-DD")
+        function formatInputDate(dateString) {
+            if (!dateString) return '';
+            return dateString.split('T')[0] || dateString;
+        }
+
+        // --- Read Functions ---
+        async function fetchTariffPlans() {
+            try {
+                showLoading(true);
+                showError('');
+                const response = await fetch(`${TARIFF_API_URL}/AllTariffs`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                allTariffs = await response.json();
+                renderTariffCards(allTariffs);
+                showLoading(false);
+
+            } catch (error) {
+                console.error('Error loading tariffs:', error);
+                showError('Failed to load tariffs data: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function renderTariffCards(plans) {
+            const container = document.getElementById('tariffCardsContainer');
+            container.innerHTML = '';
+
+            if (plans && plans.length > 0) {
+                plans.forEach(plan => {
+                    const cardHtml = `
+                        <div class="col-md-4 mb-3">
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">${plan.name}</h5>
+                                    <p class="card-text">Effective From: ${formatDate(plan.effectiveFrom)}</p>
+                                    <h3 class="text-primary">$${plan.baseRate.toFixed(4)}/kWh</h3>
+                                    <p class="card-text">Tax Rate: ${plan.taxRate}%</p>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewTariffDetails(${plan.tariffId})">View/Edit</button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTariff(${plan.tariffId}, '${plan.name}')">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                });
+            } else {
+                container.innerHTML = '<p class="col-12">No tariff plans found.</p>';
+            }
+        }
+
+        // --- Create/Update (Save) Function ---
+
+        function getTariffDataFromForm() {
+            // Note: C# DTO expects DateTime, so we format dates correctly.
+            // The TaxRate input is expecting 0-100 (as per your DTO Range), so we use the raw value.
+            return {
+                tariffId: parseInt(document.getElementById('tariffId').value) || null,
+                name: document.getElementById('name').value,
+                effectiveFrom: new Date(document.getElementById('effectiveFrom').value + 'T00:00:00').toISOString(),
+                effectiveTo: document.getElementById('effectiveTo').value ? new Date(document.getElementById('effectiveTo').value + 'T00:00:00').toISOString() : null,
+                baseRate: parseFloat(document.getElementById('baseRate').value),
+                taxRate: parseFloat(document.getElementById('taxRate').value)
+            };
+        }
+
+        async function saveTariff() {
+            const tariffData = getTariffDataFromForm();
+            const isUpdate = tariffData.tariffId > 0;
+            const endpoint = isUpdate ? `${TARIFF_API_URL}/Update` : `${TARIFF_API_URL}/Create`;
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(tariffData),
+                });
+
+                if (response.ok) {
+                    // Close the modal
+                    var modalElement = document.getElementById('tariffModal');
+                    var modal = bootstrap.Modal.getInstance(modalElement);
+                    modal.hide();
+
+                    // Refresh the list of tariffs
+                    await fetchTariffPlans();
+                } else {
+                    const errorText = await response.text();
+                    showError(`Failed to save tariff: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error saving tariff:', error);
+                showError('An error occurred while communicating with the API.');
+            }
+        }
+
+        // --- View Specific/Edit Prep Function ---
+        function prepareAddTariff() {
+            // Reset form for adding new item
+            document.getElementById('tariffForm').reset();
+            document.getElementById('tariffId').value = '0';
+            document.getElementById('tariffModalLabel').textContent = 'Add New Tariff';
+            showError('');
+        }
+
+        function viewTariffDetails(id) {
+            const plan = allTariffs.find(t => t.tariffId === id);
+
+            if (plan) {
+                // Populate the form fields
+                document.getElementById('tariffId').value = plan.tariffId;
+                document.getElementById('name').value = plan.name;
+                document.getElementById('effectiveFrom').value = formatInputDate(plan.effectiveFrom);
+                document.getElementById('effectiveTo').value = formatInputDate(plan.effectiveTo);
+                document.getElementById('baseRate').value = plan.baseRate;
+                document.getElementById('taxRate').value = plan.taxRate;
+                document.getElementById('tariffModalLabel').textContent = `Edit Tariff: ${plan.name}`;
+                showError('');
+
+                // Show the modal
+                var modal = new bootstrap.Modal(document.getElementById('tariffModal'));
+                modal.show();
+            } else {
+                showError('Tariff not found in local data.');
+            }
+        }
+
+        // --- Delete Function ---
+        async function deleteTariff(id, name) {
+            if (!confirm(`Are you sure you want to delete the tariff "${name}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${TARIFF_API_URL}/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    await fetchTariffPlans(); // Refresh the list after deletion
+                } else {
+                    const errorText = await response.text();
+                    showError(`Failed to delete tariff: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error deleting tariff:', error);
+                showError('An error occurred while communicating with the API.');
+            }
+        }
+
+    </script>
+}

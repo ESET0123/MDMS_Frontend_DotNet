@@ -1,0 +1,421 @@
+﻿<!-- ============================================ -->
+<!-- Views/Home/Meters.cshtml -->
+<!-- ============================================ -->
+@{
+    ViewData["Title"] = "Meters Management";
+    ViewData["ActivePage"] = "Meters";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Meters Management</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMeterModal">
+            <i class="bi bi-plus-circle"></i> Add New Meter
+        </button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading meters data...</p>
+    </div>
+
+    <!-- Meters Table -->
+    <div id="metersTableContainer" class="card shadow-sm" style="display: none;">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="metersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Meter Serial No.</th>
+                            <th>Consumer ID</th>
+                            <th>IP Address</th>
+                            <th>ICCID</th>
+                            <th>IMSI</th>
+                            <th>Manufacturer</th>
+                            <th>Firmware</th>
+                            <th>Category</th>
+                            <th>Install Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metersTableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center" id="pagination">
+                    <!-- Pagination will be populated here -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="alert alert-danger" role="alert" style="display: none;">
+        <i class="bi bi-exclamation-triangle"></i> <span id="errorText"></span>
+    </div>
+</div>
+
+<!-- Add/Edit Meter Modal -->
+<div class="modal fade" id="addMeterModal" tabindex="-1" aria-labelledby="addMeterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMeterModalLabel">Add New Meter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="meterForm">
+                    <input type="hidden" id="meterId" name="meterId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerId" class="form-label">Consumer ID <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="consumerId" name="consumerId" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="dtrid" class="form-label">DTR ID <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="dtrid" name="dtrid" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="ipaddress" class="form-label">IP Address <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="ipaddress" name="ipaddress" placeholder="192.168.1.1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="iccid" class="form-label">ICCID</label>
+                            <input type="text" class="form-control" id="iccid" name="iccid">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="imsi" class="form-label">IMSI</label>
+                            <input type="text" class="form-control" id="imsi" name="imsi">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="manufacturerId" class="form-label">Manufacturer <span class="text-danger">*</span></label>
+                            <select class="form-select" id="manufacturerId" name="manufacturerId" required>
+                                <option value="">Select Manufacturer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firmware" class="form-label">Firmware</label>
+                            <input type="text" class="form-control" id="firmware" name="firmware">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tariffId" class="form-label">Tariff <span class="text-danger">*</span></label>
+                            <select class="form-select" id="tariffId" name="tariffId" required>
+                                <option value="">Select Tariff</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="installDate" class="form-label">Install Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="installDate" name="installDate" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="statusId" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="statusId" name="statusId" required>
+                                <option value="">Select Status</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="latestReading" class="form-label">Latest Reading (kWh) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="latestReading" name="latestReading" value="0" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveMeter()">Save Meter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let allMeters = [];
+
+        // Load meters on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMeters();
+            loadDropdowns();
+        });
+
+        // Load all meters from API
+        async function loadMeters() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE_URL}/Meter/AllMeters`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                allMeters = await response.json();
+                displayMeters(currentPage);
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading meters:', error);
+                showError('Failed to load meters data: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        // Display meters in table
+        function displayMeters(page) {
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const metersToDisplay = allMeters.slice(startIndex, endIndex);
+
+            const tbody = document.getElementById('metersTableBody');
+            tbody.innerHTML = '';
+
+            if (metersToDisplay.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4">No meters found</td></tr>';
+                return;
+            }
+
+            metersToDisplay.forEach(meter => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>MTR${meter.meterId.toString().padStart(4, '0')}</td>
+                    <td>${meter.consumerId}</td>
+                    <td>${meter.ipaddress}</td>
+                    <td>${meter.iccid || 'N/A'}</td>
+                    <td>${meter.imsi || 'N/A'}</td>
+                    <td>${meter.manufacturerName}</td>
+                    <td>${meter.firmware || 'N/A'}</td>
+                    <td>${meter.tariffName}</td>
+                    <td>${formatDate(meter.installDate)}</td>
+                    <td><span class="badge bg-${getStatusColor(meter.statusName)}">${meter.statusName}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="editMeter(${meter.meterId})" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMeter(${meter.meterId})" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            displayPagination();
+        }
+
+        // Display pagination
+        function displayPagination() {
+            const totalPages = Math.ceil(allMeters.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Previous</a>`;
+            pagination.appendChild(prevLi);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    const li = document.createElement('li');
+                    li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                    li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>`;
+                    pagination.appendChild(li);
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = '<a class="page-link" href="#">...</a>';
+                    pagination.appendChild(li);
+                }
+            }
+
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Next</a>`;
+            pagination.appendChild(nextLi);
+        }
+
+        // Change page
+        function changePage(page) {
+            const totalPages = Math.ceil(allMeters.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                displayMeters(currentPage);
+            }
+        }
+
+        // Load dropdowns (Manufacturers, Tariffs, Statuses)
+        async function loadDropdowns() {
+            // Load Manufacturers (you need to create this endpoint)
+            // For now, using dummy data
+            const manufacturerSelect = document.getElementById('manufacturerId');
+            // Example: await fetch and populate
+
+            // Load Tariffs
+            const tariffSelect = document.getElementById('tariffId');
+            // Example: await fetch and populate
+
+            // Load Statuses
+            const statusSelect = document.getElementById('statusId');
+            // Example: await fetch and populate
+        }
+
+        // Edit meter
+        async function editMeter(meterId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/Meter/${meterId}`);
+                if (!response.ok) throw new Error('Failed to fetch meter details');
+
+                const meter = await response.json();
+
+                // Populate form
+                document.getElementById('meterId').value = meter.meterId;
+                document.getElementById('consumerId').value = meter.consumerId;
+                document.getElementById('ipaddress').value = meter.ipaddress;
+                document.getElementById('iccid').value = meter.iccid || '';
+                document.getElementById('imsi').value = meter.imsi || '';
+                document.getElementById('firmware').value = meter.firmware || '';
+                document.getElementById('installDate').value = meter.installDate.split('T')[0];
+                document.getElementById('latestReading').value = meter.latestReading;
+
+                document.getElementById('addMeterModalLabel').textContent = 'Edit Meter';
+
+                const modal = new bootstrap.Modal(document.getElementById('addMeterModal'));
+                modal.show();
+            } catch (error) {
+                alert('Error loading meter: ' + error.message);
+            }
+        }
+
+        // Save meter (Create or Update)
+        async function saveMeter() {
+            const form = document.getElementById('meterForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const meterId = document.getElementById('meterId').value;
+            const meterData = {
+                meterId: meterId ? parseInt(meterId) : null,
+                consumerId: parseInt(document.getElementById('consumerId').value),
+                dtrid: parseInt(document.getElementById('dtrid').value),
+                ipaddress: document.getElementById('ipaddress').value,
+                iccid: document.getElementById('iccid').value,
+                imsi: document.getElementById('imsi').value,
+                manufacturerId: parseInt(document.getElementById('manufacturerId').value),
+                firmware: document.getElementById('firmware').value,
+                tariffId: parseInt(document.getElementById('tariffId').value),
+                installDate: document.getElementById('installDate').value,
+                statusId: parseInt(document.getElementById('statusId').value),
+                latestReading: parseFloat(document.getElementById('latestReading').value)
+            };
+
+            try {
+                const url = meterId ? `${API_BASE_URL}/Meter/Update` : `${API_BASE_URL}/Meter/Create`;
+                const method = meterId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(meterData)
+                });
+
+                if (!response.ok) throw new Error('Failed to save meter');
+
+                bootstrap.Modal.getInstance(document.getElementById('addMeterModal')).hide();
+                form.reset();
+                loadMeters();
+                alert('Meter saved successfully!');
+            } catch (error) {
+                alert('Error saving meter: ' + error.message);
+            }
+        }
+
+        // Delete meter
+        async function deleteMeter(meterId) {
+            if (!confirm('Are you sure you want to delete this meter?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/Meter/${meterId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Failed to delete meter');
+
+                loadMeters();
+                alert('Meter deleted successfully!');
+            } catch (error) {
+                alert('Error deleting meter: ' + error.message);
+            }
+        }
+
+        // Helper functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+        function getStatusColor(status) {
+            const statusColors = {
+                'Active': 'success',
+                'Inactive': 'secondary',
+                'Suspended': 'warning',
+                'Disconnected': 'danger',
+                'Under Maintenance': 'info',
+                'Pending Activation': 'warning',
+                'Decommissioned': 'dark',
+                'Faulty': 'danger'
+            };
+            return statusColors[status] || 'secondary';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+            document.getElementById('metersTableContainer').style.display = show ? 'none' : 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('metersTableContainer').style.display = 'none';
+        }
+    </script>
+}
+
+<style>
+    .table th {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .badge {
+        font-size: 0.85em;
+        padding: 0.35em 0.65em;
+    }
+</style>
