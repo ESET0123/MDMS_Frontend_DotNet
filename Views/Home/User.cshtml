@@ -349,7 +349,7 @@
             }
 
             const userData = {
-                userId: userId, // Will be null for new users
+                userId: userId || "abc",
                 username: username,
                 email: email,
                 phone: phone || null,
@@ -376,7 +376,8 @@
                     await fetchUsers();
                 } else {
                     const errorText = await response.text();
-                    showError(`Failed to save user: ${errorText}`);
+                    console.log(errorText);
+                    // showError(`Failed to save user: ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error saving user:', error);

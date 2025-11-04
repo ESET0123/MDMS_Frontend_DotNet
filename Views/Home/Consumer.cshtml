@@ -1,5 +1,277 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "Consumer";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people"></i> Consumer Management</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#consumerModal" onclick="prepareAddConsumer()">
+            <i class="bi bi-person-plus"></i> Add Consumer
+        </button>
+    </div>
+
+    <!-- Loading and Messages -->
+    <div id="loadingIndicator" class="text-center my-4" style="display:none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading consumers...</p>
+    </div>
+
+    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display:none;">
+        <button type="button" class="btn-close" onclick="showError('')"></button>
+        <span id="errorText"></span>
+    </div>
+
+    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display:none;">
+        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
+        <span id="successText"></span>
+    </div>
+
+    <!-- Consumers Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="consumersTableBody">
+                        <!-- Consumers will load here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Consumer Modal -->
+<div class="modal fade" id="consumerModal" tabindex="-1" aria-labelledby="consumerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="consumerModalLabel">Add Consumer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="consumerForm">
+                    <input type="hidden" id="isEdit" value="false" />
+                    <input type="hidden" id="consumerId" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" placeholder="+1234567890">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="address" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="statusId" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="statusId" required>
+                                <option value="">-- Select Status --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="createdBy" class="form-label">Created By</label>
+                            <input type="text" class="form-control" id="createdBy" placeholder="Admin or Staff">
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" onclick="saveConsumer()"><i class="bi bi-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const CONSUMER_API_URL = `${API_BASE_URL}/Consumer`;
+        const STATUS_API_URL = `${API_BASE_URL}/Status`;
+
+        let allConsumers = [];
+        let allStatuses = [];
+        let consumerModal;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            consumerModal = new bootstrap.Modal(document.getElementById('consumerModal'));
+            await fetchStatuses();
+            await fetchConsumers();
+        });
+
+        async function fetchStatuses() {
+            try {
+                const res = await fetch(`${STATUS_API_URL}/AllStatuses`);
+                if (!res.ok) throw new Error('Failed to fetch statuses');
+                allStatuses = await res.json();
+                const select = document.getElementById('statusId');
+                select.innerHTML = '<option value="">-- Select Status --</option>';
+                allStatuses.forEach(s => {
+                    select.innerHTML += `<option value="${s.statusId}">${s.Name}</option>`;
+                });
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        async function fetchConsumers() {
+            try {
+                showLoading(true);
+                const res = await fetch(`${CONSUMER_API_URL}/AllConsumers`);
+                if (!res.ok) throw new Error('Failed to load consumers');
+                allConsumers = await res.json();
+                renderConsumersTable();
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function renderConsumersTable() {
+            const tbody = document.getElementById('consumersTableBody');
+            tbody.innerHTML = '';
+
+            if (allConsumers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center">No consumers found</td></tr>`;
+                return;
+            }
+
+            allConsumers.forEach(c => {
+                const row = `
+                    <tr>
+                        <td>${c.consumerId}</td>
+                        <td>${c.name}</td>
+                        <td>${c.email}</td>
+                        <td>${c.phone}</td>
+                        <td>${c.address}</td>
+                        <td><span class="badge bg-${c.status.Name.toLowerCase() === 'active' ? 'success' : 'secondary'}">${c.status.Name}</span></td>
+                        <td>${new Date(c.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-success me-1" onclick="editConsumer(${c.consumerId})"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteConsumer(${c.consumerId}, '${c.name}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function prepareAddConsumer() {
+            document.getElementById('consumerForm').reset();
+            document.getElementById('isEdit').value = 'false';
+            document.getElementById('consumerModalLabel').textContent = 'Add Consumer';
+        }
+
+        function editConsumer(id) {
+            const c = allConsumers.find(x => x.consumerId === id);
+            if (!c) return showError('Consumer not found');
+            document.getElementById('consumerModalLabel').textContent = 'Edit Consumer';
+            document.getElementById('isEdit').value = 'true';
+            document.getElementById('consumerId').value = c.consumerId;
+            document.getElementById('name').value = c.name;
+            document.getElementById('email').value = c.email;
+            document.getElementById('phone').value = c.phone;
+            document.getElementById('address').value = c.address;
+            document.getElementById('statusId').value = c.statusId;
+            document.getElementById('createdBy').value = c.createdBy;
+            consumerModal.show();
+        }
+
+        async function saveConsumer() {
+            const isEdit = document.getElementById('isEdit').value === 'true';
+            const data = {
+                consumerId: isEdit ? parseInt(document.getElementById('consumerId').value) : 0,
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                address: document.getElementById('address').value.trim(),
+                statusId: parseInt(document.getElementById('statusId').value),
+                createdBy: document.getElementById('createdBy').value.trim() || "System",
+                updatedBy: isEdit ? "System" : null
+            };
+
+            if (!data.name || !data.email || !data.address || !data.statusId) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            const endpoint = isEdit ? `${CONSUMER_API_URL}/Update` : `${CONSUMER_API_URL}/Create`;
+            const method = isEdit ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(endpoint, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+                showSuccess(isEdit ? 'Consumer updated successfully' : 'Consumer added successfully');
+                consumerModal.hide();
+                await fetchConsumers();
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        async function deleteConsumer(id, name) {
+            if (!confirm(`Delete consumer "${name}"?`)) return;
+            try {
+                const res = await fetch(`${CONSUMER_API_URL}/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+                showSuccess('Consumer deleted');
+                await fetchConsumers();
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMessage');
+            document.getElementById('errorText').textContent = msg;
+            el.style.display = msg ? 'block' : 'none';
+            if (msg) setTimeout(() => el.style.display = 'none', 4000);
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('successMessage');
+            document.getElementById('successText').textContent = msg;
+            el.style.display = msg ? 'block' : 'none';
+            if (msg) setTimeout(() => el.style.display = 'none', 3000);
+        }
+    </script>
 }
