@@ -1,60 +1,476 @@
 ﻿@{
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = "User";
 }
 
 <div class="container-fluid">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>User Management</h2>
-        <button class="btn btn-primary">
+        <h2><i class="bi bi-people"></i> User Management</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" onclick="prepareAddUser()">
             <i class="bi bi-person-plus"></i> Add User
         </button>
     </div>
 
+    <!-- Loading and Error Messages -->
+    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading users...</p>
+    </div>
+    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
+        <button type="button" class="btn-close" onclick="showError('')"></button>
+        <span id="errorText"></span>
+    </div>
+    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
+        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
+        <span id="successText"></span>
+    </div>
+
+    <!-- Users Table -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
                         <tr>
                             <th>User ID</th>
-                            <th>Name</th>
+                            <th>Username</th>
                             <th>Email</th>
+                            <th>Phone</th>
                             <th>Role</th>
-                            <th>Status</th>
                             <th>Last Login</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>U001</td>
-                            <td>John Doe</td>
-                            <td>john@example.com</td>
-                            <td><span class="badge bg-primary">Admin</span></td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td>2024-11-02</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>U002</td>
-                            <td>Jane Smith</td>
-                            <td>jane@example.com</td>
-                            <td><span class="badge bg-info">Operator</span></td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td>2024-11-01</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>
-                                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be injected here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalLabel">Add User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="isEdit" value="false" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3" id="userIdField" style="display: none;">
+                            <label for="userId" class="form-label">User ID</label>
+                            <input type="text" class="form-control" id="userId" readonly>
+                            <small class="form-text text-muted">Auto-generated based on role</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="username" placeholder="e.g., John Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" placeholder="e.g., user@example.com" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" placeholder="e.g., +1234567890">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="roleId" class="form-label">Role <span class="text-danger">*</span></label>
+                            <select class="form-select" id="roleId" required>
+                                <option value="">-- Select Role --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="active" class="form-label">Status</label>
+                            <select class="form-select" id="active">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="passwordString" class="form-label">
+                                Password
+                                <span id="passwordRequired" class="text-danger">*</span>
+                                <span id="passwordOptional" class="text-muted" style="display: none;">(Leave blank to keep current)</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="passwordString" placeholder="Enter password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">
+                                    <i class="bi bi-eye" id="passwordToggleIcon"></i>
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">Minimum 6 characters recommended</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveUser()">
+                    <i class="bi bi-save"></i> Save User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View User Details Modal -->
+<div class="modal fade" id="viewUserModal" tabindex="-1" aria-labelledby="viewUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewUserModalLabel">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">User Number:</div>
+                    <div class="col-8" id="viewUserNumber"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">User ID:</div>
+                    <div class="col-8" id="viewUserId"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Username:</div>
+                    <div class="col-8" id="viewUsername"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Email:</div>
+                    <div class="col-8" id="viewEmail"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Phone:</div>
+                    <div class="col-8" id="viewPhone"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Role:</div>
+                    <div class="col-8" id="viewRoleName"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Last Login:</div>
+                    <div class="col-8" id="viewLastLogin"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Status:</div>
+                    <div class="col-8" id="viewActive"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const USER_API_URL = `${API_BASE_URL}/User`;
+        const ROLE_API_URL = `${API_BASE_URL}/Role`;
+
+        let allUsers = [];
+        let allRoles = [];
+        let userModal;
+        let viewUserModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            viewUserModal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+            fetchAllData();
+        });
+
+        async function fetchAllData() {
+            await fetchRoles();
+            await fetchUsers();
+        }
+
+        async function fetchRoles() {
+            try {
+                const response = await fetch(`${ROLE_API_URL}/AllRoles`);
+                if (!response.ok) throw new Error('Failed to load roles');
+                allRoles = await response.json();
+                populateRoleDropdown();
+            } catch (error) {
+                console.error('Error loading roles:', error);
+                showError('Failed to load roles: ' + error.message);
+            }
+        }
+
+        function populateRoleDropdown() {
+            const roleSelect = document.getElementById('roleId');
+            roleSelect.innerHTML = '<option value="">-- Select Role --</option>';
+
+            allRoles.forEach(role => {
+                roleSelect.innerHTML += `<option value="${role.roleId}">${role.roleName}</option>`;
+            });
+        }
+
+        async function fetchUsers() {
+            try {
+                showLoading(true);
+                showError('');
+                const response = await fetch(`${USER_API_URL}/AllUsers`);
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                allUsers = await response.json();
+                renderUsersTable(allUsers);
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                showError('Failed to load users: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+
+            if (users && users.length > 0) {
+                users.forEach(user => {
+                    const statusBadge = user.active
+                        ? '<span class="badge bg-success">Active</span>'
+                        : '<span class="badge bg-danger">Inactive</span>';
+
+                    const lastLogin = user.lastLogin
+                        ? new Date(user.lastLogin).toLocaleString()
+                        : '<span class="text-muted">Never</span>';
+
+                    const rowHtml = `
+                        <tr>
+                            <td><strong>${user.userId}</strong></td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.phone || '<span class="text-muted">N/A</span>'}</td>
+                            <td><span class="badge bg-primary">${user.roleName}</span></td>
+                            <td>${lastLogin}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="viewUserDetails('${user.userId}')" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-1" onclick="editUser('${user.userId}')" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user.userId}', '${user.username}')" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No users found. Click "Add User" to create one.</td></tr>';
+            }
+        }
+
+        function prepareAddUser() {
+            document.getElementById('userModalLabel').textContent = 'Add User';
+            document.getElementById('userForm').reset();
+            document.getElementById('isEdit').value = 'false';
+            document.getElementById('userIdField').style.display = 'none';
+            document.getElementById('passwordString').required = true;
+            document.getElementById('passwordRequired').style.display = 'inline';
+            document.getElementById('passwordOptional').style.display = 'none';
+        }
+
+        async function editUser(userId) {
+            const user = allUsers.find(u => u.userId === userId);
+            if (!user) {
+                showError('User not found');
+                return;
+            }
+
+            document.getElementById('userModalLabel').textContent = 'Edit User';
+            document.getElementById('isEdit').value = 'true';
+            document.getElementById('userIdField').style.display = 'block';
+            document.getElementById('userId').value = user.userId;
+            document.getElementById('username').value = user.username;
+            document.getElementById('email').value = user.email;
+            document.getElementById('phone').value = user.phone || '';
+            document.getElementById('roleId').value = user.roleId;
+            document.getElementById('active').value = user.active.toString();
+            document.getElementById('passwordString').value = '';
+            document.getElementById('passwordString').required = false;
+            document.getElementById('passwordRequired').style.display = 'none';
+            document.getElementById('passwordOptional').style.display = 'inline';
+
+            userModal.show();
+        }
+
+        async function saveUser() {
+            const isEdit = document.getElementById('isEdit').value === 'true';
+            const userId = isEdit ? document.getElementById('userId').value.trim() : null;
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const roleId = document.getElementById('roleId').value;
+            const active = document.getElementById('active').value === 'true';
+            const passwordString = document.getElementById('passwordString').value;
+
+            // Validation
+            if (!username || !email || !roleId) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            if (!isEdit && !passwordString) {
+                showError('Password is required for new users');
+                return;
+            }
+
+            if (passwordString && passwordString.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            const userData = {
+                userId: userId, // Will be null for new users
+                username: username,
+                email: email,
+                phone: phone || null,
+                roleId: parseInt(roleId),
+                active: active,
+                passwordString: passwordString || null
+            };
+
+            const endpoint = isEdit ? `${USER_API_URL}/Update` : `${USER_API_URL}/Create`;
+            const method = isEdit ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userData),
+                });
+
+                if (response.ok) {
+                    userModal.hide();
+                    showSuccess(isEdit ? 'User updated successfully!' : 'User created successfully!');
+                    await fetchUsers();
+                } else {
+                    const errorText = await response.text();
+                    showError(`Failed to save user: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error saving user:', error);
+                showError('An error occurred while saving the user.');
+            }
+        }
+
+        async function deleteUser(userId, username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${USER_API_URL}/${userId}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    showSuccess('User deleted successfully!');
+                    await fetchUsers();
+                } else {
+                    const errorText = await response.text();
+                    showError(`Failed to delete user: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                showError('An error occurred while deleting the user.');
+            }
+        }
+
+        function viewUserDetails(userId) {
+            const user = allUsers.find(u => u.userId === userId);
+            if (!user) {
+                showError('User not found');
+                return;
+            }
+
+            document.getElementById('viewUserNumber').textContent = user.userNumber;
+            document.getElementById('viewUserId').textContent = user.userId;
+            document.getElementById('viewUsername').textContent = user.username;
+            document.getElementById('viewEmail').textContent = user.email;
+            document.getElementById('viewPhone').textContent = user.phone || 'N/A';
+            document.getElementById('viewRoleName').textContent = user.roleName;
+            document.getElementById('viewLastLogin').textContent = user.lastLogin
+                ? new Date(user.lastLogin).toLocaleString()
+                : 'Never';
+            document.getElementById('viewActive').innerHTML = user.active
+                ? '<span class="badge bg-success">Active</span>'
+                : '<span class="badge bg-danger">Inactive</span>';
+
+            viewUserModal.show();
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('passwordString');
+            const toggleIcon = document.getElementById('passwordToggleIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            if (message) {
+                errorText.textContent = message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            if (message) {
+                successText.textContent = message;
+                successDiv.style.display = 'block';
+                setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
+            } else {
+                successDiv.style.display = 'none';
+            }
+        }
+    </script>
+}

@@ -1,122 +1,64 @@
-﻿@* @{
-    ViewData["Title"] = "Tariff SlabS";
+﻿@{
+    ViewData["Title"] = "Tariff Slab Management";
 }
 
 <div class="container-fluid">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Tariff Slabs</h2>
-        <button class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Add Slab
+        <h2>Tariff Slab Management</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tariffSlabModal" onclick="prepareAddSlab()">
+            <i class="bi bi-plus-circle"></i> Add Tariff Slab
         </button>
     </div>
 
-    <div class="card shadow-sm">
+    <!-- Filter by Tariff -->
+    <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Slab ID</th>
-                        <th>Tariff Type</th>
-                        <th>Min Units</th>
-                        <th>Max Units</th>
-                        <th>Rate ($/kWh)</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>S001</td>
-                        <td>Residential</td>
-                        <td>0</td>
-                        <td>100</td>
-                        <td>$0.10</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>S002</td>
-                        <td>Residential</td>
-                        <td>101</td>
-                        <td>300</td>
-                        <td>$0.12</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <label for="filterTariffId" class="form-label fw-bold">Filter by Tariff Plan:</label>
+                    <select class="form-select" id="filterTariffId" onchange="filterSlabsByTariff()">
+                        <option value="">-- All Tariffs --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <div class="mt-4" id="selectedTariffInfo" style="display: none;">
+                        <small class="text-muted">Selected Tariff:</small>
+                        <div class="fw-bold" id="selectedTariffDetails"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div> *@
 
-
-@{
-    ViewData["Title"] = "Tariff Management";
-}
-
-<div class="container-fluid">
-    <!-- Tariff Header and Add Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Tariff Plans</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
-            <i class="bi bi-plus-circle"></i> Add Tariff
-        </button>
+    <!-- Loading and Error Messages -->
+    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading tariff slabs...</p>
+    </div>
+    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
+        <button type="button" class="btn-close" onclick="showError('')"></button>
+        <span id="errorText"></span>
+    </div>
+    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
+        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
+        <span id="successText"></span>
     </div>
 
-    <div id="loadingIndicator" class="text-center" style="display: none;">Loading tariffs...</div>
-    <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
-
-    <!-- Tariff Cards Container -->
-    <div class="row" id="tariffCardsContainer"></div>
-</div>
-
-<!-- Modal for Add/Edit Tariff (Master) -->
-<!-- ... (Keep the Tariff Modal code from the previous response) ... -->
-<!-- Modal for Managing Tariff Slabs (Detail) -->
-<div class="modal fade" id="tariffSlabModal" tabindex="-1" aria-labelledby="tariffSlabModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tariffSlabModalLabel">Manage Slabs for: <span id="currentTariffName"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="currentTariffId" />
-
-                <!-- Tariff Slab Form -->
-                <div class="mb-4 p-3 border rounded">
-                    <h6>Add New Slab</h6>
-                    <form id="tariffSlabForm" class="row g-3">
-                        <input type="hidden" id="slabId" value="0" />
-                        <div class="col-md-3">
-                            <label for="startUnit" class="form-label">Start Unit</label>
-                            <input type="number" step="0.01" class="form-control" id="startUnit" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="endUnit" class="form-label">End Unit</label>
-                            <input type="number" step="0.01" class="form-control" id="endUnit">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="rate" class="form-label">Rate ($/kWh)</label>
-                            <input type="number" step="0.0001" class="form-control" id="rate" required>
-                        </div>
-                        <div class="col-md-3 align-self-end">
-                            <button type="button" class="btn btn-success w-100" onclick="saveTariffSlab()">Save Slab</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Tariff Slab List -->
-                <h6>Existing Slabs</h6>
-                <table class="table table-striped">
-                    <thead>
+    <!-- Tariff Slabs Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
                         <tr>
-                            <th>Start Unit</th>
-                            <th>End Unit</th>
-                            <th>Rate</th>
+                            <th>Slab ID</th>
+                            <th>Tariff Name</th>
+                            <th>From (kWh)</th>
+                            <th>To (kWh)</th>
+                            <th>Rate ($/kWh)</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -129,93 +71,165 @@
     </div>
 </div>
 
+<!-- Add/Edit Tariff Slab Modal -->
+<div class="modal fade" id="tariffSlabModal" tabindex="-1" aria-labelledby="tariffSlabModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tariffSlabModalLabel">Add Tariff Slab</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="tariffSlabForm">
+                    <input type="hidden" id="slabId" />
+
+                    <div class="mb-3">
+                        <label for="tariffId" class="form-label">Tariff Plan <span class="text-danger">*</span></label>
+                        <select class="form-select" id="tariffId" required>
+                            <option value="">-- Select Tariff --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fromKwh" class="form-label">From (kWh) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="fromKwh" placeholder="e.g., 0" required>
+                        <small class="form-text text-muted">Starting unit for this slab</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="toKwh" class="form-label">To (kWh) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="toKwh" placeholder="e.g., 100" required>
+                        <small class="form-text text-muted">Ending unit for this slab</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ratePerKwh" class="form-label">Rate ($/kWh) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.0001" class="form-control" id="ratePerKwh" placeholder="e.g., 0.15" required>
+                        <small class="form-text text-muted">Rate charged per kWh for this slab</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveTariffSlab()">
+                    <i class="bi bi-save"></i> Save Slab
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Slab Details Modal -->
+<div class="modal fade" id="viewSlabModal" tabindex="-1" aria-labelledby="viewSlabModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewSlabModalLabel">Tariff Slab Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Slab ID:</div>
+                    <div class="col-8" id="viewSlabId"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Tariff Name:</div>
+                    <div class="col-8" id="viewTariffName"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">From (kWh):</div>
+                    <div class="col-8" id="viewFromKwh"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">To (kWh):</div>
+                    <div class="col-8" id="viewToKwh"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 fw-bold">Rate:</div>
+                    <div class="col-8" id="viewRatePerKwh"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script>
         const API_BASE_URL = 'https://localhost:7272/api';
         const TARIFF_API_URL = `${API_BASE_URL}/Tariff`;
-        const SLAB_API_URL = `${API_BASE_URL}/TariffSlab`; // Assumed Slab controller endpoint
+        const SLAB_API_URL = `${API_BASE_URL}/TariffSlab`;
 
+        let allSlabs = [];
         let allTariffs = [];
-        let currentSlabs = []; // Store slabs for the open modal
+        let tariffSlabModal;
+        let viewSlabModal;
 
-        // ... (Keep Utility Functions: showLoading, showError, formatDate, formatInputDate from previous response) ...
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            tariffSlabModal = new bootstrap.Modal(document.getElementById('tariffSlabModal'));
+            viewSlabModal = new bootstrap.Modal(document.getElementById('viewSlabModal'));
+            fetchAllData();
+        });
 
-        // =======================================================
-        // TARIFF (Master) Logic - Same as previous code
-        // =======================================================
-        async function fetchTariffPlans() {
+        async function fetchAllData() {
+            await fetchTariffs();
+            await fetchTariffSlabs();
+        }
+
+        async function fetchTariffs() {
+            try {
+                const response = await fetch(`${TARIFF_API_URL}/AllTariffs`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                allTariffs = await response.json();
+                populateTariffDropdown();
+            } catch (error) {
+                console.error('Error loading tariffs:', error);
+                showError('Failed to load tariff plans: ' + error.message);
+            }
+        }
+
+        function populateTariffDropdown() {
+            const select = document.getElementById('tariffId');
+            const filterSelect = document.getElementById('filterTariffId');
+
+            select.innerHTML = '<option value="">-- Select Tariff --</option>';
+            filterSelect.innerHTML = '<option value="">-- All Tariffs --</option>';
+
+            allTariffs.forEach(tariff => {
+                const option = document.createElement('option');
+                option.value = tariff.tariffId;
+                option.textContent = `${tariff.name} - ${tariff.baseRate.toFixed(4)}/kWh`;
+                select.appendChild(option);
+
+                const filterOption = document.createElement('option');
+                filterOption.value = tariff.tariffId;
+                filterOption.textContent = `${tariff.name}`;
+                filterOption.dataset.name = tariff.name;
+                filterOption.dataset.baseRate = tariff.baseRate;
+                filterOption.dataset.taxRate = tariff.taxRate;
+                filterOption.dataset.effectiveFrom = tariff.effectiveFrom;
+                filterSelect.appendChild(filterOption);
+            });
+        }
+
+        async function fetchTariffSlabs() {
             try {
                 showLoading(true);
                 showError('');
-                const response = await fetch(`${TARIFF_API_URL}/AllTariffSlabs`);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                allTariffs = await response.json();
-                renderTariffCards(allTariffs);
-                showLoading(false);
-
-            } catch (error) {
-                console.error('Error loading tariffs:', error);
-                showError('Failed to load tariffs data: ' + error.message);
-                showLoading(false);
-            }
-        }
-        function renderTariffCards(plans) {
-            // Update button onclick to open Slab modal instead of edit modal directly
-            // ... inside renderTariffCards function ...
-            /*
-            // Old line
-            <button class="btn btn-sm btn-outline-primary" onclick="viewTariffDetails(${plan.tariffId})">View/Edit</button>
-            // New line to manage slabs:
-            <button class="btn btn-sm btn-info text-white" onclick="openSlabManagement(${plan.tariffId}, '${plan.name}')">Manage Slabs</button>
-            */
-        }
-        async function saveTariff() { /* ... (Same code as before) ... */ }
-        function prepareAddTariff() { /* ... (Same code as before) ... */ }
-        function viewTariffDetails(id) { /* ... (Same code as before, for editing Tariff details) ... */ }
-        async function deleteTariff(id, name) { /* ... (Same code as before) ... */ }
-
-
-        // =======================================================
-        // TARIFF SLAB (Detail) Logic - New functionality
-        // =======================================================
-
-        function openSlabManagement(tariffId, tariffName) {
-            document.getElementById('currentTariffId').value = tariffId;
-            document.getElementById('currentTariffName').textContent = tariffName;
-
-            // Reset the slab form
-            document.getElementById('tariffSlabForm').reset();
-            document.getElementById('slabId').value = '0';
-            showError('');
-
-            // Fetch and display existing slabs
-            fetchTariffSlabs(tariffId);
-
-            // Show the modal (assuming Bootstrap 5)
-            var modal = new bootstrap.Modal(document.getElementById('tariffSlabModal'));
-            modal.show();
-        }
-
-        async function fetchTariffSlabs(tariffId) {
-            try {
-                showLoading(true);
-                // Assumed API endpoint: GET api/TariffSlab/ByTariff/{tariffId}
-                const response = await fetch(`${SLAB_API_URL}/ByTariff/${tariffId}`);
+                const response = await fetch(`${SLAB_API_URL}/AllTariffSlabs`);
 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-                currentSlabs = await response.json();
-                renderTariffSlabsTable(currentSlabs);
+                allSlabs = await response.json();
+                renderTariffSlabsTable(allSlabs);
                 showLoading(false);
-
             } catch (error) {
-                console.error('Error loading slabs:', error);
-                showError('Failed to load tariff slab data: ' + error.message);
+                console.error('Error loading tariff slabs:', error);
+                showError('Failed to load tariff slabs: ' + error.message);
                 showLoading(false);
             }
         }
@@ -226,41 +240,121 @@
 
             if (slabs && slabs.length > 0) {
                 slabs.forEach(slab => {
-                    const endUnitDisplay = slab.endUnit !== null ? slab.endUnit.toFixed(2) : 'Endless';
                     const rowHtml = `
-                        <tr data-slab-id="${slab.slabId}">
-                            <td>${slab.startUnit.toFixed(2)}</td>
-                            <td>${endUnitDisplay}</td>
-                            <td>$${slab.rate.toFixed(4)}</td>
+                        <tr>
+                            <td>${slab.slabId}</td>
+                            <td><span class="badge bg-primary">${slab.tariffName}</span></td>
+                            <td>${slab.fromKwh.toFixed(2)}</td>
+                            <td>${slab.toKwh.toFixed(2)}</td>
+                            <td>${slab.ratePerKwh.toFixed(4)}</td>
                             <td>
-                                <!-- We don't really need inline edit for table rows, typically done via form/modal -->
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTariffSlab(${slab.slabId})">Delete</button>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="viewSlabDetails(${slab.slabId})" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-1" onclick="editTariffSlab(${slab.slabId})" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTariffSlab(${slab.slabId})" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </td>
                         </tr>
                     `;
                     tbody.insertAdjacentHTML('beforeend', rowHtml);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="4">No slabs defined for this tariff.</td></tr>';
+                const filterTariffId = document.getElementById('filterTariffId').value;
+                const message = filterTariffId
+                    ? 'No tariff slabs found for the selected tariff. Click "Add Tariff Slab" to create one.'
+                    : 'No tariff slabs found. Click "Add Tariff Slab" to create one.';
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center">${message}</td></tr>`;
             }
         }
 
+        function filterSlabsByTariff() {
+            const filterTariffId = document.getElementById('filterTariffId').value;
+            const selectedOption = document.getElementById('filterTariffId').selectedOptions[0];
+            const infoDiv = document.getElementById('selectedTariffInfo');
+            const detailsDiv = document.getElementById('selectedTariffDetails');
+
+            if (filterTariffId) {
+                // Show selected tariff info
+                const name = selectedOption.dataset.name;
+                const baseRate = parseFloat(selectedOption.dataset.baseRate).toFixed(4);
+                const taxRate = selectedOption.dataset.taxRate;
+                const effectiveFrom = new Date(selectedOption.dataset.effectiveFrom).toLocaleDateString();
+
+                detailsDiv.innerHTML = `
+                    ${name} | Base Rate: ${baseRate}/kWh | Tax: ${taxRate}% | Effective: ${effectiveFrom}
+                `;
+                infoDiv.style.display = 'block';
+
+                // Filter slabs
+                const filteredSlabs = allSlabs.filter(slab => slab.tariffId == filterTariffId);
+                renderTariffSlabsTable(filteredSlabs);
+            } else {
+                // Show all slabs
+                infoDiv.style.display = 'none';
+                renderTariffSlabsTable(allSlabs);
+            }
+        }
+
+        function prepareAddSlab() {
+            document.getElementById('tariffSlabModalLabel').textContent = 'Add Tariff Slab';
+            document.getElementById('tariffSlabForm').reset();
+            document.getElementById('slabId').value = '';
+
+            // Pre-select the filtered tariff if one is selected
+            const filterTariffId = document.getElementById('filterTariffId').value;
+            if (filterTariffId) {
+                document.getElementById('tariffId').value = filterTariffId;
+            }
+        }
+
+        async function editTariffSlab(id) {
+            const slab = allSlabs.find(s => s.slabId === id);
+            if (!slab) {
+                showError('Slab not found');
+                return;
+            }
+
+            document.getElementById('tariffSlabModalLabel').textContent = 'Edit Tariff Slab';
+            document.getElementById('slabId').value = slab.slabId;
+            document.getElementById('tariffId').value = slab.tariffId;
+            document.getElementById('fromKwh').value = slab.fromKwh;
+            document.getElementById('toKwh').value = slab.toKwh;
+            document.getElementById('ratePerKwh').value = slab.ratePerKwh;
+
+            tariffSlabModal.show();
+        }
+
         async function saveTariffSlab() {
-            const tariffId = document.getElementById('currentTariffId').value;
             const slabId = document.getElementById('slabId').value;
+            const tariffId = document.getElementById('tariffId').value;
+            const fromKwh = document.getElementById('fromKwh').value;
+            const toKwh = document.getElementById('toKwh').value;
+            const ratePerKwh = document.getElementById('ratePerKwh').value;
+
+            // Validation
+            if (!tariffId || !fromKwh || !toKwh || !ratePerKwh) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            if (parseFloat(toKwh) <= parseFloat(fromKwh)) {
+                showError('To (kWh) must be greater than From (kWh)');
+                return;
+            }
 
             const slabData = {
-                slabId: parseInt(slabId) || null,
+                slabId: slabId ? parseInt(slabId) : null,
                 tariffId: parseInt(tariffId),
-                startUnit: parseFloat(document.getElementById('startUnit').value),
-                endUnit: document.getElementById('endUnit').value ? parseFloat(document.getElementById('endUnit').value) : null,
-                rate: parseFloat(document.getElementById('rate').value)
+                fromKwh: parseFloat(fromKwh),
+                toKwh: parseFloat(toKwh),
+                ratePerKwh: parseFloat(ratePerKwh)
             };
 
-            if (!slabData.startUnit && slabData.startUnit !== 0) return showError('Start Unit is required.');
-            if (!slabData.rate && slabData.rate !== 0) return showError('Rate is required.');
-
-            const isUpdate = slabData.slabId > 0;
+            const isUpdate = slabId && parseInt(slabId) > 0;
             const endpoint = isUpdate ? `${SLAB_API_URL}/Update` : `${SLAB_API_URL}/Create`;
             const method = isUpdate ? 'PUT' : 'POST';
 
@@ -274,24 +368,22 @@
                 });
 
                 if (response.ok) {
-                    // Refresh the slabs list in the modal
-                    await fetchTariffSlabs(tariffData.tariffId);
-                    // Reset the form for adding another one
-                    document.getElementById('tariffSlabForm').reset();
-                    document.getElementById('slabId').value = '0';
-                    showError('');
+                    tariffSlabModal.hide();
+                    showSuccess(isUpdate ? 'Tariff slab updated successfully!' : 'Tariff slab created successfully!');
+                    await fetchTariffSlabs();
                 } else {
                     const errorText = await response.text();
                     showError(`Failed to save slab: ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error saving slab:', error);
-                showError('An error occurred while communicating with the API.');
+                showError('An error occurred while saving the tariff slab.');
             }
         }
 
         async function deleteTariffSlab(id) {
-            if (!confirm(`Are you sure you want to delete this slab?`)) {
+            const slab = allSlabs.find(s => s.slabId === id);
+            if (!confirm(`Are you sure you want to delete the slab from ${slab.fromKwh} to ${slab.toKwh} kWh?`)) {
                 return;
             }
 
@@ -301,15 +393,59 @@
                 });
 
                 if (response.ok) {
-                    const currentTariffId = document.getElementById('currentTariffId').value;
-                    await fetchTariffSlabs(currentTariffId); // Refresh the list
+                    showSuccess('Tariff slab deleted successfully!');
+                    await fetchTariffSlabs();
                 } else {
                     const errorText = await response.text();
                     showError(`Failed to delete slab: ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error deleting slab:', error);
-                showError('An error occurred while communicating with the API.');
+                showError('An error occurred while deleting the tariff slab.');
+            }
+        }
+
+        function viewSlabDetails(id) {
+            const slab = allSlabs.find(s => s.slabId === id);
+            if (!slab) {
+                showError('Slab not found');
+                return;
+            }
+
+            document.getElementById('viewSlabId').textContent = slab.slabId;
+            document.getElementById('viewTariffName').textContent = slab.tariffName;
+            document.getElementById('viewFromKwh').textContent = slab.fromKwh.toFixed(2) + ' kWh';
+            document.getElementById('viewToKwh').textContent = slab.toKwh.toFixed(2) + ' kWh';
+            document.getElementById('viewRatePerKwh').textContent = '$' + slab.ratePerKwh.toFixed(4) + '/kWh';
+
+            viewSlabModal.show();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            if (message) {
+                errorText.textContent = message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            if (message) {
+                successText.textContent = message;
+                successDiv.style.display = 'block';
+                setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
+            } else {
+                successDiv.style.display = 'none';
             }
         }
     </script>
