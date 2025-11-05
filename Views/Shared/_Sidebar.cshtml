@@ -1,45 +1,45 @@
-﻿
-<aside class="sidebar d-flex flex-column bg-dark text-white vh-100 shadow-lg" style="width: 250px;">
-    
+﻿<aside class="sidebar d-flex flex-column bg-dark text-white vh-100 shadow-lg" style="width: 250px;">
 
     <nav class="sidebar-nav flex-grow-1 p-3">
-        <a href="@Url.Action("Dashboard", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
-            <i class="bi bi-grid-3x3-gap"></i>
+        <a href="@Url.Action("Dashboard", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="Dashboard">
+            <i class="bi bi-speedometer2"></i>
             <span class="ms-3">Dashboard</span>
         </a>
-        <a href="@Url.Action("Meter", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
-            <i class="bi bi-grid-3x3-gap"></i>
+        <a href="@Url.Action("Meter", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="Meter">
+            <i class="bi bi-lightning-charge"></i>
             <span class="ms-3">Meter</span>
         </a>
-        <a href="@Url.Action("UploadMeter", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
-            <i class="bi bi-upload"></i>
-            <span class="ms-3">uploadmeter</span>
+        <a href="@Url.Action("UploadMeter", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="UploadMeter">
+            <i class="bi bi-cloud-upload"></i>
+            <span class="ms-3">Upload Meter</span>
         </a>
-
-        <a href="@Url.Action("Consumer", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
-            <i class="bi bi-house-door"></i>
+        <a href="@Url.Action("Consumer", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="Consumer">
+            <i class="bi bi-person-badge"></i>
             <span class="ms-3">Consumer</span>
         </a>
-
-        <a href="@Url.Action("OrgUnit", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
-            <i class="bi bi-building"></i>
+        <a href="@Url.Action("OrgUnit", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="OrgUnit">
+            <i class="bi bi-diagram-3"></i>
             <span class="ms-3">Org Unit</span>
         </a>
-        <a href="@Url.Action("Tariff", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
-            <i class="bi bi-tag"></i>
+        <a href="@Url.Action("Tariff", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="Tariff">
+            <i class="bi bi-receipt"></i>
             <span class="ms-3">Tariff</span>
         </a>
-        <a href="@Url.Action("TariffSlab", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+        <a href="@Url.Action("TariffSlab", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="TariffSlab">
             <i class="bi bi-cash-stack"></i>
             <span class="ms-3">Tariff Slabs</span>
         </a>
-        <a href="@Url.Action("TODRule", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
-            <i class="bi bi-file-text"></i>
+        <a href="@Url.Action("TODRule", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="TODRule">
+            <i class="bi bi-clock-history"></i>
             <span class="ms-3">TOD Rules</span>
         </a>
-        <a href="@Url.Action("User", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link">
+        <a href="@Url.Action("User", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="User">
             <i class="bi bi-people"></i>
             <span class="ms-3">User</span>
+        </a>
+        <a href="@Url.Action("Manufacturer", "Home")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="Manufacturer">
+            <i class="bi bi-building"></i>
+            <span class="ms-3">Manufacturer</span>
         </a>
     </nav>
 </aside>
@@ -56,3 +56,18 @@
         font-weight: bold;
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPage = '@ViewContext.RouteData.Values["action"]';
+        const navItems = document.querySelectorAll('.nav-item');
+
+        navItems.forEach(item => {
+            const page = item.getAttribute('data-page');
+            if (page === currentPage) {
+                item.classList.remove('text-white-50');
+                item.classList.add('active-link');
+            }
+        });
+    });
+</script>

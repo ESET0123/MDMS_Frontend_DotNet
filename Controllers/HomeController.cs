@@ -50,6 +50,10 @@ namespace MDMS_Frontend.Controllers
         {
             return View();
         }
+        public IActionResult Manufacturer()
+        {
+            return View();
+        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

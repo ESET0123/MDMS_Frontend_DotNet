@@ -3,36 +3,43 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="container-fluid ">
+<div class="container-fluid">
     <div class="row mb-4">
         <div class="col-12">
             <h1 class="display-5 mb-3">Welcome 🎉</h1>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div id="loadingIndicator" class="text-center my-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading dashboard statistics...</p>
+    </div>
+
+    <div id="statisticsCards" class="row g-4" style="display: none;">
         <div class="col-md-3">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-start border-primary border-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-subtitle mb-2 text-muted">Total Meters</h6>
-                            <h2 class="card-title mb-0">1,234</h2>
+                            <h2 class="card-title mb-0" id="totalMeters">0</h2>
                         </div>
                         <div class="text-primary">
-                            <i class="bi bi-speedometer2 fs-1"></i>
+                            <i class="bi bi-lightning-charge fs-1"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-start border-success border-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-subtitle mb-2 text-muted">Active Users</h6>
-                            <h2 class="card-title mb-0">456</h2>
+                            <h2 class="card-title mb-0" id="activeUsers">0</h2>
                         </div>
                         <div class="text-success">
                             <i class="bi bi-people fs-1"></i>
@@ -41,15 +48,78 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm">
+        @* <div class="col-md-3">
+            <div class="card shadow-sm border-start border-warning border-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-subtitle mb-2 text-muted">Org Units</h6>
-                            <h2 class="card-title mb-0">89</h2>
+                            <h2 class="card-title mb-0" id="totalOrgUnits">0</h2>
                         </div>
                         <div class="text-warning">
+                            <i class="bi bi-diagram-3 fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> *@
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-info border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Tariff Plans</h6>
+                            <h2 class="card-title mb-0" id="totalTariffs">0</h2>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-receipt fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="additionalStats" class="row g-4 mt-2" style="display: none;">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-danger border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Total Consumers</h6>
+                            <h2 class="card-title mb-0" id="totalConsumers">0</h2>
+                        </div>
+                        <div class="text-danger">
+                            <i class="bi bi-person-badge fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-success border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Active Consumers</h6>
+                            <h2 class="card-title mb-0" id="activeConsumers">0</h2>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-person-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-start border-secondary border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Manufacturers</h6>
+                            <h2 class="card-title mb-0" id="totalManufacturers">0</h2>
+                        </div>
+                        <div class="text-secondary">
                             <i class="bi bi-building fs-1"></i>
                         </div>
                     </div>
@@ -57,19 +127,189 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-start border-primary border-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Tariff Plans</h6>
-                            <h2 class="card-title mb-0">12</h2>
+                            <h6 class="card-subtitle mb-2 text-muted">DTRs</h6>
+                            <h2 class="card-title mb-0" id="totalDtrs">0</h2>
                         </div>
-                        <div class="text-info">
-                            <i class="bi bi-tags fs-1"></i>
+                        <div class="text-primary">
+                            <i class="bi bi-router fs-1"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="recentActivity" class="row mt-4" style="display: none;">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Consumers</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentConsumersTable">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Recent Users</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentUsersTable">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const DASHBOARD_API_URL = `${API_BASE_URL}/Dashboard`;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDashboardData();
+        });
+
+        async function fetchDashboardData() {
+            await fetchStatistics();
+            await fetchRecentActivity();
+        }
+
+        async function fetchStatistics() {
+            try {
+                const response = await fetch(`${DASHBOARD_API_URL}/Statistics`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                animateValue('totalMeters', 0, data.totalMeters, 1000);
+                animateValue('activeUsers', 0, data.activeUsers, 1000);
+                // animateValue('totalOrgUnits', 0, data.totalOrgUnits, 1000);
+                animateValue('totalTariffs', 0, data.totalTariffs, 1000);
+                animateValue('totalConsumers', 0, data.totalConsumers, 1000);
+                animateValue('activeConsumers', 0, data.activeConsumers, 1000);
+                animateValue('totalManufacturers', 0, data.totalManufacturers, 1000);
+                animateValue('totalDtrs', 0, data.totalDtrs, 1000);
+
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('statisticsCards').style.display = 'flex';
+                document.getElementById('additionalStats').style.display = 'flex';
+
+            } catch (error) {
+                console.error('Error fetching statistics:', error);
+                document.getElementById('loadingIndicator').innerHTML =
+                    '<div class="alert alert-danger">Failed to load dashboard statistics</div>';
+            }
+        }
+
+        async function fetchRecentActivity() {
+            try {
+                const response = await fetch(`${DASHBOARD_API_URL}/RecentActivity`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                const consumersTable = document.getElementById('recentConsumersTable');
+                if (data.recentConsumers && data.recentConsumers.length > 0) {
+                    consumersTable.innerHTML = data.recentConsumers.map(consumer => `
+                        <tr>
+                            <td>${consumer.name}</td>
+                            <td>${consumer.email}</td>
+                            <td>${new Date(consumer.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    consumersTable.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No recent consumers</td></tr>';
+                }
+
+                const usersTable = document.getElementById('recentUsersTable');
+                if (data.recentUsers && data.recentUsers.length > 0) {
+                    usersTable.innerHTML = data.recentUsers.map(user => `
+                        <tr>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td><span class="badge bg-primary">${user.roleName}</span></td>
+                        </tr>
+                    `).join('');
+                } else {
+                    usersTable.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No recent users</td></tr>';
+                }
+
+                document.getElementById('recentActivity').style.display = 'flex';
+
+            } catch (error) {
+                console.error('Error fetching recent activity:', error);
+            }
+        }
+
+        function animateValue(id, start, end, duration) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current).toLocaleString();
+            }, 16);
+        }
+
+        setInterval(fetchDashboardData, 300000);
+    </script>
+}
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+</style>
