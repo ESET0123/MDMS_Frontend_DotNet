@@ -181,9 +181,9 @@
 
 @section Scripts {
     <script>
-        const API_BASE_URL = 'https://localhost:7272/api';
-        const USER_API_URL = `${API_BASE_URL}/User`;
-        const ROLE_API_URL = `${API_BASE_URL}/Role`;
+        const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
+        const USER_API_URL = `${API_BASE_URL}/api/User`;
+        const ROLE_API_URL = `${API_BASE_URL}/api/Role`;
 
         let allUsers = [];
         let allRoles = [];

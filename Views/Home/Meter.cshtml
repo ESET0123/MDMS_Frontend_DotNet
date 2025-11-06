@@ -75,6 +75,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="dtrid" class="form-label">DTR ID <span class="text-danger">*</span></label>
                             <input type="number" class="form-control" id="dtrid" name="dtrid" required>
+                            <div id="dtrValidation" class="mt-2"></div>
                         </div>
                     </div>
                     <div class="row">
@@ -264,6 +265,20 @@
                     });
                 }
 
+                const dtrIdInput = document.getElementById('dtrid');
+                if (dtrIdInput) {
+                    dtrIdInput.addEventListener('input', function () {
+                        clearTimeout(consumerCheckTimeout);
+                        const dtrId = this.value.trim();
+                        if (dtrId && dtrId > 0) {
+                            consumerCheckTimeout = setTimeout(() => checkDtrExists(dtrId), 500);
+                        } else {
+                            document.getElementById('dtrValidation').innerHTML = '';
+                        }
+                    });
+                }
+
+
                 console.log('✓ Meter management page initialized');
             } catch (error) {
                 console.error('Initialization error:', error);
@@ -345,6 +360,42 @@
                             <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="openCreateConsumerModal()">
                                 <i class="bi bi-person-plus"></i> Create New Consumer
                             </button>`;
+            }
+        }
+
+        async function checkDtrExists(dtrId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Dtr/${dtrId}`);
+                const validationDiv = document.getElementById('dtrValidation');
+
+                if (response.ok) {
+                    const dtr = await response.json();
+                    validationDiv.innerHTML = `
+                        <div class="alert alert-success py-2 mb-0">
+                            <i class="bi bi-check-circle"></i>
+                            <strong>DTR Found:</strong> ${dtr.dtrname}
+                        </div>`;
+                }
+                else if (response.status === 404) {
+                    validationDiv.innerHTML = `
+                        <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                onclick="redirectToAddDtr()">
+                            <i class="bi bi-diagram-3"></i> Create New DTR
+                        </button>`;
+                }
+                else {
+                    validationDiv.innerHTML = `
+                        <div class="alert alert-warning py-2 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> Unable to verify DTR
+                        </div>`;
+                }
+            } catch (error) {
+                console.error('Error checking DTR:', error);
+                document.getElementById('dtrValidation').innerHTML = `
+                    <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                            onclick="redirectToAddDtr()">
+                        <i class="bi bi-diagram-3"></i> Create New DTR
+                    </button>`;
             }
         }
 
@@ -733,6 +784,11 @@
             document.getElementById('errorMessage').style.display = 'block';
             document.getElementById('metersTableContainer').style.display = 'none';
         }
+
+        function redirectToAddDtr() {
+            // Redirect user to Org Unit Hierarchy page (adjust path if needed)
+            window.location.href = '/Organization/OrgUnitHierarchy';
+        }
     </script>
 }
 
@@ -782,4 +838,15 @@
     #addMeterModal.show .modal-dialog {
         transform: translateX(0);
     }
+
+    #dtrValidation button,
+    #consumerValidation button {
+        transition: all 0.2s ease;
+    }
+
+        #dtrValidation button:hover,
+        #consumerValidation button:hover {
+            transform: scale(1.02);
+        }
+
 </style>
