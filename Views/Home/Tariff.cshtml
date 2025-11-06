@@ -76,8 +76,8 @@
 
 @section Scripts {
     <script>
-        const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
-        const TARIFF_API_URL = `${API_BASE_URL}/api/Tariff`;
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const TARIFF_API_URL = `${API_BASE_URL}/Tariff`;
         let allTariffs = [];
 
         document.addEventListener('DOMContentLoaded', (event) => {
