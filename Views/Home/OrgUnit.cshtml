@@ -151,7 +151,7 @@
 
 @section Scripts {
     <script>
-        const API_BASE_URL = 'https://localhost:7272/api';
+        const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
 
         let zones = [];
         let substations = [];
@@ -175,7 +175,7 @@
 
         async function loadZones() {
             try {
-                const response = await fetch(`${API_BASE_URL}/Zone/AllZones`);
+                const response = await fetch(`${API_BASE_URL}/api/Zone/AllZones`);
                 if (!response.ok) throw new Error('Failed to load zones');
                 zones = await response.json();
                 populateZoneDropdowns();
@@ -186,7 +186,7 @@
 
         async function loadSubstations() {
             try {
-                const response = await fetch(`${API_BASE_URL}/Substation/AllSubstations`);
+                const response = await fetch(`${API_BASE_URL}/api/Substation/AllSubstations`);
                 if (!response.ok) throw new Error('Failed to load substations');
                 substations = await response.json();
             } catch (error) {
@@ -196,7 +196,7 @@
 
         async function loadFeeders() {
             try {
-                const response = await fetch(`${API_BASE_URL}/Feeder/AllFeeders`);
+                const response = await fetch(`${API_BASE_URL}/api/Feeder/AllFeeders`);
                 if (!response.ok) throw new Error('Failed to load feeders');
                 feeders = await response.json();
             } catch (error) {
@@ -206,7 +206,7 @@
 
         async function loadDtrs() {
             try {
-                const response = await fetch(`${API_BASE_URL}/Dtr/AllDtrs`);
+                const response = await fetch(`${API_BASE_URL}/api/Dtr/AllDtrs`);
                 if (!response.ok) throw new Error('Failed to load DTRs');
                 dtrs = await response.json();
                 populateDirectDtrDropdown();
@@ -494,7 +494,7 @@
             const zoneName = document.getElementById('zoneName').value;
             if (!zoneName) throw new Error('Zone name is required');
 
-            const response = await fetch(`${API_BASE_URL}/Zone/Create`, {
+            const response = await fetch(`${API_BASE_URL}/api/Zone/Create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ zoneName })
@@ -509,7 +509,7 @@
 
             if (!substationName || !zoneId) throw new Error('All fields are required');
 
-            const response = await fetch(`${API_BASE_URL}/Substation/Create`, {
+            const response = await fetch(`${API_BASE_URL}/api/Substation/Create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ substationName, zoneId: parseInt(zoneId) })
@@ -524,7 +524,7 @@
 
             if (!feederName || !substationId) throw new Error('All fields are required');
 
-            const response = await fetch(`${API_BASE_URL}/Feeder/Create`, {
+            const response = await fetch(`${API_BASE_URL}/api/Feeder/Create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ feederName, substationId: parseInt(substationId) })
@@ -539,7 +539,7 @@
 
             if (!dtrname || !feederId) throw new Error('All fields are required');
 
-            const response = await fetch(`${API_BASE_URL}/Dtr/Create`, {
+            const response = await fetch(`${API_BASE_URL}/api/Dtr/Create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ dtrname, feederId: parseInt(feederId) })
