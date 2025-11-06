@@ -1,45 +1,422 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Upload Meter";
-}
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Meter Data</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px 0;
+        }
 
-<div class="container-fluid">
-    <h2 class="mb-4">Upload Meter Data</h2>
+        .upload-zone {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="meterFile" class="form-label">Select File</label>
-                            <input class="form-control" type="file" id="meterFile">
+            .upload-zone:hover {
+                border-color: #0d6efd;
+                background-color: #f8f9ff;
+            }
+
+            .upload-zone.drag-over {
+                border-color: #0d6efd;
+                background-color: #e7f1ff;
+            }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e7f1ff;
+            border-radius: 5px;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .history-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .history-item:hover {
+                background-color: #f8f9fa;
+            }
+
+        .alert-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="alert-container" id="alertContainer"></div>
+
+    <div class="container-fluid">
+        <h2 class="mb-4">Upload Meter Data</h2>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form id="uploadForm">
+                            <div class="mb-3">
+                                <label for="fileType" class="form-label">File Type</label>
+                                <select class="form-select" id="fileType" required>
+                                    <option value="csv">CSV</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="json">JSON</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Select File</label>
+                                <div class="upload-zone" id="uploadZone">
+                                    <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
+                                    <p class="mb-2">Drag and drop your file here or click to browse</p>
+                                    <input class="form-control d-none" type="file" id="meterFile"
+                                           accept=".csv,.xlsx,.xls,.json">
+                                    <button type="button" class="btn btn-outline-primary btn-sm"
+                                            onclick="document.getElementById('meterFile').click()">
+                                        Browse Files
+                                    </button>
+                                </div>
+                                <div id="fileInfo" class="file-info d-none">
+                                    <i class="bi bi-file-earmark"></i>
+                                    <strong id="fileName"></strong>
+                                    <span id="fileSize" class="text-muted ms-2"></span>
+                                    <button type="button" class="btn btn-sm btn-link text-danger float-end"
+                                            id="removeFile">
+                                        <i class="bi bi-x-circle"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="progress-container" id="progressContainer">
+                                <label class="form-label">Upload Progress</label>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                         id="progressBar" role="progressbar" style="width: 0%">
+                                        0%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary mt-3" id="uploadBtn" disabled>
+                                <i class="bi bi-upload"></i> Upload
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title">File Preview</h5>
+                        <div id="previewContainer">
+                            <p class="text-muted">Upload a file to see preview...</p>
                         </div>
-                        <div class="mb-3">
-                            <label for="fileType" class="form-label">File Type</label>
-                            <select class="form-select" id="fileType">
-                                <option>CSV</option>
-                                <option>Excel</option>
-                                <option>JSON</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-upload"></i> Upload
-                        </button>
-                    </form>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Upload History</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">meters_data.csv - 2 hours ago</li>
-                        <li class="list-group-item">readings_oct.xlsx - Yesterday</li>
-                    </ul>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            Upload History
+                            <button class="btn btn-sm btn-outline-danger float-end" id="clearHistory">
+                                <i class="bi bi-trash"></i> Clear
+                            </button>
+                        </h5>
+                        <ul class="list-group list-group-flush" id="historyList">
+                            <li class="list-group-item text-muted">No uploads yet</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Statistics</h5>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Uploads:</span>
+                            <strong id="totalUploads">0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Size:</span>
+                            <strong id="totalSize">0 KB</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Last Upload:</span>
+                            <strong id="lastUpload">Never</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <script>
+        let selectedFile = null;
+        let uploadHistory = JSON.parse(localStorage.getItem('uploadHistory') || '[]');
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('meterFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadForm = document.getElementById('uploadForm');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const previewContainer = document.getElementById('previewContainer');
+
+        updateHistory();
+        updateStats();
+
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+        uploadZone.addEventListener('click', (e) => {
+            if (e.target === uploadZone || e.target.closest('.upload-zone')) {
+                fileInput.click();
+            }
+        });
+
+        document.getElementById('removeFile').addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.add('d-none');
+            uploadBtn.disabled = true;
+            previewContainer.innerHTML = '<p class="text-muted">Upload a file to see preview...</p>';
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+
+            const fileType = document.getElementById('fileType').value;
+            const validExtensions = {
+                csv: ['.csv'],
+                excel: ['.xlsx', '.xls'],
+                json: ['.json']
+            };
+
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (!validExtensions[fileType].includes(ext)) {
+                showAlert('Invalid file type. Please select a ' + fileType.toUpperCase() + ' file.', 'danger');
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.remove('d-none');
+            uploadBtn.disabled = false;
+
+            previewFile(file, fileType);
+        }
+
+        function previewFile(file, type) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const content = e.target.result;
+                let preview = '<div class="table-responsive" style="max-height: 300px; overflow: auto;">';
+
+                try {
+                    if (type === 'csv') {
+                        const lines = content.split('\n').slice(0, 6);
+                        preview += '<table class="table table-sm table-bordered">';
+                        lines.forEach((line, i) => {
+                            const cells = line.split(',');
+                            preview += '<tr>';
+                            cells.forEach(cell => {
+                                preview += i === 0 ? `<th>${cell.trim()}</th>` : `<td>${cell.trim()}</td>`;
+                            });
+                            preview += '</tr>';
+                        });
+                        preview += '</table>';
+                    } else if (type === 'json') {
+                        const data = JSON.parse(content);
+                        preview += '<pre class="bg-light p-3 rounded">' +
+                                  JSON.stringify(data, null, 2).substring(0, 500) +
+                                  (JSON.stringify(data).length > 500 ? '...' : '') +
+                                  '</pre>';
+                    }
+                    preview += '</div>';
+                    previewContainer.innerHTML = preview;
+                } catch (err) {
+                    previewContainer.innerHTML = '<p class="text-danger">Unable to preview file</p>';
+                }
+            };
+
+            if (type === 'excel') {
+                previewContainer.innerHTML = '<p class="text-info"><i class="bi bi-file-earmark-excel"></i> Excel file selected. Preview not available.</p>';
+            } else {
+                reader.readAsText(file);
+            }
+        }
+
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!selectedFile) return;
+
+            simulateUpload();
+        });
+
+        function simulateUpload() {
+            uploadBtn.disabled = true;
+            progressContainer.style.display = 'block';
+            let progress = 0;
+
+            const interval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+
+                    setTimeout(() => {
+                        completeUpload();
+                    }, 500);
+                }
+
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = Math.round(progress) + '%';
+            }, 300);
+        }
+
+        function completeUpload() {
+            const upload = {
+                name: selectedFile.name,
+                size: selectedFile.size,
+                type: document.getElementById('fileType').value,
+                timestamp: new Date().toISOString()
+            };
+
+            uploadHistory.unshift(upload);
+            if (uploadHistory.length > 10) uploadHistory.pop();
+
+            localStorage.setItem('uploadHistory', JSON.stringify(uploadHistory));
+
+            showAlert('File uploaded successfully!', 'success');
+
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.add('d-none');
+            progressContainer.style.display = 'none';
+            progressBar.style.width = '0%';
+            uploadBtn.disabled = true;
+            previewContainer.innerHTML = '<p class="text-muted">Upload a file to see preview...</p>';
+
+            updateHistory();
+            updateStats();
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+
+            if (uploadHistory.length === 0) {
+                historyList.innerHTML = '<li class="list-group-item text-muted">No uploads yet</li>';
+                return;
+            }
+
+            historyList.innerHTML = uploadHistory.map(item => `
+                <li class="list-group-item history-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <i class="bi bi-file-earmark-${item.type === 'csv' ? 'text' : item.type === 'excel' ? 'excel' : 'code'}"></i>
+                            <strong>${item.name}</strong>
+                            <br>
+                            <small class="text-muted">${formatFileSize(item.size)} • ${getTimeAgo(item.timestamp)}</small>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function updateStats() {
+            const totalUploads = uploadHistory.length;
+            const totalSize = uploadHistory.reduce((sum, item) => sum + item.size, 0);
+            const lastUpload = uploadHistory.length > 0 ? getTimeAgo(uploadHistory[0].timestamp) : 'Never';
+
+            document.getElementById('totalUploads').textContent = totalUploads;
+            document.getElementById('totalSize').textContent = formatFileSize(totalSize);
+            document.getElementById('lastUpload').textContent = lastUpload;
+        }
+
+        document.getElementById('clearHistory').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all upload history?')) {
+                uploadHistory = [];
+                localStorage.removeItem('uploadHistory');
+                updateHistory();
+                updateStats();
+                showAlert('Upload history cleared', 'info');
+            }
+        });
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function getTimeAgo(timestamp) {
+            const now = new Date();
+            const past = new Date(timestamp);
+            const diff = Math.floor((now - past) / 1000);
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + ' minutes ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+            if (diff < 604800) return Math.floor(diff / 86400) + ' days ago';
+            return past.toLocaleDateString();
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.getElementById('alertContainer').appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
