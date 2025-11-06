@@ -5,7 +5,7 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Tariff Slab Management</h2>
+        <h2><i class="bi bi-cash-stack"></i> Tariff Slab Management</h2>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tariffSlabModal" onclick="prepareAddSlab()">
             <i class="bi bi-plus-circle"></i> Add Tariff Slab
         </button>
@@ -15,9 +15,9 @@
         <div class="card-body">
             <div class="row align-items-center">
                 <div class="col-md-6">
-                    <label for="filterTariffId" class="form-label fw-bold">Filter by Tariff Plan:</label>
+                    <label for="filterTariffId" class="form-label fw-bold">Select Tariff Plan:</label>
                     <select class="form-select" id="filterTariffId" onchange="filterSlabsByTariff()">
-                        <option value="">-- All Tariffs --</option>
+                        <option value="">-- Select Tariff --</option>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -60,6 +60,9 @@
                         </tr>
                     </thead>
                     <tbody id="tariffSlabsTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Please select a tariff to view slabs</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -164,12 +167,25 @@
         document.addEventListener('DOMContentLoaded', function() {
             tariffSlabModal = new bootstrap.Modal(document.getElementById('tariffSlabModal'));
             viewSlabModal = new bootstrap.Modal(document.getElementById('viewSlabModal'));
-            fetchAllData();
+
+            const selectedTariffId = sessionStorage.getItem('selectedTariffId');
+
+            fetchAllData(selectedTariffId);
+
+            if (selectedTariffId) {
+                sessionStorage.removeItem('selectedTariffId');
+                sessionStorage.removeItem('selectedTariffName');
+            }
         });
 
-        async function fetchAllData() {
+        async function fetchAllData(preselectedTariffId) {
             await fetchTariffs();
             await fetchTariffSlabs();
+
+            if (preselectedTariffId) {
+                document.getElementById('filterTariffId').value = preselectedTariffId;
+                filterSlabsByTariff();
+            }
         }
 
         async function fetchTariffs() {
@@ -190,12 +206,12 @@
             const filterSelect = document.getElementById('filterTariffId');
 
             select.innerHTML = '<option value="">-- Select Tariff --</option>';
-            filterSelect.innerHTML = '<option value="">-- All Tariffs --</option>';
+            filterSelect.innerHTML = '<option value="">-- Select Tariff --</option>';
 
             allTariffs.forEach(tariff => {
                 const option = document.createElement('option');
                 option.value = tariff.tariffId;
-                option.textContent = `${tariff.name} - ${tariff.baseRate.toFixed(4)}/kWh`;
+                option.textContent = `${tariff.name} - $${tariff.baseRate.toFixed(4)}/kWh`;
                 select.appendChild(option);
 
                 const filterOption = document.createElement('option');
@@ -218,7 +234,6 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 allSlabs = await response.json();
-                renderTariffSlabsTable(allSlabs);
                 showLoading(false);
             } catch (error) {
                 console.error('Error loading tariff slabs:', error);
@@ -235,11 +250,11 @@
                 slabs.forEach(slab => {
                     const rowHtml = `
                         <tr>
-                            <td>${slab.slabId}</td>
+                            <td><strong>${slab.slabId}</strong></td>
                             <td><span class="badge bg-primary">${slab.tariffName}</span></td>
                             <td>${slab.fromKwh.toFixed(2)}</td>
                             <td>${slab.toKwh.toFixed(2)}</td>
-                            <td>${slab.ratePerKwh.toFixed(4)}</td>
+                            <td><strong>$${slab.ratePerKwh.toFixed(4)}</strong></td>
                             <td>
                                 <button class="btn btn-sm btn-outline-primary me-1" onclick="viewSlabDetails(${slab.slabId})" title="View Details">
                                     <i class="bi bi-eye"></i>
@@ -259,8 +274,8 @@
                 const filterTariffId = document.getElementById('filterTariffId').value;
                 const message = filterTariffId
                     ? 'No tariff slabs found for the selected tariff. Click "Add Tariff Slab" to create one.'
-                    : 'No tariff slabs found. Click "Add Tariff Slab" to create one.';
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center">${message}</td></tr>`;
+                    : 'Please select a tariff to view slabs';
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">${message}</td></tr>`;
             }
         }
 
@@ -277,7 +292,10 @@
                 const effectiveFrom = new Date(selectedOption.dataset.effectiveFrom).toLocaleDateString();
 
                 detailsDiv.innerHTML = `
-                    ${name} | Base Rate: ${baseRate}/kWh | Tax: ${taxRate}% | Effective: ${effectiveFrom}
+                    <span class="badge bg-primary me-2">${name}</span>
+                    <span class="text-muted">Base Rate:</span> <strong>$${baseRate}/kWh</strong> |
+                    <span class="text-muted">Tax:</span> <strong>${taxRate}%</strong> |
+                    <span class="text-muted">Effective:</span> <strong>${effectiveFrom}</strong>
                 `;
                 infoDiv.style.display = 'block';
 
@@ -285,7 +303,7 @@
                 renderTariffSlabsTable(filteredSlabs);
             } else {
                 infoDiv.style.display = 'none';
-                renderTariffSlabsTable(allSlabs);
+                renderTariffSlabsTable([]);
             }
         }
 
@@ -359,6 +377,7 @@
                     tariffSlabModal.hide();
                     showSuccess(isUpdate ? 'Tariff slab updated successfully!' : 'Tariff slab created successfully!');
                     await fetchTariffSlabs();
+                    filterSlabsByTariff();
                 } else {
                     const errorText = await response.text();
                     showError(`Failed to save slab: ${errorText}`);
@@ -383,6 +402,7 @@
                 if (response.ok) {
                     showSuccess('Tariff slab deleted successfully!');
                     await fetchTariffSlabs();
+                    filterSlabsByTariff();
                 } else {
                     const errorText = await response.text();
                     showError(`Failed to delete slab: ${errorText}`);

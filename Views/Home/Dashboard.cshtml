@@ -19,139 +19,158 @@
 
     <div id="statisticsCards" class="row g-4" style="display: none;">
         <div class="col-md-3">
-            <div class="card shadow-sm border-start border-primary border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Total Meters</h6>
-                            <h2 class="card-title mb-0" id="totalMeters">0</h2>
+            <a href="@Url.Action("Meter", "Home")" class="text-decoration-none">
+                <div class="card shadow-sm border-start border-primary border-4 card-clickable">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Total Meters</h6>
+                                <h2 class="card-title mb-0 text-dark" id="totalMeters">0</h2>
+                            </div>
+                            <div class="text-primary">
+                                <i class="bi bi-lightning-charge fs-1"></i>
+                            </div>
                         </div>
-                        <div class="text-primary">
-                            <i class="bi bi-lightning-charge fs-1"></i>
+                        <div class="mt-2">
+                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm border-start border-success border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Active Users</h6>
-                            <h2 class="card-title mb-0" id="activeUsers">0</h2>
+            <a href="@Url.Action("User", "Home")" class="text-decoration-none">
+                <div class="card shadow-sm border-start border-success border-4 card-clickable">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Active Users</h6>
+                                <h2 class="card-title mb-0 text-dark" id="activeUsers">0</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-people fs-1"></i>
+                            </div>
                         </div>
-                        <div class="text-success">
-                            <i class="bi bi-people fs-1"></i>
+                        <div class="mt-2">
+                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
-        @* <div class="col-md-3">
-            <div class="card shadow-sm border-start border-warning border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Org Units</h6>
-                            <h2 class="card-title mb-0" id="totalOrgUnits">0</h2>
-                        </div>
-                        <div class="text-warning">
-                            <i class="bi bi-diagram-3 fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> *@
         <div class="col-md-3">
-            <div class="card shadow-sm border-start border-info border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Tariff Plans</h6>
-                            <h2 class="card-title mb-0" id="totalTariffs">0</h2>
+            <a href="@Url.Action("Tariff", "Home")" class="text-decoration-none">
+                <div class="card shadow-sm border-start border-info border-4 card-clickable">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Tariff Plans</h6>
+                                <h2 class="card-title mb-0 text-dark" id="totalTariffs">0</h2>
+                            </div>
+                            <div class="text-info">
+                                <i class="bi bi-receipt fs-1"></i>
+                            </div>
                         </div>
-                        <div class="text-info">
-                            <i class="bi bi-receipt fs-1"></i>
+                        <div class="mt-2">
+                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="@Url.Action("Consumer", "Home")" class="text-decoration-none">
+                <div class="card shadow-sm border-start border-danger border-4 card-clickable">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Total Consumers</h6>
+                                <h2 class="card-title mb-0 text-dark" id="totalConsumers">0</h2>
+                            </div>
+                            <div class="text-danger">
+                                <i class="bi bi-person-badge fs-1"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
+                        </div>
+                    </div>
+                </div>
+            </a>
         </div>
     </div>
 
     <div id="additionalStats" class="row g-4 mt-2" style="display: none;">
         <div class="col-md-3">
-            <div class="card shadow-sm border-start border-danger border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Total Consumers</h6>
-                            <h2 class="card-title mb-0" id="totalConsumers">0</h2>
+            <a href="@Url.Action("Consumer", "Home")" class="text-decoration-none">
+                <div class="card shadow-sm border-start border-success border-4 card-clickable">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Active Consumers</h6>
+                                <h2 class="card-title mb-0 text-dark" id="activeConsumers">0</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-person-check fs-1"></i>
+                            </div>
                         </div>
-                        <div class="text-danger">
-                            <i class="bi bi-person-badge fs-1"></i>
+                        <div class="mt-2">
+                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm border-start border-success border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Active Consumers</h6>
-                            <h2 class="card-title mb-0" id="activeConsumers">0</h2>
+            <a href="@Url.Action("Manufacturer", "Home")" class="text-decoration-none">
+                <div class="card shadow-sm border-start border-secondary border-4 card-clickable">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">Manufacturers</h6>
+                                <h2 class="card-title mb-0 text-dark" id="totalManufacturers">0</h2>
+                            </div>
+                            <div class="text-secondary">
+                                <i class="bi bi-building fs-1"></i>
+                            </div>
                         </div>
-                        <div class="text-success">
-                            <i class="bi bi-person-check fs-1"></i>
+                        <div class="mt-2">
+                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card shadow-sm border-start border-secondary border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">Manufacturers</h6>
-                            <h2 class="card-title mb-0" id="totalManufacturers">0</h2>
+            <a href="@Url.Action("Dtr", "Home")" class="text-decoration-none">
+                <div class="card shadow-sm border-start border-primary border-4 card-clickable">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted">DTRs</h6>
+                                <h2 class="card-title mb-0 text-dark" id="totalDtrs">0</h2>
+                            </div>
+                            <div class="text-primary">
+                                <i class="bi bi-router fs-1"></i>
+                            </div>
                         </div>
-                        <div class="text-secondary">
-                            <i class="bi bi-building fs-1"></i>
-                        </div>
+                        
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-start border-primary border-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="card-subtitle mb-2 text-muted">DTRs</h6>
-                            <h2 class="card-title mb-0" id="totalDtrs">0</h2>
-                        </div>
-                        <div class="text-primary">
-                            <i class="bi bi-router fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </a>
         </div>
     </div>
 
     <div id="recentActivity" class="row mt-4" style="display: none;">
         <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Consumers</h5>
+                    <span class="badge bg-light text-primary">Latest 5</span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -167,16 +186,22 @@
                         </table>
                     </div>
                 </div>
+                <div class="card-footer bg-light text-center">
+                    <a href="@Url.Action("Consumer", "Home")" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-right-circle me-1"></i> See More Consumers
+                    </a>
+                </div>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Recent Users</h5>
+                    <span class="badge bg-light text-success">Latest 5</span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th>Username</th>
@@ -191,6 +216,11 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+                <div class="card-footer bg-light text-center">
+                    <a href="@Url.Action("User", "Home")" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-arrow-right-circle me-1"></i> See More Users
+                    </a>
                 </div>
             </div>
         </div>
@@ -223,7 +253,6 @@
 
                 animateValue('totalMeters', 0, data.totalMeters, 1000);
                 animateValue('activeUsers', 0, data.activeUsers, 1000);
-                // animateValue('totalOrgUnits', 0, data.totalOrgUnits, 1000);
                 animateValue('totalTariffs', 0, data.totalTariffs, 1000);
                 animateValue('totalConsumers', 0, data.totalConsumers, 1000);
                 animateValue('activeConsumers', 0, data.activeConsumers, 1000);
@@ -255,9 +284,9 @@
                 if (data.recentConsumers && data.recentConsumers.length > 0) {
                     consumersTable.innerHTML = data.recentConsumers.map(consumer => `
                         <tr>
-                            <td>${consumer.name}</td>
+                            <td><strong>${consumer.name}</strong></td>
                             <td>${consumer.email}</td>
-                            <td>${new Date(consumer.createdAt).toLocaleDateString()}</td>
+                            <td><small class="text-muted">${new Date(consumer.createdAt).toLocaleDateString()}</small></td>
                         </tr>
                     `).join('');
                 } else {
@@ -268,7 +297,7 @@
                 if (data.recentUsers && data.recentUsers.length > 0) {
                     usersTable.innerHTML = data.recentUsers.map(user => `
                         <tr>
-                            <td>${user.username}</td>
+                            <td><strong>${user.username}</strong></td>
                             <td>${user.email}</td>
                             <td><span class="badge bg-primary">${user.roleName}</span></td>
                         </tr>
@@ -305,11 +334,34 @@
 }
 
 <style>
+    .card-clickable {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .card-clickable:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+
     .card {
         transition: transform 0.2s;
     }
 
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-2px);
         }
+
+    a.text-decoration-none:hover .card-clickable {
+        border-color: var(--bs-primary) !important;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+
+    .card-footer .btn:hover {
+        transform: translateX(5px);
+        transition: transform 0.2s ease;
+    }
 </style>
