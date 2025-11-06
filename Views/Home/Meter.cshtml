@@ -137,7 +137,7 @@
 
 @section Scripts {
     <script>
-        const API_BASE_URL = 'https://localhost:7272/api';
+        const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
         let currentPage = 1;
         const itemsPerPage = 10;
         let allMeters = [];
@@ -150,7 +150,7 @@
         async function loadMeters() {
             try {
                 showLoading(true);
-                const response = await fetch(`${API_BASE_URL}/Meter/AllMeters`);
+                const response = await fetch(`${API_BASE_URL}/api/Meter/AllMeters`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -255,7 +255,7 @@
 
         async function editMeter(meterId) {
             try {
-                const response = await fetch(`${API_BASE_URL}/Meter/${meterId}`);
+                const response = await fetch(`${API_BASE_URL}/api/Meter/${meterId}`);
                 if (!response.ok) throw new Error('Failed to fetch meter details');
 
                 const meter = await response.json();
@@ -302,7 +302,7 @@
             };
 
             try {
-                const url = meterId ? `${API_BASE_URL}/Meter/Update` : `${API_BASE_URL}/Meter/Create`;
+                const url = meterId ? `${API_BASE_URL}/api/Meter/Update` : `${API_BASE_URL}/api/Meter/Create`;
                 const method = meterId ? 'PUT' : 'POST';
 
                 const response = await fetch(url, {
@@ -328,7 +328,7 @@
             if (!confirm('Are you sure you want to delete this meter?')) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/Meter/${meterId}`, {
+                const response = await fetch(`${API_BASE_URL}/api/Meter/${meterId}`, {
                     method: 'DELETE'
                 });
 
