@@ -18,8 +18,8 @@ namespace MDMS_Frontend
             builder.Configuration["ApiBaseUrl"] = apiBaseUrl;
 
             builder.Services.AddControllersWithViews();
-            builder.Services.AddRazorPages()
-                   .AddRazorRuntimeCompilation();
+            builder.Services.AddRazorPages();
+              //.AddRazorRuntimeCompilation();
 
             var app = builder.Build();
 
