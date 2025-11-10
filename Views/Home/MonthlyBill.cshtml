@@ -1,0 +1,506 @@
+﻿@{
+    ViewData["Title"] = "Monthly Bills";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-earmark-text"></i> Monthly Bills</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateBillModal">
+            <i class="bi bi-plus-circle"></i> Generate Bill
+        </button>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="filterMonth" class="form-label">Month:</label>
+                    <select class="form-select" id="filterMonth" onchange="filterBills()">
+                        <option value="">All Months</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="filterYear" class="form-label">Year:</label>
+                    <input type="number" class="form-control" id="filterYear" value="2025" onchange="filterBills()">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterStatus" class="form-label">Status:</label>
+                    <select class="form-select" id="filterStatus" onchange="filterBills()">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading bills...</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Bill ID</th>
+                            <th>Consumer</th>
+                            <th>Meter</th>
+                            <th>Period</th>
+                            <th>Consumption</th>
+                            <th>Base Amount</th>
+                            <th>Adjustments</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Bill Modal -->
+<div class="modal fade" id="generateBillModal" tabindex="-1" aria-labelledby="generateBillModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateBillModalLabel">Generate Monthly Bill</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="generateBillForm">
+                    <div class="mb-3">
+                        <label for="billMeterId" class="form-label">Select Meter <span class="text-danger">*</span></label>
+                        <select class="form-select" id="billMeterId" onchange="loadConsumerInfo()" required>
+                            <option value="">-- Select Meter --</option>
+                        </select>
+                    </div>
+
+                    <div id="consumerInfoDisplay" class="alert alert-info" style="display: none;">
+                        <strong>Consumer:</strong> <span id="consumerName"></span><br>
+                        <strong>Meter:</strong> <span id="meterId"></span>
+                    </div>
+
+                    <input type="hidden" id="billConsumerId" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="billMonth" class="form-label">Month <span class="text-danger">*</span></label>
+                            <select class="form-select" id="billMonth" required>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="billYear" class="form-label">Year <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="billYear" value="2025" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="taxRate" class="form-label">Tax Rate (%) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="taxRate" value="8.5" required>
+                        <small class="form-text text-muted">Tax applied on net amount</small>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Note:</strong> The bill will be generated from all daily readings for the selected month.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="generateBill()">
+                    <i class="bi bi-calculator"></i> Generate Bill
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Bill Details Modal -->
+<div class="modal fade" id="viewBillModal" tabindex="-1" aria-labelledby="viewBillModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewBillModalLabel">Bill Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Consumer Information</h6>
+                        <div><strong>Name:</strong> <span id="viewConsumerName"></span></div>
+                        <div><strong>Meter:</strong> <span id="viewMeterId"></span></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Billing Period</h6>
+                        <div><strong>Month:</strong> <span id="viewBillingPeriod"></span></div>
+                        <div><strong>Date Range:</strong> <span id="viewDateRange"></span></div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h6 class="text-muted">Consumption & Charges</h6>
+                        <table class="table table-bordered">
+                            <tr>
+                                <td><strong>Total Consumption:</strong></td>
+                                <td class="text-end"><span id="viewConsumption"></span> kWh</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Base Amount:</strong></td>
+                                <td class="text-end">$<span id="viewBaseAmount"></span></td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td><strong>Total Surge Charges:</strong></td>
+                                <td class="text-end">+$<span id="viewSurgeCharges"></span></td>
+                            </tr>
+                            <tr class="table-success">
+                                <td><strong>Total Discounts:</strong></td>
+                                <td class="text-end">-$<span id="viewDiscounts"></span></td>
+                            </tr>
+                            <tr class="table-info">
+                                <td><strong>Net Amount:</strong></td>
+                                <td class="text-end">$<span id="viewNetAmount"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tax Amount:</strong></td>
+                                <td class="text-end">$<span id="viewTaxAmount"></span></td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>Total Amount:</strong></td>
+                                <td class="text-end"><h5 class="mb-0">$<span id="viewTotalAmount"></span></h5></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6 class="text-muted">Status</h6>
+                        <div id="viewBillStatus"></div>
+                        <div class="mt-2"><small class="text-muted">Generated on: <span id="viewGeneratedAt"></span></small></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" onclick="printBill()">
+                    <i class="bi bi-printer"></i> Print Bill
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const MONTHLY_BILL_API_URL = `${API_BASE_URL}/MonthlyBill`;
+        const METER_API_URL = `${API_BASE_URL}/Meter`;
+
+        let allBills = [];
+        let allMeters = [];
+        let generateBillModal;
+        let viewBillModal;
+        let currentBillDetails = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            generateBillModal = new bootstrap.Modal(document.getElementById('generateBillModal'));
+            viewBillModal = new bootstrap.Modal(document.getElementById('viewBillModal'));
+
+            const currentDate = new Date();
+            document.getElementById('billMonth').value = currentDate.getMonth() + 1;
+            document.getElementById('billYear').value = currentDate.getFullYear();
+            document.getElementById('filterYear').value = currentDate.getFullYear();
+
+            fetchAllData();
+        });
+
+        async function fetchAllData() {
+            await fetchMeters();
+            await fetchBills();
+        }
+
+        async function fetchMeters() {
+            try {
+                const response = await fetch(`${METER_API_URL}/AllMeters`);
+                if (!response.ok) throw new Error('Failed to load meters');
+                allMeters = await response.json();
+                populateMeterDropdown();
+            } catch (error) {
+                console.error('Error loading meters:', error);
+            }
+        }
+
+        function populateMeterDropdown() {
+            const select = document.getElementById('billMeterId');
+            select.innerHTML = '<option value="">-- Select Meter --</option>';
+
+            allMeters.forEach(meter => {
+                select.innerHTML += `<option value="${meter.meterId}" data-consumer-id="${meter.consumerId}" data-consumer-name="${meter.consumerName}" data-meter-number="${meter.meterId}">${meter.meterId} - ${meter.consumerName}</option>`;
+            });
+        }
+
+        function loadConsumerInfo() {
+            const select = document.getElementById('billMeterId');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (select.value) {
+                document.getElementById('billConsumerId').value = selectedOption.dataset.consumerId;
+                document.getElementById('consumerName').textContent = selectedOption.dataset.consumerName;
+                document.getElementById('meterId').textContent = selectedOption.dataset.meterId;
+                document.getElementById('consumerInfoDisplay').style.display = 'block';
+            } else {
+                document.getElementById('consumerInfoDisplay').style.display = 'none';
+            }
+        }
+
+        async function fetchBills() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${MONTHLY_BILL_API_URL}/AllBills`);
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                allBills = await response.json();
+                filterBills();
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading bills:', error);
+                alert('Failed to load bills: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function filterBills() {
+            const month = document.getElementById('filterMonth').value;
+            const year = document.getElementById('filterYear').value;
+            const status = document.getElementById('filterStatus').value;
+
+            let filtered = allBills;
+
+            if (month) {
+                filtered = filtered.filter(b => b.billingMonth == month);
+            }
+            if (year) {
+                filtered = filtered.filter(b => b.billingYear == year);
+            }
+            if (status) {
+                filtered = filtered.filter(b => b.billStatus === status);
+            }
+
+            renderBillsTable(filtered);
+        }
+
+        function renderBillsTable(bills) {
+            const tbody = document.getElementById('billsTableBody');
+            tbody.innerHTML = '';
+
+            if (bills && bills.length > 0) {
+                bills.forEach(bill => {
+                    const statusBadge = bill.billStatus === 'Paid'
+                        ? '<span class="badge bg-success">Paid</span>'
+                        : bill.billStatus === 'Overdue'
+                        ? '<span class="badge bg-danger">Overdue</span>'
+                        : '<span class="badge bg-warning">Pending</span>';
+
+                    const monthName = new Date(bill.billingYear, bill.billingMonth - 1).toLocaleString('default', { month: 'long' });
+                    const adjustments = bill.totalSurgeCharges - bill.totalDiscounts;
+
+                    const rowHtml = `
+                        <tr>
+                            <td><strong>${bill.billId}</strong></td>
+                            <td>${bill.consumerName}</td>
+                            <td>${bill.meterId}</td>
+                            <td>${monthName} ${bill.billingYear}</td>
+                            <td>${bill.totalConsumptionKwh.toFixed(2)} kWh</td>
+                            <td>$${bill.baseAmount.toFixed(2)}</td>
+                            <td>${adjustments >= 0 ? '+' : ''}$${adjustments.toFixed(2)}</td>
+                            <td><strong>$${bill.totalAmount.toFixed(2)}</strong></td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewBillDetails(${bill.billId})" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center">No bills found for the selected filters.</td></tr>';
+            }
+        }
+
+        async function generateBill() {
+            const meterId = document.getElementById('billMeterId').value;
+            const consumerId = document.getElementById('billConsumerId').value;
+            const month = parseInt(document.getElementById('billMonth').value);
+            const year = parseInt(document.getElementById('billYear').value);
+            const taxRate = parseFloat(document.getElementById('taxRate').value);
+
+            if (!meterId || !consumerId || !month || !year || isNaN(taxRate)) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const billData = {
+                meterId: parseInt(meterId),
+                consumerId: parseInt(consumerId),
+                month: month,
+                year: year,
+                taxRate: taxRate,
+                generatedBy: 'Admin'
+            };
+
+            try {
+                const response = await fetch(`${MONTHLY_BILL_API_URL}/Generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(billData),
+                });
+
+                if (response.ok) {
+                    generateBillModal.hide();
+                    alert('Bill generated successfully!');
+                    await fetchBills();
+                } else {
+                    const errorText = await response.text();
+                    alert(`Failed to generate bill: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error generating bill:', error);
+                alert('An error occurred while generating the bill.');
+            }
+        }
+
+        async function viewBillDetails(billId) {
+            const bill = allBills.find(b => b.billId === billId);
+            if (!bill) {
+                alert('Bill not found');
+                return;
+            }
+
+            currentBillDetails = bill;
+
+            document.getElementById('viewConsumerName').textContent = bill.consumerName;
+            document.getElementById('viewmeterId').textContent = bill.meterId;
+
+            const monthName = new Date(bill.billingYear, bill.billingMonth - 1).toLocaleString('default', { month: 'long' });
+            document.getElementById('viewBillingPeriod').textContent = `${monthName} ${bill.billingYear}`;
+
+            const startDate = new Date(bill.billingYear, bill.billingMonth - 1, 1).toLocaleDateString();
+            const endDate = new Date(bill.billingYear, bill.billingMonth, 0).toLocaleDateString();
+            document.getElementById('viewDateRange').textContent = `${startDate} - ${endDate}`;
+
+            document.getElementById('viewConsumption').textContent = bill.totalConsumptionKwh.toFixed(2);
+            document.getElementById('viewBaseAmount').textContent = bill.baseAmount.toFixed(2);
+            document.getElementById('viewSurgeCharges').textContent = bill.totalSurgeCharges.toFixed(2);
+            document.getElementById('viewDiscounts').textContent = bill.totalDiscounts.toFixed(2);
+            document.getElementById('viewNetAmount').textContent = bill.netAmount.toFixed(2);
+            document.getElementById('viewTaxAmount').textContent = bill.taxAmount.toFixed(2);
+            document.getElementById('viewTotalAmount').textContent = bill.totalAmount.toFixed(2);
+
+            const statusBadge = bill.billStatus === 'Paid'
+                ? '<span class="badge bg-success fs-6">Paid</span>'
+                : bill.billStatus === 'Overdue'
+                ? '<span class="badge bg-danger fs-6">Overdue</span>'
+                : '<span class="badge bg-warning fs-6">Pending</span>';
+            document.getElementById('viewBillStatus').innerHTML = statusBadge;
+
+            document.getElementById('viewGeneratedAt').textContent = new Date(bill.generatedAt).toLocaleString();
+
+            viewBillModal.show();
+        }
+
+        function printBill() {
+            if (!currentBillDetails) return;
+
+            const printWindow = window.open('', '_blank');
+            const bill = currentBillDetails;
+            const monthName = new Date(bill.billingYear, bill.billingMonth - 1).toLocaleString('default', { month: 'long' });
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Bill #${bill.billId}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #333; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                        .total { font-size: 18px; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Electricity Bill</h1>
+                    <p><strong>Bill ID:</strong> ${bill.billId}</p>
+                    <p><strong>Consumer:</strong> ${bill.consumerName}</p>
+                    <p><strong>Meter:</strong> ${bill.meterId}</p>
+                    <p><strong>Billing Period:</strong> ${monthName} ${bill.billingYear}</p>
+
+                    <table>
+                        <tr><th>Description</th><th>Amount</th></tr>
+                        <tr><td>Total Consumption</td><td>${bill.totalConsumptionKwh.toFixed(2)} kWh</td></tr>
+                        <tr><td>Base Amount</td><td>$${bill.baseAmount.toFixed(2)}</td></tr>
+                        <tr><td>Surge Charges</td><td>+$${bill.totalSurgeCharges.toFixed(2)}</td></tr>
+                        <tr><td>Discounts</td><td>-$${bill.totalDiscounts.toFixed(2)}</td></tr>
+                        <tr><td>Net Amount</td><td>$${bill.netAmount.toFixed(2)}</td></tr>
+                        <tr><td>Tax</td><td>$${bill.taxAmount.toFixed(2)}</td></tr>
+                        <tr class="total"><td>Total Amount</td><td>$${bill.totalAmount.toFixed(2)}</td></tr>
+                    </table>
+
+                    <p><strong>Status:</strong> ${bill.billStatus}</p>
+                    <p><strong>Generated:</strong> ${new Date(bill.generatedAt).toLocaleString()}</p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+    </script>
+}

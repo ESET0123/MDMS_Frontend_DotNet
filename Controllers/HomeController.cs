@@ -55,6 +55,15 @@ namespace MDMS_Frontend.Controllers
             return View();
         }
 
+        public IActionResult DailyMeterReading()
+        {
+            return View();
+        }
+        public IActionResult MonthlyBill()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -1,0 +1,516 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Meter Reading</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px 0;
+        }
+
+        .table input[type="time"],
+        .table input[type="number"],
+        .table select {
+            font-size: 0.875rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .validation-error {
+            border-color: #dc3545 !important;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+            .loading-overlay.active {
+                display: flex;
+            }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-calendar-day"></i> Daily Meter Reading Entry</h2>
+            <button onclick="viewMonthlyBills()" class="btn btn-success">
+                <i class="bi bi-file-earmark-text"></i> View Monthly Bills
+            </button>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Reading Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="meterId" class="form-label">Select Meter <span class="text-danger">*</span></label>
+                        <select class="form-select" id="meterId" onchange="loadMeterInfo()">
+                            <option value="">-- Select Meter --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="readingDate" class="form-label">Reading Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="readingDate" value="">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="baseRate" class="form-label">Base Rate (₹/kWh) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.0001" class="form-control" id="baseRate" placeholder="0.0000" readonly>
+                    </div>
+                </div>
+                <div id="meterInfoDisplay" class="alert alert-info" style="display: none;">
+                    <strong>Meter Info:</strong> <span id="meterDetails"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>TOD Readings</h5>
+                <button class="btn btn-light btn-sm" onclick="addReadingRow()">
+                    <i class="bi bi-plus-circle"></i> Add Time Slot
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 20%;">TOD Rule</th>
+                                <th style="width: 15%;">Start Time</th>
+                                <th style="width: 15%;">End Time</th>
+                                <th style="width: 15%;">Previous Reading</th>
+                                <th style="width: 15%;">Current Reading</th>
+                                <th style="width: 10%;">Consumption</th>
+                                <th style="width: 10%;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="readingsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Click "Add Time Slot" to start entering readings</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Total Consumption:</label>
+                        <div class="h4 text-primary" id="totalConsumption">0.00 kWh</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Base Amount:</label>
+                        <div class="h4 text-secondary" id="baseAmount">$0.00</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Surge/Discount:</label>
+                        <div class="h4 text-warning" id="adjustmentAmount">$0.00</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Total Amount:</label>
+                        <div class="h4 text-success" id="totalAmount">$0.00</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button class="btn btn-secondary" onclick="clearForm()">
+                        <i class="bi bi-x-circle"></i> Clear
+                    </button>
+                    <button class="btn btn-primary" onclick="saveReadings()">
+                        <i class="bi bi-save"></i> Save Readings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const DAILY_READING_API_URL = `${API_BASE_URL}/DailyMeterReading`;
+        const TOD_RULE_API_URL = `${API_BASE_URL}/TodRule`;
+        const METER_API_URL = `${API_BASE_URL}/Meter`;
+
+        let allTodRules = [];
+        let allMeters = [];
+        let readingRowCounter = 0;
+        let currentMeterLatestReading = 0;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('readingDate').valueAsDate = new Date();
+            fetchAllData();
+        });
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        async function fetchAllData() {
+            showLoading();
+            try {
+                await fetchMeters();
+                await fetchTodRules();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Failed to load initial data. Please refresh the page.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function fetchMeters() {
+            try {
+                const response = await fetch(`${METER_API_URL}/AllMeters`);
+                if (!response.ok) throw new Error('Failed to load meters');
+                allMeters = await response.json();
+                populateMeterDropdown();
+            } catch (error) {
+                console.error('Error loading meters:', error);
+                throw error;
+            }
+        }
+
+        function populateMeterDropdown() {
+            const select = document.getElementById('meterId');
+            select.innerHTML = '<option value="">-- Select Meter --</option>';
+
+            console.log('All Meters:', allMeters); // Debug log
+
+            allMeters.forEach(meter => {
+                // Handle different possible data structures
+                const baseRate = meter.tariff?.baseRate || meter.baseRate || 0;
+                const consumerName = meter.consumer?.consumerName || meter.consumerName || 'Unknown';
+                const latestReading = meter.latestReading || 0;
+
+                console.log(`Meter ${meter.meterId}: baseRate=${baseRate}, consumer=${consumerName}`); // Debug log
+
+                select.innerHTML += `<option value="${meter.meterId}"
+                    data-meter-number="${meter.meterId}"
+                    data-tariff-rate="${baseRate}"
+                    data-latest-reading="${latestReading}"
+                    data-consumer-name="${consumerName}">
+                    Meter #${meter.meterId} - ${consumerName}
+                </option>`;
+            });
+        }
+
+        async function fetchTodRules() {
+            try {
+                const response = await fetch(`${TOD_RULE_API_URL}/AllRules`);
+                if (!response.ok) throw new Error('Failed to load TOD rules');
+                const rules = await response.json();
+                allTodRules = rules.filter(r => r.isActive);
+            } catch (error) {
+                console.error('Error loading TOD rules:', error);
+                throw error;
+            }
+        }
+
+        function loadMeterInfo() {
+            const select = document.getElementById('meterId');
+            const selectedOption = select.options[select.selectedIndex];
+
+            console.log('Selected option:', selectedOption);
+
+            if (select.value) {
+                const meterId = selectedOption.dataset.meterNumber;
+                const baseRate = parseFloat(selectedOption.dataset.tariffRate) || 8;
+                const consumerName = selectedOption.dataset.consumerName || 'Unknown';
+                currentMeterLatestReading = parseFloat(selectedOption.dataset.latestReading) || 0;
+
+                console.log('Loaded meter info:', { meterId, baseRate, consumerName, currentMeterLatestReading }); // Debug log
+
+                if (baseRate === 0) {
+                    alert('Warning: Base rate is 0 or not found for this meter. Please check the tariff configuration.');
+                }
+
+                document.getElementById('baseRate').value = baseRate.toFixed(4);
+                document.getElementById('meterDetails').textContent =
+                    `Meter: #${meterId} | Consumer: ${consumerName} | Base Rate: ${baseRate.toFixed(4)}/kWh | Latest Reading: ${currentMeterLatestReading.toFixed(2)}`;
+                document.getElementById('meterInfoDisplay').style.display = 'block';
+            } else {
+                document.getElementById('baseRate').value = '';
+                document.getElementById('meterInfoDisplay').style.display = 'none';
+                currentMeterLatestReading = 0;
+            }
+        }
+
+        function addReadingRow() {
+            const meterId = document.getElementById('meterId').value;
+            if (!meterId) {
+                alert('Please select a meter first');
+                return;
+            }
+
+            const tbody = document.getElementById('readingsTableBody');
+            if (tbody.rows[0]?.cells[0]?.colSpan === 7) {
+                tbody.innerHTML = '';
+            }
+
+            readingRowCounter++;
+            const rowId = `row_${readingRowCounter}`;
+
+            const todRuleOptions = allTodRules.map(rule =>
+                `<option value="${rule.todRuleId}"
+                    data-start="${rule.startTime}"
+                    data-end="${rule.endTime}"
+                    data-surge="${rule.surgeChargePercent}"
+                    data-discount="${rule.discountPercent}">
+                    ${rule.ruleName} (${rule.startTime}-${rule.endTime})
+                </option>`
+            ).join('');
+
+            const row = `
+                <tr id="${rowId}">
+                    <td>
+                        <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
+                            <option value="">-- Select Rule --</option>
+                            ${todRuleOptions}
+                        </select>
+                    </td>
+                    <td><input type="time" class="form-control form-control-sm start-time" required></td>
+                    <td><input type="time" class="form-control form-control-sm end-time" required></td>
+                    <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
+                        placeholder="0.00" onchange="calculateConsumption('${rowId}')" required></td>
+                    <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
+                        placeholder="0.00" onchange="calculateConsumption('${rowId}')" onblur="validateReading('${rowId}')" required></td>
+                    <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-danger" onclick="removeReadingRow('${rowId}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            tbody.insertAdjacentHTML('beforeend', row);
+        }
+
+        function updateTimeSlot(rowId) {
+            const row = document.getElementById(rowId);
+            const select = row.querySelector('.tod-rule-select');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (select.value) {
+                row.querySelector('.start-time').value = selectedOption.dataset.start;
+                row.querySelector('.end-time').value = selectedOption.dataset.end;
+            }
+        }
+
+        function calculateConsumption(rowId) {
+            const row = document.getElementById(rowId);
+            const previous = parseFloat(row.querySelector('.previous-reading').value) || 0;
+            const current = parseFloat(row.querySelector('.current-reading').value) || 0;
+            const consumption = current - previous;
+
+            if (consumption < 0) {
+                row.querySelector('.current-reading').classList.add('validation-error');
+                row.querySelector('.consumption').value = '0.00';
+            } else {
+                row.querySelector('.current-reading').classList.remove('validation-error');
+                row.querySelector('.consumption').value = consumption.toFixed(2);
+            }
+
+            calculateTotals();
+        }
+
+        function validateReading(rowId) {
+            const row = document.getElementById(rowId);
+            const currentReading = parseFloat(row.querySelector('.current-reading').value) || 0;
+
+            if (currentReading < currentMeterLatestReading) {
+                alert(`Warning: Current reading (${currentReading}) is less than meter's latest reading (${currentMeterLatestReading})`);
+                row.querySelector('.current-reading').classList.add('validation-error');
+            } else {
+                row.querySelector('.current-reading').classList.remove('validation-error');
+            }
+        }
+
+        function calculateTotals() {
+            const tbody = document.getElementById('readingsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            let totalConsumption = 0;
+            let baseAmount = 0;
+            let adjustmentAmount = 0;
+
+            const baseRate = parseFloat(document.getElementById('baseRate').value) || 0;
+
+            rows.forEach(row => {
+                const consumption = parseFloat(row.querySelector('.consumption')?.value) || 0;
+                const todRuleSelect = row.querySelector('.tod-rule-select');
+                const selectedOption = todRuleSelect?.options[todRuleSelect.selectedIndex];
+
+                if (consumption > 0 && selectedOption) {
+                    const surge = parseFloat(selectedOption.dataset.surge) || 0;
+                    const discount = parseFloat(selectedOption.dataset.discount) || 0;
+
+                    totalConsumption += consumption;
+                    const rowBaseAmount = consumption * baseRate;
+                    baseAmount += rowBaseAmount;
+
+                    const surgeAmount = rowBaseAmount * (surge / 100);
+                    const discountAmount = rowBaseAmount * (discount / 100);
+                    adjustmentAmount += (surgeAmount - discountAmount);
+                }
+            });
+
+            const totalAmount = baseAmount + adjustmentAmount;
+
+            document.getElementById('totalConsumption').textContent = totalConsumption.toFixed(2) + ' kWh';
+            document.getElementById('baseAmount').textContent = '$' + baseAmount.toFixed(2);
+            document.getElementById('adjustmentAmount').textContent = (adjustmentAmount >= 0 ? '+' : '') + '$' + adjustmentAmount.toFixed(2);
+            document.getElementById('totalAmount').textContent = '$' + totalAmount.toFixed(2);
+        }
+
+        function removeReadingRow(rowId) {
+            document.getElementById(rowId).remove();
+            calculateTotals();
+
+            const tbody = document.getElementById('readingsTableBody');
+            if (tbody.rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Click "Add Time Slot" to start entering readings</td></tr>';
+            }
+        }
+
+        async function saveReadings() {
+            const meterId = document.getElementById('meterId').value;
+            const readingDate = document.getElementById('readingDate').value;
+            const baseRate = parseFloat(document.getElementById('baseRate').value);
+
+            if (!meterId || !readingDate || !baseRate) {
+                alert('Please fill in meter, date, and ensure base rate is set');
+                return;
+            }
+
+            const tbody = document.getElementById('readingsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            if (rows.length === 0 || rows[0].cells[0]?.colSpan === 7) {
+                alert('Please add at least one reading');
+                return;
+            }
+
+            const readings = [];
+
+            for (const row of rows) {
+                const todRuleId = parseInt(row.querySelector('.tod-rule-select').value);
+                const startTime = row.querySelector('.start-time').value;
+                const endTime = row.querySelector('.end-time').value;
+                const previousReading = parseFloat(row.querySelector('.previous-reading').value);
+                const currentReading = parseFloat(row.querySelector('.current-reading').value);
+
+                if (!todRuleId || !startTime || !endTime || isNaN(previousReading) || isNaN(currentReading)) {
+                    alert('Please fill in all fields for each reading row');
+                    return;
+                }
+
+                if (currentReading < previousReading) {
+                    alert('Current reading cannot be less than previous reading');
+                    return;
+                }
+
+                readings.push({
+                    todRuleId: todRuleId,
+                    startTime: startTime,
+                    endTime: endTime,
+                    previousReading: previousReading,
+                    currentReading: currentReading,
+                    baseRate: baseRate
+                });
+            }
+
+            const bulkData = {
+                meterId: parseInt(meterId),
+                readingDate: readingDate,
+                recordedBy: 'Admin',
+                readings: readings
+            };
+
+            showLoading();
+
+            try {
+                const response = await fetch(`${DAILY_READING_API_URL}/CreateBulk`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bulkData),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(`Success! ${result.count} reading(s) saved successfully.\n` +
+                          `Total Consumption: ${result.totalConsumption.toFixed(2)} kWh\n` +
+                          `Total Amount: $${result.totalAmount.toFixed(2)}`);
+                    clearForm();
+                    await fetchMeters();
+                } else {
+                    if (result.errors) {
+                        alert('Validation Errors:\n' + result.errors.join('\n'));
+                    } else {
+                        alert(`Failed to save readings: ${result.error || JSON.stringify(result)}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving readings:', error);
+                alert('Network error occurred while saving readings. Please check your connection.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('meterId').value = '';
+            document.getElementById('readingDate').valueAsDate = new Date();
+            document.getElementById('baseRate').value = '';
+            document.getElementById('meterInfoDisplay').style.display = 'none';
+            currentMeterLatestReading = 0;
+
+            const tbody = document.getElementById('readingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Click "Add Time Slot" to start entering readings</td></tr>';
+
+            calculateTotals();
+        }
+
+        function viewMonthlyBills() {
+            window.location.href = '/Home/MonthlyBill';
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

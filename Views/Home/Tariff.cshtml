@@ -54,7 +54,7 @@
                         <input type="date" class="form-control" id="effectiveTo">
                     </div>
                     <div class="mb-3">
-                        <label for="baseRate" class="form-label">Base Rate ($/kWh) <span class="text-danger">*</span></label>
+                        <label for="baseRate" class="form-label">Base Rate (₹/kWh) <span class="text-danger">*</span></label>
                         <input type="number" step="0.0001" class="form-control" id="baseRate" placeholder="e.g., 0.15" required>
                     </div>
                     <div class="mb-3">
@@ -169,7 +169,7 @@
                                         <div class="fw-semibold">${formatDate(plan.effectiveFrom)}</div>
                                     </div>
                                     <div class="text-center py-3 bg-light rounded mb-3">
-                                        <h3 class="text-primary mb-0">$${plan.baseRate.toFixed(4)}</h3>
+                                        <h3 class="text-primary mb-0">₹${plan.baseRate.toFixed(4)}</h3>
                                         <small class="text-muted">per kWh</small>
                                     </div>
                                     <div class="mb-3">
