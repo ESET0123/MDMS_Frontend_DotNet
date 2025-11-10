@@ -1,4 +1,4 @@
-﻿@{
+﻿@* @{
     ViewData["Title"] = "Monthly Bills";
 }
 
@@ -492,6 +492,386 @@
 
                     <p><strong>Status:</strong> ${bill.billStatus}</p>
                     <p><strong>Generated:</strong> ${new Date(bill.generatedAt).toLocaleString()}</p>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+    </script>
+}
+ *@
+@{
+    ViewData["Title"] = "Monthly Bills";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-earmark-text"></i> Monthly Bills</h2>
+        <div>
+            <button class="btn btn-outline-secondary me-2" onclick="refreshBills()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Note:</strong> Bills are automatically calculated from daily meter readings. No manual generation required.
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="filterMonth" class="form-label">Month:</label>
+                    <select class="form-select" id="filterMonth" onchange="filterBills()">
+                        <option value="">All Months</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="filterYear" class="form-label">Year:</label>
+                    <input type="number" class="form-control" id="filterYear" value="2025" onchange="filterBills()">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterStatus" class="form-label">Status:</label>
+                    <select class="form-select" id="filterStatus" onchange="filterBills()">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Overdue">Overdue</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-x-circle"></i> Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading bills...</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Bill ID</th>
+                            <th>Consumer</th>
+                            <th>Meter</th>
+                            <th>Period</th>
+                            <th>Readings</th>
+                            <th>Consumption</th>
+                            <th>Base Amount</th>
+                            <th>Adjustments</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Bill Details Modal -->
+<div class="modal fade" id="viewBillModal" tabindex="-1" aria-labelledby="viewBillModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewBillModalLabel">Bill Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Consumer Information</h6>
+                        <div><strong>Name:</strong> <span id="viewConsumerName"></span></div>
+                        <div><strong>Meter ID:</strong> <span id="viewMeterId"></span></div>
+                        <div><strong>Consumer ID:</strong> <span id="viewConsumerId"></span></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Billing Period</h6>
+                        <div><strong>Month:</strong> <span id="viewBillingPeriod"></span></div>
+                        <div><strong>Date Range:</strong> <span id="viewDateRange"></span></div>
+                        <div><strong>Total Readings:</strong> <span id="viewReadingsCount"></span></div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h6 class="text-muted">Consumption & Charges</h6>
+                        <table class="table table-bordered">
+                            <tr>
+                                <td><strong>Total Consumption:</strong></td>
+                                <td class="text-end"><span id="viewConsumption"></span> kWh</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Base Amount:</strong></td>
+                                <td class="text-end">$<span id="viewBaseAmount"></span></td>
+                            </tr>
+                            <tr class="table-danger">
+                                <td><strong>Total Surge Charges:</strong></td>
+                                <td class="text-end">+$<span id="viewSurgeCharges"></span></td>
+                            </tr>
+                            <tr class="table-success">
+                                <td><strong>Total Discounts:</strong></td>
+                                <td class="text-end">-$<span id="viewDiscounts"></span></td>
+                            </tr>
+                            <tr class="table-info">
+                                <td><strong>Net Amount:</strong></td>
+                                <td class="text-end">$<span id="viewNetAmount"></span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tax Amount (8.5%):</strong></td>
+                                <td class="text-end">$<span id="viewTaxAmount"></span></td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>Total Amount:</strong></td>
+                                <td class="text-end"><h5 class="mb-0">$<span id="viewTotalAmount"></span></h5></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6 class="text-muted">Status</h6>
+                        <div id="viewBillStatus"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" onclick="printBill()">
+                    <i class="bi bi-printer"></i> Print Bill
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = 'https://localhost:7272/api';
+        const MONTHLY_BILL_API_URL = `${API_BASE_URL}/MonthlyBill`;
+
+        let allBills = [];
+        let viewBillModal;
+        let currentBillDetails = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            viewBillModal = new bootstrap.Modal(document.getElementById('viewBillModal'));
+
+            const currentDate = new Date();
+            document.getElementById('filterYear').value = currentDate.getFullYear();
+
+            fetchBills();
+        });
+
+        async function fetchBills() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${MONTHLY_BILL_API_URL}/AllBills`);
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                allBills = await response.json();
+                console.log('Loaded bills:', allBills.length);
+                filterBills();
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading bills:', error);
+                alert('Failed to load bills: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function filterBills() {
+            const month = document.getElementById('filterMonth').value;
+            const year = document.getElementById('filterYear').value;
+            const status = document.getElementById('filterStatus').value;
+
+            let filtered = allBills;
+
+            if (month) {
+                filtered = filtered.filter(b => b.billingMonth == month);
+            }
+            if (year) {
+                filtered = filtered.filter(b => b.billingYear == year);
+            }
+            if (status) {
+                filtered = filtered.filter(b => b.billStatus === status);
+            }
+
+            renderBillsTable(filtered);
+        }
+
+        function clearFilters() {
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('filterYear').value = new Date().getFullYear();
+            document.getElementById('filterStatus').value = '';
+            filterBills();
+        }
+
+        function refreshBills() {
+            fetchBills();
+        }
+
+        function renderBillsTable(bills) {
+            const tbody = document.getElementById('billsTableBody');
+            tbody.innerHTML = '';
+
+            if (bills && bills.length > 0) {
+                bills.forEach(bill => {
+                    const statusBadge = bill.billStatus === 'Paid'
+                        ? '<span class="badge bg-success">Paid</span>'
+                        : bill.billStatus === 'Overdue'
+                        ? '<span class="badge bg-danger">Overdue</span>'
+                        : '<span class="badge bg-warning text-dark">Pending</span>';
+
+                    const monthName = new Date(bill.billingYear, bill.billingMonth - 1).toLocaleString('default', { month: 'long' });
+                    const adjustments = bill.totalSurgeCharges - bill.totalDiscounts;
+
+                    const rowHtml = `
+                        <tr>
+                            <td><strong>${bill.billId}</strong></td>
+                            <td>${bill.consumerName}</td>
+                            <td>${bill.meterId}</td>
+                            <td>${monthName} ${bill.billingYear}</td>
+                            <td><span class="badge bg-info">${bill.readingsCount} readings</span></td>
+                            <td>${bill.totalConsumptionKwh.toFixed(2)} kWh</td>
+                            <td>$${bill.baseAmount.toFixed(2)}</td>
+                            <td>${adjustments >= 0 ? '+' : ''}$${adjustments.toFixed(2)}</td>
+                            <td><strong>$${bill.totalAmount.toFixed(2)}</strong></td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick='viewBillDetails(${JSON.stringify(bill).replace(/'/g, "&apos;")})' title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center">No bills found for the selected filters.</td></tr>';
+            }
+        }
+
+        function viewBillDetails(bill) {
+            currentBillDetails = bill;
+
+            document.getElementById('viewConsumerName').textContent = bill.consumerName;
+            document.getElementById('viewMeterId').textContent = bill.meterId;
+            document.getElementById('viewConsumerId').textContent = bill.consumerId;
+
+            const monthName = new Date(bill.billingYear, bill.billingMonth - 1).toLocaleString('default', { month: 'long' });
+            document.getElementById('viewBillingPeriod').textContent = `${monthName} ${bill.billingYear}`;
+
+            const startDate = new Date(bill.startDate).toLocaleDateString();
+            const endDate = new Date(bill.endDate).toLocaleDateString();
+            document.getElementById('viewDateRange').textContent = `${startDate} - ${endDate}`;
+            document.getElementById('viewReadingsCount').textContent = bill.readingsCount;
+
+            document.getElementById('viewConsumption').textContent = bill.totalConsumptionKwh.toFixed(2);
+            document.getElementById('viewBaseAmount').textContent = bill.baseAmount.toFixed(2);
+            document.getElementById('viewSurgeCharges').textContent = bill.totalSurgeCharges.toFixed(2);
+            document.getElementById('viewDiscounts').textContent = bill.totalDiscounts.toFixed(2);
+            document.getElementById('viewNetAmount').textContent = bill.netAmount.toFixed(2);
+            document.getElementById('viewTaxAmount').textContent = bill.taxAmount.toFixed(2);
+            document.getElementById('viewTotalAmount').textContent = bill.totalAmount.toFixed(2);
+
+            const statusBadge = bill.billStatus === 'Paid'
+                ? '<span class="badge bg-success fs-6">Paid</span>'
+                : bill.billStatus === 'Overdue'
+                ? '<span class="badge bg-danger fs-6">Overdue</span>'
+                : '<span class="badge bg-warning fs-6 text-dark">Pending</span>';
+            document.getElementById('viewBillStatus').innerHTML = statusBadge;
+
+            viewBillModal.show();
+        }
+
+        function printBill() {
+            if (!currentBillDetails) return;
+
+            const printWindow = window.open('', '_blank');
+            const bill = currentBillDetails;
+            const monthName = new Date(bill.billingYear, bill.billingMonth - 1).toLocaleString('default', { month: 'long' });
+
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Bill #${bill.billId}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                        .header { margin-bottom: 30px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                        th { background-color: #f2f2f2; font-weight: bold; }
+                        .total { font-size: 18px; font-weight: bold; background-color: #e3f2fd; }
+                        .status { margin-top: 20px; padding: 10px; background-color: #fff9c4; }
+                        .amount { text-align: right; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Electricity Bill</h1>
+                        <p><strong>Bill ID:</strong> ${bill.billId}</p>
+                        <p><strong>Consumer:</strong> ${bill.consumerName}</p>
+                        <p><strong>Meter ID:</strong> ${bill.meterId}</p>
+                        <p><strong>Billing Period:</strong> ${monthName} ${bill.billingYear}</p>
+                        <p><strong>Date Range:</strong> ${new Date(bill.startDate).toLocaleDateString()} - ${new Date(bill.endDate).toLocaleDateString()}</p>
+                        <p><strong>Total Readings:</strong> ${bill.readingsCount}</p>
+                    </div>
+
+                    <table>
+                        <tr><th>Description</th><th class="amount">Amount</th></tr>
+                        <tr><td>Total Consumption</td><td class="amount">${bill.totalConsumptionKwh.toFixed(2)} kWh</td></tr>
+                        <tr><td>Base Amount</td><td class="amount">$${bill.baseAmount.toFixed(2)}</td></tr>
+                        <tr><td>Surge Charges</td><td class="amount">+$${bill.totalSurgeCharges.toFixed(2)}</td></tr>
+                        <tr><td>Discounts</td><td class="amount">-$${bill.totalDiscounts.toFixed(2)}</td></tr>
+                        <tr><td>Net Amount</td><td class="amount">$${bill.netAmount.toFixed(2)}</td></tr>
+                        <tr><td>Tax (8.5%)</td><td class="amount">$${bill.taxAmount.toFixed(2)}</td></tr>
+                        <tr class="total"><td>Total Amount Due</td><td class="amount">$${bill.totalAmount.toFixed(2)}</td></tr>
+                    </table>
+
+                    <div class="status">
+                        <strong>Payment Status:</strong> ${bill.billStatus}
+                    </div>
+
+                    <p style="margin-top: 30px; font-size: 12px; color: #666;">
+                        This is a computer-generated bill calculated from ${bill.readingsCount} daily meter readings.
+                    </p>
                 </body>
                 </html>
             `);
