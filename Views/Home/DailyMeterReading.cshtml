@@ -483,13 +483,11 @@
                 return;
             }
 
-            // Check for duplicate entries first
             const hasDuplicate = await checkForDuplicateReadings(meterId, readingDate);
             if (hasDuplicate) {
                 if (!confirm('Readings already exist for this meter on this date. Do you want to delete existing readings and create new ones?')) {
                     return;
                 }
-                // Delete existing readings first
                 await deleteExistingReadings(meterId, readingDate);
             }
 
