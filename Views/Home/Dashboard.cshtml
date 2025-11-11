@@ -11,7 +11,7 @@
     </div>
 
     <div id="loadingIndicator" class="text-center my-4">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-success" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-2">Loading dashboard statistics...</p>
@@ -20,14 +20,14 @@
     <div id="statisticsCards" class="row g-4" style="display: none;">
         <div class="col-md-3">
             <a href="@Url.Action("Meter", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-primary border-4 card-clickable">
+                <div class="card shadow-sm border-start border-success border-4 card-clickable">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-subtitle mb-2 text-muted">Total Meters</h6>
                                 <h2 class="card-title mb-0 text-dark" id="totalMeters">0</h2>
                             </div>
-                            <div class="text-primary">
+                            <div class="text-success">
                                 <i class="bi bi-lightning-charge fs-1"></i>
                             </div>
                         </div>
@@ -143,14 +143,14 @@
         </div>
         <div class="col-md-3">
             <a href="@Url.Action("Dtr", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-primary border-4 card-clickable">
+                <div class="card shadow-sm border-start border-success border-4 card-clickable">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-subtitle mb-2 text-muted">DTRs</h6>
                                 <h2 class="card-title mb-0 text-dark" id="totalDtrs">0</h2>
                             </div>
-                            <div class="text-primary">
+                            <div class="text-success">
                                 <i class="bi bi-router fs-1"></i>
                             </div>
                         </div>
@@ -164,9 +164,9 @@
     <div id="recentActivity" class="row mt-4" style="display: none;">
         <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Consumers</h5>
-                    <span class="badge bg-light text-primary">Latest 5</span>
+                    <span class="badge bg-light text-success">Latest 5</span>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -187,7 +187,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-light text-center">
-                    <a href="@Url.Action("Consumer", "Home")" class="btn btn-sm btn-outline-primary">
+                    <a href="@Url.Action("Consumer", "Home")" class="btn btn-sm btn-outline-success">
                         <i class="bi bi-arrow-right-circle me-1"></i> See More Consumers
                     </a>
                 </div>
@@ -299,7 +299,7 @@
                         <tr>
                             <td><strong>${user.username}</strong></td>
                             <td>${user.email}</td>
-                            <td><span class="badge bg-primary">${user.roleName}</span></td>
+                            <td><span class="badge bg-success">${user.roleName}</span></td>
                         </tr>
                     `).join('');
                 } else {
@@ -353,7 +353,7 @@
         }
 
     a.text-decoration-none:hover .card-clickable {
-        border-color: var(--bs-primary) !important;
+        border-color: var(--bs-success) !important;
     }
 
     .table-hover tbody tr:hover {

@@ -6,13 +6,13 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-receipt"></i> Tariff Plans</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
             <i class="bi bi-plus-circle"></i> Add Tariff
         </button>
     </div>
 
     <div id="loadingIndicator" class="text-center my-4" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-success" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-2">Loading tariff plans...</p>
@@ -65,7 +65,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="saveTariff()">
+                <button type="button" class="btn btn-success" onclick="saveTariff()">
                     <i class="bi bi-save"></i> Save Tariff
                 </button>
             </div>
@@ -158,7 +158,7 @@
 
                     const cardHtml = `
                         <div class="col-md-4 mb-4">
-                            <div class="card shadow-sm h-100 border-top border-primary border-3">
+                            <div class="card shadow-sm h-100 border-top border-success border-3">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         <h5 class="card-title mb-0">${plan.name}</h5>
@@ -169,7 +169,7 @@
                                         <div class="fw-semibold">${formatDate(plan.effectiveFrom)}</div>
                                     </div>
                                     <div class="text-center py-3 bg-light rounded mb-3">
-                                        <h3 class="text-primary mb-0">₹${plan.baseRate.toFixed(4)}</h3>
+                                        <h3 class="text-success mb-0">₹${plan.baseRate.toFixed(4)}</h3>
                                         <small class="text-muted">per kWh</small>
                                     </div>
                                     <div class="mb-3">
@@ -177,7 +177,7 @@
                                         <span class="fw-semibold">${plan.taxRate}%</span>
                                     </div>
                                     <div class="d-grid gap-2">
-                                        <button class="btn btn-outline-primary btn-sm" onclick="viewTariffSlabs(${plan.tariffId}, '${plan.name}')">
+                                        <button class="btn btn-outline-success btn-sm" onclick="viewTariffSlabs(${plan.tariffId}, '${plan.name}')">
                                             <i class="bi bi-layers"></i> View Tariff Slabs
                                         </button>
                                         <div class="btn-group" role="group">
