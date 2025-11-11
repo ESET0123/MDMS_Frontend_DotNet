@@ -211,7 +211,7 @@
             allTariffs.forEach(tariff => {
                 const option = document.createElement('option');
                 option.value = tariff.tariffId;
-                option.textContent = `${tariff.name} - $${tariff.baseRate.toFixed(4)}/kWh`;
+                option.textContent = `${tariff.name} - ₹${tariff.baseRate.toFixed(4)}/kWh`;
                 select.appendChild(option);
 
                 const filterOption = document.createElement('option');
@@ -254,7 +254,7 @@
                             <td><span class="badge bg-success">${slab.tariffName}</span></td>
                             <td>${slab.fromKwh.toFixed(2)}</td>
                             <td>${slab.toKwh.toFixed(2)}</td>
-                            <td><strong>$${slab.ratePerKwh.toFixed(4)}</strong></td>
+                            <td><strong>₹${slab.ratePerKwh.toFixed(4)}</strong></td>
                             <td>
                                 <button class="btn btn-sm btn-outline-success me-1" onclick="viewSlabDetails(${slab.slabId})" title="View Details">
                                     <i class="bi bi-eye"></i>
@@ -293,7 +293,7 @@
 
                 detailsDiv.innerHTML = `
                     <span class="badge bg-success me-2">${name}</span>
-                    <span class="text-muted">Base Rate:</span> <strong>$${baseRate}/kWh</strong> |
+                    <span class="text-muted">Base Rate:</span> <strong>₹${baseRate}/kWh</strong> |
                     <span class="text-muted">Tax:</span> <strong>${taxRate}%</strong> |
                     <span class="text-muted">Effective:</span> <strong>${effectiveFrom}</strong>
                 `;
@@ -424,7 +424,7 @@
             document.getElementById('viewTariffName').textContent = slab.tariffName;
             document.getElementById('viewFromKwh').textContent = slab.fromKwh.toFixed(2) + ' kWh';
             document.getElementById('viewToKwh').textContent = slab.toKwh.toFixed(2) + ' kWh';
-            document.getElementById('viewRatePerKwh').textContent = '$' + slab.ratePerKwh.toFixed(4) + '/kWh';
+            document.getElementById('viewRatePerKwh').textContent = '₹' + slab.ratePerKwh.toFixed(4) + '/kWh';
 
             viewSlabModal.show();
         }

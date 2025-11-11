@@ -52,48 +52,43 @@
 </aside>
 
 <style>
-    /* Add smooth transitions for a more modern feel */
     .hover-link {
         transition: all 0.3s ease;
-        margin-bottom: 8px; /* Add slight spacing between links */
+        margin-bottom: 8px;
     }
 
         .hover-link:hover {
-            background-color: rgba(255, 255, 255, 0.15); /* Slightly stronger hover background */
+            background-color: rgba(255, 255, 255, 0.15);
             color: white !important;
-            transform: translateX(2px); /* Subtle slide effect on hover */
+            transform: translateX(2px);
         }
 
     .active-link {
-        background-color: #198754; /* Bootstrap primary blue */
+        background-color: #198754;
         color: white !important;
         font-weight: bold;
-        box-shadow: 0 4px 6px rgba(13, 110, 253, 0.3); /* Add shadow for depth */
-        position: relative; /* Needed for the side indicator effect */
+        box-shadow: 0 4px 6px rgba(13, 110, 253, 0.3);
+        position: relative;
     }
 
-        /* Optional: Add a small colored bar on the side for the active link */
         .active-link::before {
             content: '';
             position: absolute;
             left: 0;
             top: 0;
             bottom: 0;
-            width: 4px; /* Width of the indicator bar */
-            background-color: #ffc107; /* A contrasting color like Bootstrap warning/yellow */
+            width: 4px;
+            background-color: #ffc107;
             border-radius: 4px 0 0 4px;
         }
 
-    /* --- Hide Scrollbar CSS --- */
-    /* Hide scrollbar for Chrome, Safari and Opera */
     .sidebar-nav::-webkit-scrollbar {
         display: none;
     }
 
-    /* Hide scrollbar for IE, Edge and Firefox */
     .sidebar-nav {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; 
+        scrollbar-width: none;
     }
 </style>
 

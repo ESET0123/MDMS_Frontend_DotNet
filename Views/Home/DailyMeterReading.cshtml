@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Daily Meter Reading";
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -154,7 +158,7 @@
                         <div class="col-md-4">
                             <label class="form-label">Filter by Meter:</label>
                             <select class="form-select" id="filterMeterId" onchange="loadAllReadings()">
-                                <option value="">Select Meters</option>
+                                <option value="">All Meters</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -188,7 +192,7 @@
                             </thead>
                             <tbody id="allReadingsTableBody">
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted">Loading...</td>
+                                    <td colspan="9" class="text-center text-muted">Select filters to view readings</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -208,6 +212,7 @@
         let allMeters = [];
         let readingRowCounter = 0;
         let currentMeterLatestReading = 0;
+        let currentMeterApplicableRules = [];
 
         function showError(message) {
             document.getElementById('errorText').textContent = message;
@@ -272,17 +277,19 @@
                 const consumerName = meter.consumerName || meter.consumer?.name || 'Unknown';
                 const latestReading = meter.latestReading || 0;
                 const meterId = meter.meterId;
+                const tariffId = meter.tariffId || meter.tariff?.tariffId;
 
                 const option = `<option value="${meterId}"
                     data-meter-number="${meterId}"
                     data-base-rate="${baseRate}"
                     data-latest-reading="${latestReading}"
-                    data-consumer-name="${consumerName}">
+                    data-consumer-name="${consumerName}"
+                    data-tariff-id="${tariffId}">
                     Meter #${meterId} - ${consumerName}
                 </option>`;
 
                 select.innerHTML += option;
-                filterSelect.innerHTML += option;
+                filterSelect.innerHTML += `<option value="${meterId}">Meter #${meterId} - ${consumerName}</option>`;
             });
         }
 
@@ -305,6 +312,7 @@
                 const meterId = selectedOption.dataset.meterNumber;
                 const baseRate = parseFloat(selectedOption.dataset.baseRate) || 0;
                 const consumerName = selectedOption.dataset.consumerName || 'Unknown';
+                const tariffId = selectedOption.dataset.tariffId;
                 currentMeterLatestReading = parseFloat(selectedOption.dataset.latestReading) || 0;
 
                 if (baseRate === 0) {
@@ -316,13 +324,19 @@
                     `Meter: #${meterId} | Consumer: ${consumerName} | Base Rate: ₹${baseRate.toFixed(4)}/kWh | Latest Reading: ${currentMeterLatestReading.toFixed(2)} kWh`;
                 document.getElementById('meterInfoDisplay').style.display = 'block';
 
-                checkExistingReadingsForDate();
+                // Filter TOD rules applicable to this meter's tariff
+                currentMeterApplicableRules = allTodRules.filter(rule => rule.tariffId == tariffId);
 
-                loadAllTodSlots();
+                if (currentMeterApplicableRules.length === 0) {
+                    showError('No TOD rules found for this meter\'s tariff. Please check tariff configuration.');
+                }
+
+                checkExistingReadingsForDate();
             } else {
                 document.getElementById('baseRate').value = '';
                 document.getElementById('meterInfoDisplay').style.display = 'none';
                 currentMeterLatestReading = 0;
+                currentMeterApplicableRules = [];
 
                 const tbody = document.getElementById('readingsTableBody');
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a meter to load TOD slots</td></tr>';
@@ -335,19 +349,111 @@
 
             if (!meterId || !readingDate) return;
 
-            const hasDuplicate = await checkForDuplicateReadings(meterId, readingDate);
-            if (hasDuplicate) {
-                showError(`⚠️ Readings already exist for this meter on ${readingDate}. You can either choose a different date or overwrite existing data when saving.`);
+            const existingReadings = await getExistingReadings(meterId, readingDate);
+
+            if (existingReadings.length > 0) {
+                showError(`⚠️ Readings already exist for this meter on ${readingDate}. Loading existing data.`);
+                loadExistingReadings(existingReadings);
             } else {
                 hideError();
+                loadApplicableTodSlots();
             }
         }
 
-        function loadAllTodSlots() {
+        async function getExistingReadings(meterId, readingDate) {
+            try {
+                const startDate = readingDate;
+                const endDate = readingDate;
+                const response = await fetch(
+                    `${DAILY_READING_API_URL}/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`
+                );
+
+                if (response.ok) {
+                    return await response.json();
+                }
+                return [];
+            } catch (error) {
+                console.error('Error checking existing readings:', error);
+                return [];
+            }
+        }
+
+        function loadExistingReadings(existingReadings) {
             const tbody = document.getElementById('readingsTableBody');
             tbody.innerHTML = '';
 
-            allTodRules.forEach((rule, index) => {
+            if (existingReadings.length === 0) {
+                loadApplicableTodSlots();
+                return;
+            }
+
+            // Group readings by TOD rule for easier processing
+            const readingsByTodRule = {};
+            existingReadings.forEach(reading => {
+                readingsByTodRule[reading.todRuleId] = reading;
+            });
+
+            currentMeterApplicableRules.forEach((rule, index) => {
+                readingRowCounter++;
+                const rowId = `row_${readingRowCounter}`;
+
+                const existingReading = readingsByTodRule[rule.todRuleId];
+
+                let previousReadingValue = '';
+                let currentReadingValue = '';
+
+                if (existingReading) {
+                    previousReadingValue = existingReading.previousReading.toFixed(2);
+                    currentReadingValue = existingReading.currentReading.toFixed(2);
+                } else if (index === 0) {
+                    previousReadingValue = currentMeterLatestReading.toFixed(2);
+                }
+
+                const row = `
+                    <tr id="${rowId}">
+                        <td>
+                            <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
+                                <option value="${rule.todRuleId}" selected
+                                    data-start="${rule.startTime}"
+                                    data-end="${rule.endTime}"
+                                    data-surge="${rule.surgeChargePercent}"
+                                    data-discount="${rule.discountPercent}">
+                                    ${rule.ruleName} (${rule.startTime}-${rule.endTime})
+                                </option>
+                            </select>
+                        </td>
+                        <td><input type="time" class="form-control form-control-sm start-time" value="${rule.startTime}" required></td>
+                        <td><input type="time" class="form-control form-control-sm end-time" value="${rule.endTime}" required></td>
+                        <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
+                            placeholder="0.00" value="${previousReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                        <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
+                            placeholder="0.00" value="${currentReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                        <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly
+                            value="${existingReading ? existingReading.consumptionKwh.toFixed(2) : ''}"></td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-danger" onclick="removeReadingRow('${rowId}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            calculateTotals();
+        }
+
+        function loadApplicableTodSlots() {
+            const tbody = document.getElementById('readingsTableBody');
+            tbody.innerHTML = '';
+
+            if (currentMeterApplicableRules.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No TOD rules configured for this meter\'s tariff</td></tr>';
+                return;
+            }
+
+            currentMeterApplicableRules.forEach((rule, index) => {
                 readingRowCounter++;
                 const rowId = `row_${readingRowCounter}`;
                 const previousReadingValue = index === 0 ? currentMeterLatestReading.toFixed(2) : '';
@@ -613,6 +719,7 @@
             document.getElementById('baseRate').value = '';
             document.getElementById('meterInfoDisplay').style.display = 'none';
             currentMeterLatestReading = 0;
+            currentMeterApplicableRules = [];
 
             const tbody = document.getElementById('readingsTableBody');
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a meter to load TOD slots</td></tr>';
@@ -623,7 +730,9 @@
         async function viewAllReadings() {
             const modal = new bootstrap.Modal(document.getElementById('viewReadingsModal'));
             modal.show();
-            await loadAllReadings();
+            // Don't load readings automatically - wait for user to apply filters
+            const tbody = document.getElementById('allReadingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select filters to view readings</td></tr>';
         }
 
         async function loadAllReadings() {
@@ -631,14 +740,25 @@
             const startDate = document.getElementById('filterStartDate').value;
             const endDate = document.getElementById('filterEndDate').value;
 
+            // Don't load if no filters are selected
+            if (!filterMeterId && !startDate && !endDate) {
+                const tbody = document.getElementById('allReadingsTableBody');
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select filters to view readings</td></tr>';
+                return;
+            }
+
             const tbody = document.getElementById('allReadingsTableBody');
             tbody.innerHTML = '<tr><td colspan="9" class="text-center">Loading...</td></tr>';
 
             try {
-                let url = `${DAILY_READING_API_URL}/ByMeter/${filterMeterId || 1}`;
+                let url = `${DAILY_READING_API_URL}/AllReadings`;
 
                 if (filterMeterId && startDate && endDate) {
                     url = `${DAILY_READING_API_URL}/ByDateRange?meterId=${filterMeterId}&startDate=${startDate}&endDate=${endDate}`;
+                } else if (filterMeterId) {
+                    url = `${DAILY_READING_API_URL}/ByMeter/${filterMeterId}`;
+                } else if (startDate && endDate) {
+                    url = `${DAILY_READING_API_URL}/ByDateRange?startDate=${startDate}&endDate=${endDate}`;
                 }
 
                 const response = await fetch(url);
@@ -696,7 +816,8 @@
             document.getElementById('filterMeterId').value = '';
             document.getElementById('filterStartDate').value = '';
             document.getElementById('filterEndDate').value = '';
-            loadAllReadings();
+            const tbody = document.getElementById('allReadingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select filters to view readings</td></tr>';
         }
 
         function viewMonthlyBills() {
