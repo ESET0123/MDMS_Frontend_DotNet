@@ -5,46 +5,10 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-file-invoice-dollar"></i> Monthly Bills Management</h2>
+        <h2><i class="bi bi-file-earmark-text"></i> Monthly Bills Management</h2>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#billModal" onclick="prepareAddBill()">
-            <i class="bi bi-plus-circle"></i> Create New Bill
+            <i class="bi bi-plus-circle"></i> Add Monthly Bill
         </button>
-    </div>
-
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-start border-primary border-4">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Bills</h6>
-                    <h3 id="totalBills">0</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-start border-success border-4">
-                <div class="card-body">
-                    <h6 class="text-muted">Paid Bills</h6>
-                    <h3 id="paidBills" class="text-success">0</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-start border-danger border-4">
-                <div class="card-body">
-                    <h6 class="text-muted">Unpaid Bills</h6>
-                    <h3 id="unpaidBills" class="text-danger">0</h3>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-start border-warning border-4">
-                <div class="card-body">
-                    <h6 class="text-muted">Total Amount</h6>
-                    <h3 id="totalAmount">₹0.00</h3>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div id="loadingIndicator" class="text-center my-4" style="display: none;">
@@ -53,79 +17,15 @@
         </div>
         <p class="mt-2">Loading bills...</p>
     </div>
-
     <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
         <button type="button" class="btn-close" onclick="showError('')"></button>
         <span id="errorText"></span>
     </div>
-
     <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
         <button type="button" class="btn-close" onclick="showSuccess('')"></button>
         <span id="successText"></span>
     </div>
 
-    <!-- Filter Section -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter Bills</h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-2">
-                    <label for="filterMeterId" class="form-label">Meter ID</label>
-                    <input type="number" class="form-control" id="filterMeterId" placeholder="Enter Meter ID">
-                </div>
-                <div class="col-md-2">
-                    <label for="filterConsumerId" class="form-label">Consumer ID</label>
-                    <input type="number" class="form-control" id="filterConsumerId" placeholder="Enter Consumer ID">
-                </div>
-                <div class="col-md-2">
-                    <label for="filterMonth" class="form-label">Month</label>
-                    <select class="form-select" id="filterMonth">
-                        <option value="">All Months</option>
-                        <option value="1">January</option>
-                        <option value="2">February</option>
-                        <option value="3">March</option>
-                        <option value="4">April</option>
-                        <option value="5">May</option>
-                        <option value="6">June</option>
-                        <option value="7">July</option>
-                        <option value="8">August</option>
-                        <option value="9">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label for="filterYear" class="form-label">Year</label>
-                    <input type="number" class="form-control" id="filterYear" placeholder="e.g., 2025">
-                </div>
-                <div class="col-md-2">
-                    <label for="filterStatus" class="form-label">Status</label>
-                    <select class="form-select" id="filterStatus">
-                        <option value="">All Statuses</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Unpaid">Unpaid</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Overdue">Overdue</option>
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <div class="w-100">
-                        <button type="button" class="btn btn-success w-100 mb-2" onclick="applyFilters()">
-                            <i class="bi bi-search"></i> Apply
-                        </button>
-                        <button type="button" class="btn btn-secondary w-100" onclick="clearFilters()">
-                            <i class="bi bi-x-circle"></i> Clear
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bills Table -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -133,11 +33,11 @@
                     <thead class="table-dark">
                         <tr>
                             <th>Bill ID</th>
-                            <th>Meter ID</th>
-                            <th>Consumer ID</th>
-                            <th>Period</th>
+                            <th>Consumer</th>
+                            <th>Meter</th>
+                            <th>Billing Date</th>
                             <th>Consumption (kWh)</th>
-                            <th>Total Amount</th>
+                            <th>Amount (₹)</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -150,107 +50,12 @@
     </div>
 </div>
 
-<!-- View Details Modal -->
-<div class="modal fade" id="viewBillModal" tabindex="-1" aria-labelledby="viewBillModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="viewBillModalLabel">Bill Details</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="border-bottom pb-2">Basic Information</h6>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Bill ID:</div>
-                            <div class="col-7" id="viewBillId"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Meter ID:</div>
-                            <div class="col-7" id="viewMeterId"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Consumer ID:</div>
-                            <div class="col-7" id="viewConsumerId"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Billing Period:</div>
-                            <div class="col-7" id="viewBillingPeriod"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Bill Duration:</div>
-                            <div class="col-7" id="viewBillDuration"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Status:</div>
-                            <div class="col-7" id="viewStatus"></div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="border-bottom pb-2">Consumption & Generation</h6>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Consumption:</div>
-                            <div class="col-7" id="viewConsumption"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Generated At:</div>
-                            <div class="col-7" id="viewGeneratedAt"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Generated By:</div>
-                            <div class="col-7" id="viewGeneratedBy"></div>
-                        </div>
-                        <div class="row mb-2">
-                            <div class="col-5 fw-bold">Paid Date:</div>
-                            <div class="col-7" id="viewPaidDate"></div>
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <h6 class="border-bottom pb-2">Billing Breakdown</h6>
-                <table class="table table-bordered">
-                    <tbody>
-                        <tr>
-                            <td><strong>Base Amount</strong></td>
-                            <td class="text-end" id="viewBaseAmount"></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Surge Charges</strong></td>
-                            <td class="text-end text-danger" id="viewSurgeCharges"></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Discounts</strong></td>
-                            <td class="text-end text-success" id="viewDiscounts"></td>
-                        </tr>
-                        <tr class="table-secondary">
-                            <td><strong>Net Amount</strong></td>
-                            <td class="text-end" id="viewNetAmount"></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Tax Amount</strong></td>
-                            <td class="text-end" id="viewTaxAmount"></td>
-                        </tr>
-                        <tr class="table-primary">
-                            <td><h5 class="mb-0">Total Amount</h5></td>
-                            <td class="text-end"><h5 class="mb-0" id="viewTotalAmount"></h5></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Create/Edit Bill Modal -->
+<!-- Add/Edit Modal -->
 <div class="modal fade" id="billModal" tabindex="-1" aria-labelledby="billModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="billModalLabel">Create New Bill</h5>
+                <h5 class="modal-title" id="billModalLabel">Add Monthly Bill</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -259,92 +64,56 @@
                     <input type="hidden" id="billId" value="0" />
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <h6 class="border-bottom pb-2">Basic Information</h6>
-                            <div class="mb-3">
-                                <label for="meterId" class="form-label">Meter ID <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="meterId" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="consumerId" class="form-label">Consumer ID <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="consumerId" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="billingMonth" class="form-label">Billing Month <span class="text-danger">*</span></label>
-                                <select class="form-select" id="billingMonth" required>
-                                    <option value="">Select Month</option>
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="billingYear" class="form-label">Billing Year <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="billingYear" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="billStartDate" class="form-label">Start Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="billStartDate" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="billEndDate" class="form-label">End Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="billEndDate" required>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerId" class="form-label">Consumer <span class="text-danger">*</span></label>
+                            <select class="form-select" id="consumerId" required>
+                                <option value="">-- Select Consumer --</option>
+                            </select>
+                            <small class="form-text text-muted">Select the consumer for this bill</small>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="meterId" class="form-label">Meter <span class="text-danger">*</span></label>
+                            <select class="form-select" id="meterId" required>
+                                <option value="">-- Select Meter --</option>
+                            </select>
+                            <small class="form-text text-muted">Select the meter associated with this bill</small>
+                        </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <h6 class="border-bottom pb-2">Charges & Amount</h6>
-                            <div class="mb-3">
-                                <label for="totalConsumptionKwh" class="form-label">Consumption (kWh) <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="totalConsumptionKwh" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="baseAmount" class="form-label">Base Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="baseAmount" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="totalSurgeCharges" class="form-label">Surge Charges</label>
-                                <input type="number" step="0.01" class="form-control" id="totalSurgeCharges" value="0">
-                            </div>
-                            <div class="mb-3">
-                                <label for="totalDiscounts" class="form-label">Discounts</label>
-                                <input type="number" step="0.01" class="form-control" id="totalDiscounts" value="0">
-                            </div>
-                            <div class="mb-3">
-                                <label for="netAmount" class="form-label">Net Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="netAmount" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="taxAmount" class="form-label">Tax Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="taxAmount" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="totalAmount" class="form-label">Total Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" class="form-control" id="totalAmount" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="billStatus" class="form-label">Status <span class="text-danger">*</span></label>
-                                <select class="form-select" id="billStatus" required>
-                                    <option value="Unpaid">Unpaid</option>
-                                    <option value="Paid">Paid</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Overdue">Overdue</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="generatedBy" class="form-label">Generated By <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="generatedBy" required>
-                            </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="billingDate" class="form-label">Billing Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="billingDate" required>
+                            <small class="form-text text-muted">Date when the bill was generated</small>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="billStatus" class="form-label">Bill Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="billStatus" required>
+                                <option value="">-- Select Status --</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Overdue">Overdue</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <small class="form-text text-muted">Current status of the bill</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="totalConsumptionKwh" class="form-label">Total Consumption (kWh) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="totalConsumptionKwh" required onchange="calculateAmount()">
+                            <small class="form-text text-muted">Total electricity consumed in kWh</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="totalAmount" class="form-label">Total Amount (₹) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="totalAmount" required>
+                            <small class="form-text text-muted">Total bill amount</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> <strong>Note:</strong> You can manually adjust the total amount or it will be calculated based on consumption and rate.
                     </div>
                 </form>
             </div>
@@ -358,12 +127,98 @@
     </div>
 </div>
 
+<!-- View Details Modal -->
+<div class="modal fade" id="viewBillModal" tabindex="-1" aria-labelledby="viewBillModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewBillModalLabel">Bill Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Bill Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Bill ID:</div>
+                                            <div class="col-7" id="viewBillId"></div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Consumer:</div>
+                                            <div class="col-7" id="viewConsumerName"></div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Meter Number:</div>
+                                            <div class="col-7" id="viewmeterId"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Billing Date:</div>
+                                            <div class="col-7" id="viewBillingDate"></div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Status:</div>
+                                            <div class="col-7" id="viewStatus"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-lightning-charge"></i> Consumption & Billing</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded">
+                                            <h6 class="text-muted">Total Consumption</h6>
+                                            <h3 id="viewTotalConsumption" class="text-primary"></h3>
+                                            <small class="text-muted">kWh</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-warning bg-opacity-25 rounded">
+                                            <h6 class="text-muted">Total Amount</h6>
+                                            <h3 id="viewTotalAmount" class="text-success"></h3>
+                                            <small class="text-muted">₹</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
         const BILL_API_URL = `${API_BASE_URL}/api/MonthlyBill`;
+        const CONSUMER_API_URL = `${API_BASE_URL}/api/Consumer`;
+        const METER_API_URL = `${API_BASE_URL}/api/Meter`;
 
         let allBills = [];
+        let allConsumers = [];
+        let allMeters = [];
         let billModal;
         let viewBillModal;
 
@@ -371,19 +226,20 @@
             billModal = new bootstrap.Modal(document.getElementById('billModal'));
             viewBillModal = new bootstrap.Modal(document.getElementById('viewBillModal'));
             fetchBills();
+            fetchConsumers();
+            fetchMeters();
         });
 
         async function fetchBills() {
             try {
                 showLoading(true);
                 showError('');
-                const response = await fetch(`${BILL_API_URL}/All`);
+                const response = await fetch(`${BILL_API_URL}/AllMonthlyBills`);
 
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 allBills = await response.json();
                 renderBillsTable(allBills);
-                updateStatistics(allBills);
                 showLoading(false);
             } catch (error) {
                 console.error('Error loading bills:', error);
@@ -392,45 +248,77 @@
             }
         }
 
+        async function fetchConsumers() {
+            try {
+                const response = await fetch(`${CONSUMER_API_URL}/AllConsumers`);
+                if (response.ok) {
+                    allConsumers = await response.json();
+                    populateConsumersDropdown();
+                }
+            } catch (error) {
+                console.error('Error loading consumers:', error);
+            }
+        }
+
+        async function fetchMeters() {
+            try {
+                const response = await fetch(`${METER_API_URL}/AllMeters`);
+                if (response.ok) {
+                    allMeters = await response.json();
+                    populateMetersDropdown();
+                }
+            } catch (error) {
+                console.error('Error loading meters:', error);
+            }
+        }
+
+        function populateConsumersDropdown() {
+            const select = document.getElementById('consumerId');
+            select.innerHTML = '<option value="">-- Select Consumer --</option>';
+            allConsumers.forEach(consumer => {
+                select.innerHTML += `<option value="${consumer.consumerId}">${consumer.name}</option>`;
+            });
+        }
+
+        function populateMetersDropdown() {
+            const select = document.getElementById('meterId');
+            select.innerHTML = '<option value="">-- Select Meter --</option>';
+            allMeters.forEach(meter => {
+                select.innerHTML += `<option value="${meter.meterId}">${meter.meterId}</option>`;
+            });
+        }
+
         function renderBillsTable(bills) {
             const tbody = document.getElementById('billsTableBody');
             tbody.innerHTML = '';
 
             if (bills && bills.length > 0) {
                 bills.forEach(bill => {
-                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    const period = `${monthNames[bill.billingMonth - 1]} ${bill.billingYear}`;
+                    const billingDate = new Date(bill.billingDate).toLocaleDateString('en-IN');
 
-                    let statusBadge = '';
+                    let statusBadge;
                     switch(bill.billStatus) {
                         case 'Paid':
                             statusBadge = '<span class="badge bg-success">Paid</span>';
                             break;
-                        case 'Unpaid':
-                            statusBadge = '<span class="badge bg-danger">Unpaid</span>';
-                            break;
-                        case 'Pending':
-                            statusBadge = '<span class="badge bg-warning">Pending</span>';
-                            break;
                         case 'Overdue':
-                            statusBadge = '<span class="badge bg-dark">Overdue</span>';
+                            statusBadge = '<span class="badge bg-danger">Overdue</span>';
+                            break;
+                        case 'Cancelled':
+                            statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
                             break;
                         default:
-                            statusBadge = `<span class="badge bg-secondary">${bill.billStatus}</span>`;
+                            statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
                     }
 
                     const rowHtml = `
-                        <tr data-meterid="${bill.meterId}"
-                            data-consumerid="${bill.consumerId}"
-                            data-month="${bill.billingMonth}"
-                            data-year="${bill.billingYear}"
-                            data-status="${bill.billStatus}">
+                        <tr>
                             <td><strong>${bill.billId}</strong></td>
-                            <td><span class="badge bg-info">${bill.meterId}</span></td>
-                            <td><span class="badge bg-secondary">${bill.consumerId}</span></td>
-                            <td>${period}</td>
+                            <td>${bill.consumerName}</td>
+                            <td>${bill.meterId}</td>
+                            <td>${billingDate}</td>
                             <td>${bill.totalConsumptionKwh.toFixed(2)}</td>
-                            <td><strong>₹${bill.totalAmount.toFixed(2)}</strong></td>
+                            <td>₹${bill.totalAmount.toFixed(2)}</td>
                             <td>${statusBadge}</td>
                             <td>
                                 <button class="btn btn-sm btn-outline-primary me-1" onclick="viewBillDetails(${bill.billId})" title="View Details">
@@ -448,71 +336,19 @@
                     tbody.insertAdjacentHTML('beforeend', rowHtml);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No bills found. Click "Create New Bill" to add one.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No bills found. Click "Add Monthly Bill" to create one.</td></tr>';
             }
         }
 
-        function updateStatistics(bills) {
-            const total = bills.length;
-            const paid = bills.filter(b => b.billStatus === 'Paid').length;
-            const unpaid = bills.filter(b => b.billStatus === 'Unpaid').length;
-            const totalAmount = bills.reduce((sum, b) => sum + b.totalAmount, 0);
-
-            document.getElementById('totalBills').textContent = total;
-            document.getElementById('paidBills').textContent = paid;
-            document.getElementById('unpaidBills').textContent = unpaid;
-            document.getElementById('totalAmount').textContent = `₹${totalAmount.toFixed(2)}`;
-        }
-
-        function applyFilters() {
-            const meterId = document.getElementById('filterMeterId').value;
-            const consumerId = document.getElementById('filterConsumerId').value;
-            const month = document.getElementById('filterMonth').value;
-            const year = document.getElementById('filterYear').value;
-            const status = document.getElementById('filterStatus').value;
-
-            const rows = document.querySelectorAll('#billsTableBody tr');
-            let filteredBills = [];
-
-            rows.forEach(row => {
-                let show = true;
-
-                if (meterId && row.dataset.meterid !== meterId) show = false;
-                if (consumerId && row.dataset.consumerid !== consumerId) show = false;
-                if (month && row.dataset.month !== month) show = false;
-                if (year && row.dataset.year !== year) show = false;
-                if (status && row.dataset.status !== status) show = false;
-
-                row.style.display = show ? '' : 'none';
-
-                if (show) {
-                    const billId = parseInt(row.querySelector('td:first-child strong').textContent);
-                    const bill = allBills.find(b => b.billId === billId);
-                    if (bill) filteredBills.push(bill);
-                }
-            });
-
-            updateStatistics(filteredBills);
-        }
-
-        function clearFilters() {
-            document.getElementById('filterMeterId').value = '';
-            document.getElementById('filterConsumerId').value = '';
-            document.getElementById('filterMonth').value = '';
-            document.getElementById('filterYear').value = '';
-            document.getElementById('filterStatus').value = '';
-
-            const rows = document.querySelectorAll('#billsTableBody tr');
-            rows.forEach(row => row.style.display = '');
-
-            updateStatistics(allBills);
-        }
-
         function prepareAddBill() {
-            document.getElementById('billModalLabel').textContent = 'Create New Bill';
+            document.getElementById('billModalLabel').textContent = 'Add Monthly Bill';
             document.getElementById('billForm').reset();
             document.getElementById('isEdit').value = 'false';
             document.getElementById('billId').value = '0';
+
+            // Set default billing date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('billingDate').value = today;
         }
 
         async function editBill(billId) {
@@ -522,49 +358,47 @@
                 return;
             }
 
-            document.getElementById('billModalLabel').textContent = 'Edit Bill';
+            document.getElementById('billModalLabel').textContent = 'Edit Monthly Bill';
             document.getElementById('isEdit').value = 'true';
             document.getElementById('billId').value = bill.billId;
-            document.getElementById('meterId').value = bill.meterId;
             document.getElementById('consumerId').value = bill.consumerId;
-            document.getElementById('billingMonth').value = bill.billingMonth;
-            document.getElementById('billingYear').value = bill.billingYear;
-            document.getElementById('billStartDate').value = bill.billStartDate;
-            document.getElementById('billEndDate').value = bill.billEndDate;
+            document.getElementById('meterId').value = bill.meterId;
+            document.getElementById('billingDate').value = bill.billingDate;
             document.getElementById('totalConsumptionKwh').value = bill.totalConsumptionKwh;
-            document.getElementById('baseAmount').value = bill.baseAmount;
-            document.getElementById('totalSurgeCharges').value = bill.totalSurgeCharges;
-            document.getElementById('totalDiscounts').value = bill.totalDiscounts;
-            document.getElementById('netAmount').value = bill.netAmount;
-            document.getElementById('taxAmount').value = bill.taxAmount;
             document.getElementById('totalAmount').value = bill.totalAmount;
             document.getElementById('billStatus').value = bill.billStatus;
-            document.getElementById('generatedBy').value = bill.generatedBy;
 
             billModal.show();
         }
 
         async function saveBill() {
             const isEdit = document.getElementById('isEdit').value === 'true';
+            const billId = parseInt(document.getElementById('billId').value);
+            const consumerId = parseInt(document.getElementById('consumerId').value);
+            const meterId = parseInt(document.getElementById('meterId').value);
+            const billingDate = document.getElementById('billingDate').value;
+            const totalConsumptionKwh = parseFloat(document.getElementById('totalConsumptionKwh').value);
+            const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+            const billStatus = document.getElementById('billStatus').value;
+
+            if (!consumerId || !meterId || !billingDate || !totalConsumptionKwh || !totalAmount || !billStatus) {
+                showError('Please fill all required fields');
+                return;
+            }
+
+            if (totalConsumptionKwh < 0 || totalAmount < 0) {
+                showError('Consumption and amount must be positive values');
+                return;
+            }
 
             const billData = {
-                billId: isEdit ? parseInt(document.getElementById('billId').value) : null,
-                meterId: parseInt(document.getElementById('meterId').value),
-                consumerId: parseInt(document.getElementById('consumerId').value),
-                billingMonth: parseInt(document.getElementById('billingMonth').value),
-                billingYear: parseInt(document.getElementById('billingYear').value),
-                billStartDate: document.getElementById('billStartDate').value,
-                billEndDate: document.getElementById('billEndDate').value,
-                totalConsumptionKwh: parseFloat(document.getElementById('totalConsumptionKwh').value),
-                baseAmount: parseFloat(document.getElementById('baseAmount').value),
-                totalSurgeCharges: parseFloat(document.getElementById('totalSurgeCharges').value),
-                totalDiscounts: parseFloat(document.getElementById('totalDiscounts').value),
-                netAmount: parseFloat(document.getElementById('netAmount').value),
-                taxAmount: parseFloat(document.getElementById('taxAmount').value),
-                totalAmount: parseFloat(document.getElementById('totalAmount').value),
-                billStatus: document.getElementById('billStatus').value,
-                generatedBy: document.getElementById('generatedBy').value,
-                generatedAt: new Date().toISOString()
+                billId: isEdit ? billId : null,
+                consumerId: consumerId,
+                meterId: meterId,
+                billingDate: billingDate,
+                totalConsumptionKwh: totalConsumptionKwh,
+                totalAmount: totalAmount,
+                billStatus: billStatus
             };
 
             const endpoint = isEdit ? `${BILL_API_URL}/Update` : `${BILL_API_URL}/Create`;
@@ -623,46 +457,48 @@
                 return;
             }
 
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const billingDate = new Date(bill.billingDate).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
 
-            document.getElementById('viewBillId').textContent = bill.billId;
-            document.getElementById('viewMeterId').innerHTML = `<span class="badge bg-info">${bill.meterId}</span>`;
-            document.getElementById('viewConsumerId').innerHTML = `<span class="badge bg-secondary">${bill.consumerId}</span>`;
-            document.getElementById('viewBillingPeriod').textContent = `${monthNames[bill.billingMonth - 1]} ${bill.billingYear}`;
-            document.getElementById('viewBillDuration').textContent = `${bill.billStartDate} to ${bill.billEndDate}`;
-
-            let statusBadge = '';
+            let statusBadge;
             switch(bill.billStatus) {
                 case 'Paid':
-                    statusBadge = '<span class="badge bg-success">Paid</span>';
-                    break;
-                case 'Unpaid':
-                    statusBadge = '<span class="badge bg-danger">Unpaid</span>';
-                    break;
-                case 'Pending':
-                    statusBadge = '<span class="badge bg-warning">Pending</span>';
+                    statusBadge = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> PAID</span>';
                     break;
                 case 'Overdue':
-                    statusBadge = '<span class="badge bg-dark">Overdue</span>';
+                    statusBadge = '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> OVERDUE</span>';
+                    break;
+                case 'Cancelled':
+                    statusBadge = '<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> CANCELLED</span>';
                     break;
                 default:
-                    statusBadge = `<span class="badge bg-secondary">${bill.billStatus}</span>`;
+                    statusBadge = '<span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> PENDING</span>';
             }
+
+            document.getElementById('viewBillId').textContent = bill.billId;
+            document.getElementById('viewConsumerName').textContent = bill.consumerName;
+            document.getElementById('viewmeterId').textContent = bill.meterId;
+            document.getElementById('viewBillingDate').textContent = billingDate;
             document.getElementById('viewStatus').innerHTML = statusBadge;
-
-            document.getElementById('viewConsumption').innerHTML = `<strong>${bill.totalConsumptionKwh.toFixed(2)} kWh</strong>`;
-            document.getElementById('viewGeneratedAt').textContent = new Date(bill.generatedAt).toLocaleString();
-            document.getElementById('viewGeneratedBy').textContent = bill.generatedBy;
-            document.getElementById('viewPaidDate').textContent = bill.paidDate ? new Date(bill.paidDate).toLocaleString() : 'Not paid yet';
-
-            document.getElementById('viewBaseAmount').textContent = `₹${bill.baseAmount.toFixed(2)}`;
-            document.getElementById('viewSurgeCharges').textContent = `+ ₹${bill.totalSurgeCharges.toFixed(2)}`;
-            document.getElementById('viewDiscounts').textContent = `- ₹${bill.totalDiscounts.toFixed(2)}`;
-            document.getElementById('viewNetAmount').innerHTML = `<strong>₹${bill.netAmount.toFixed(2)}</strong>`;
-            document.getElementById('viewTaxAmount').textContent = `+ ₹${bill.taxAmount.toFixed(2)}`;
-            document.getElementById('viewTotalAmount').textContent = `₹${bill.totalAmount.toFixed(2)}`;
+            document.getElementById('viewTotalConsumption').textContent = bill.totalConsumptionKwh.toFixed(2);
+            document.getElementById('viewTotalAmount').textContent = '₹ ' + bill.totalAmount.toFixed(2);
 
             viewBillModal.show();
+        }
+
+        function calculateAmount() {
+            // Optional: You can add logic here to calculate amount based on consumption
+            // For example, if you have a rate per kWh
+            const consumption = parseFloat(document.getElementById('totalConsumptionKwh').value) || 0;
+            const defaultRate = 7.5; // Default rate per kWh in rupees
+
+            if (consumption > 0 && !document.getElementById('totalAmount').value) {
+                const calculatedAmount = consumption * defaultRate;
+                document.getElementById('totalAmount').value = calculatedAmount.toFixed(2);
+            }
         }
 
         function showLoading(show) {
