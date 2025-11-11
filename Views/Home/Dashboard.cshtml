@@ -4,95 +4,133 @@
 }
 
 <div class="container-fluid">
+    <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="display-5 mb-3">Dashboard</h1>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5 fw-bold text-dark mb-1">Dashboard</h1>
+                    <p class="text-muted">Welcome to your energy management dashboard</p>
+                </div>
+                <div class="text-end">
+                    <div class="text-muted small" id="currentDateTime"></div>
+                    <button class="btn btn-sm btn-outline-secondary mt-1" onclick="refreshDashboard()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="loadingIndicator" class="text-center my-4">
-        <div class="spinner-border text-success" role="status">
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center my-5 py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2">Loading dashboard statistics...</p>
+        <p class="mt-3 text-muted">Loading dashboard statistics...</p>
     </div>
 
-    <div id="statisticsCards" class="row g-4" style="display: none;">
-        <div class="col-md-3">
+    <!-- Statistics Cards -->
+    <div id="statisticsCards" class="row g-4 mb-4" style="display: none;">
+        <!-- Primary Stats -->
+        <div class="col-xl-3 col-md-6">
             <a href="@Url.Action("Meter", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-success border-4 card-clickable">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">Total Meters</h6>
-                                <h2 class="card-title mb-0 text-dark" id="totalMeters">0</h2>
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL METERS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalMeters">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 75%"></div>
+                                </div>
                             </div>
-                            <div class="text-success">
-                                <i class="bi bi-lightning-charge fs-1"></i>
+                            <div class="stat-icon text-success bg-success bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-lightning-charge fs-3"></i>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
+                        <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-arrow-right-circle me-1"></i> View all meters
+                            </small>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
+
+        <div class="col-xl-3 col-md-6">
             <a href="@Url.Action("User", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-success border-4 card-clickable">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">Active Users</h6>
-                                <h2 class="card-title mb-0 text-dark" id="activeUsers">0</h2>
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">ACTIVE USERS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="activeUsers">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 65%"></div>
+                                </div>
                             </div>
-                            <div class="text-success">
-                                <i class="bi bi-people fs-1"></i>
+                            <div class="stat-icon text-success bg-success bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-people fs-3"></i>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
+                        <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-arrow-right-circle me-1"></i> View all users
+                            </small>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
+
+        <div class="col-xl-3 col-md-6">
             <a href="@Url.Action("Tariff", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-info border-4 card-clickable">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">Tariff Plans</h6>
-                                <h2 class="card-title mb-0 text-dark" id="totalTariffs">0</h2>
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TARIFF PLANS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalTariffs">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 45%"></div>
+                                </div>
                             </div>
-                            <div class="text-info">
-                                <i class="bi bi-receipt fs-1"></i>
+                            <div class="stat-icon text-info bg-info bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-receipt fs-3"></i>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
+                        <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-arrow-right-circle me-1"></i> View all tariffs
+                            </small>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
+
+        <div class="col-xl-3 col-md-6">
             <a href="@Url.Action("Consumer", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-danger border-4 card-clickable">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">Total Consumers</h6>
-                                <h2 class="card-title mb-0 text-dark" id="totalConsumers">0</h2>
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL CONSUMERS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalConsumers">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 85%"></div>
+                                </div>
                             </div>
-                            <div class="text-danger">
-                                <i class="bi bi-person-badge fs-1"></i>
+                            <div class="stat-icon text-danger bg-danger bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-person-badge fs-3"></i>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
+                        <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-arrow-right-circle me-1"></i> View all consumers
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -100,127 +138,183 @@
         </div>
     </div>
 
-    <div id="additionalStats" class="row g-4 mt-2" style="display: none;">
-        <div class="col-md-3">
+    <!-- Secondary Stats -->
+    <div id="additionalStats" class="row g-4 mb-4" style="display: none;">
+        <div class="col-xl-3 col-md-6">
             <a href="@Url.Action("Consumer", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-success border-4 card-clickable">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">Active Consumers</h6>
-                                <h2 class="card-title mb-0 text-dark" id="activeConsumers">0</h2>
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">ACTIVE CONSUMERS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="activeConsumers">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 70%"></div>
+                                </div>
                             </div>
-                            <div class="text-success">
-                                <i class="bi bi-person-check fs-1"></i>
+                            <div class="stat-icon text-success bg-success bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-person-check fs-3"></i>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
+                        <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-arrow-right-circle me-1"></i> View all consumers
+                            </small>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
+
+        <div class="col-xl-3 col-md-6">
             <a href="@Url.Action("Manufacturer", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-secondary border-4 card-clickable">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">Manufacturers</h6>
-                                <h2 class="card-title mb-0 text-dark" id="totalManufacturers">0</h2>
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">MANUFACTURERS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalManufacturers">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-secondary" role="progressbar" style="width: 35%"></div>
+                                </div>
                             </div>
-                            <div class="text-secondary">
-                                <i class="bi bi-building fs-1"></i>
+                            <div class="stat-icon text-secondary bg-secondary bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-building fs-3"></i>
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <small class="text-muted">Click to view all <i class="bi bi-arrow-right"></i></small>
+                        <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-arrow-right-circle me-1"></i> View all manufacturers
+                            </small>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3">
-            <a href="@Url.Action("Dtr", "Home")" class="text-decoration-none">
-                <div class="card shadow-sm border-start border-success border-4 card-clickable">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="card-subtitle mb-2 text-muted">DTRs</h6>
-                                <h2 class="card-title mb-0 text-dark" id="totalDtrs">0</h2>
+
+        <div class="col-xl-3 col-md-6">
+            @* <a href="@Url.Action("Dtr", "Home")" class="text-decoration-none"> *@
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="me-3">
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">DTRS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalDtrs">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 60%"></div>
+                                </div>
                             </div>
-                            <div class="text-success">
-                                <i class="bi bi-router fs-1"></i>
+                            <div class="stat-icon text-success bg-success bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-router fs-3"></i>
                             </div>
                         </div>
-                        
+                        @* <div class="mt-3 pt-2 border-top">
+                            <small class="text-muted d-flex align-items-center">
+                                <i class="bi bi-arrow-right-circle me-1"></i> View all DTRs
+                            </small>
+                        </div> *@
                     </div>
                 </div>
-            </a>
+            @* </a> *@
+        </div>
+
+        <!-- Summary Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-gradient-primary text-white">
+                <div class="card-body p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="card-subtitle mb-2 opacity-75 small fw-semibold">SYSTEM SUMMARY</h6>
+                        <p class="mb-3">Your energy management system at a glance</p>
+                    </div>
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span>Active Components</span>
+                            <span id="activeComponents">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span>Total Entities</span>
+                            <span id="totalEntities">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between small">
+                            <span>Last Updated</span>
+                            <span id="lastUpdated">Just now</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Recent Activity -->
     <div id="recentActivity" class="row mt-4" style="display: none;">
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Consumers</h5>
-                    <span class="badge bg-light text-success">Latest 5</span>
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-success"></i>Recent Consumers</h5>
+                        <span class="badge bg-success bg-opacity-10 text-success">Latest 5</span>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body pt-2 px-4">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-borderless table-hover mb-0">
                             <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Created</th>
+                                <tr class="border-bottom">
+                                    <th class="text-muted small fw-semibold">Name</th>
+                                    <th class="text-muted small fw-semibold">Email</th>
+                                    <th class="text-muted small fw-semibold text-end">Created</th>
                                 </tr>
                             </thead>
                             <tbody id="recentConsumersTable">
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted">Loading...</td>
+                                    <td colspan="3" class="text-center text-muted py-4">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-light text-center">
-                    <a href="@Url.Action("Consumer", "Home")" class="btn btn-sm btn-outline-success">
-                        <i class="bi bi-arrow-right-circle me-1"></i> See More Consumers
-                    </a>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-4 px-4">
+                    <div class="text-center">
+                        <a href="@Url.Action("Consumer", "Home")" class="btn btn-sm btn-outline-success d-inline-flex align-items-center">
+                            <i class="bi bi-arrow-right-circle me-1"></i> See More Consumers
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>Recent Users</h5>
-                    <span class="badge bg-light text-success">Latest 5</span>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0 pt-4 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-person-plus me-2 text-success"></i>Recent Users</h5>
+                        <span class="badge bg-success bg-opacity-10 text-success">Latest 5</span>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body pt-2 px-4">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-borderless table-hover mb-0">
                             <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
+                                <tr class="border-bottom">
+                                    <th class="text-muted small fw-semibold">Username</th>
+                                    <th class="text-muted small fw-semibold">Email</th>
+                                    <th class="text-muted small fw-semibold text-end">Role</th>
                                 </tr>
                             </thead>
                             <tbody id="recentUsersTable">
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted">Loading...</td>
+                                    <td colspan="3" class="text-center text-muted py-4">Loading...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-light text-center">
-                    <a href="@Url.Action("User", "Home")" class="btn btn-sm btn-outline-success">
-                        <i class="bi bi-arrow-right-circle me-1"></i> See More Users
-                    </a>
+                <div class="card-footer bg-transparent border-0 pt-0 pb-4 px-4">
+                    <div class="text-center">
+                        <a href="@Url.Action("User", "Home")" class="btn btn-sm btn-outline-success d-inline-flex align-items-center">
+                            <i class="bi bi-arrow-right-circle me-1"></i> See More Users
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -233,12 +327,40 @@
         const DASHBOARD_API_URL = `${API_BASE_URL}/api/Dashboard`;
 
         document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 60000); // Update time every minute
             fetchDashboardData();
         });
 
+        function updateDateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        function refreshDashboard() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('statisticsCards').style.display = 'none';
+            document.getElementById('additionalStats').style.display = 'none';
+            document.getElementById('recentActivity').style.display = 'none';
+
+            setTimeout(() => {
+                fetchDashboardData();
+            }, 500);
+        }
+
         async function fetchDashboardData() {
-            await fetchStatistics();
-            await fetchRecentActivity();
+            await Promise.all([
+                fetchStatistics(),
+                fetchRecentActivity()
+            ]);
         }
 
         async function fetchStatistics() {
@@ -251,6 +373,7 @@
 
                 const data = await response.json();
 
+                // Animate values
                 animateValue('totalMeters', 0, data.totalMeters, 1000);
                 animateValue('activeUsers', 0, data.activeUsers, 1000);
                 animateValue('totalTariffs', 0, data.totalTariffs, 1000);
@@ -259,6 +382,16 @@
                 animateValue('totalManufacturers', 0, data.totalManufacturers, 1000);
                 animateValue('totalDtrs', 0, data.totalDtrs, 1000);
 
+                // Calculate summary values
+                const activeComponents = data.activeUsers + data.activeConsumers;
+                const totalEntities = data.totalMeters + data.totalConsumers + data.totalTariffs + data.totalManufacturers + data.totalDtrs;
+
+                animateValue('activeComponents', 0, activeComponents, 1000);
+                animateValue('totalEntities', 0, totalEntities, 1000);
+
+                document.getElementById('lastUpdated').textContent = 'Just now';
+
+                // Show content
                 document.getElementById('loadingIndicator').style.display = 'none';
                 document.getElementById('statisticsCards').style.display = 'flex';
                 document.getElementById('additionalStats').style.display = 'flex';
@@ -266,7 +399,7 @@
             } catch (error) {
                 console.error('Error fetching statistics:', error);
                 document.getElementById('loadingIndicator').innerHTML =
-                    '<div class="alert alert-danger">Failed to load dashboard statistics</div>';
+                    '<div class="alert alert-danger d-inline-block">Failed to load dashboard statistics. <button class="btn btn-sm btn-outline-danger ms-2" onclick="fetchDashboardData()">Retry</button></div>';
             }
         }
 
@@ -284,26 +417,44 @@
                 if (data.recentConsumers && data.recentConsumers.length > 0) {
                     consumersTable.innerHTML = data.recentConsumers.map(consumer => `
                         <tr>
-                            <td><strong>${consumer.name}</strong></td>
-                            <td>${consumer.email}</td>
-                            <td><small class="text-muted">${new Date(consumer.createdAt).toLocaleDateString()}</small></td>
+                            <td class="py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-3">
+                                        <i class="bi bi-person text-muted"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">${consumer.name}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3">${consumer.email}</td>
+                            <td class="py-3 text-end"><small class="text-muted">${formatDate(consumer.createdAt)}</small></td>
                         </tr>
                     `).join('');
                 } else {
-                    consumersTable.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No recent consumers</td></tr>';
+                    consumersTable.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">No recent consumers</td></tr>';
                 }
 
                 const usersTable = document.getElementById('recentUsersTable');
                 if (data.recentUsers && data.recentUsers.length > 0) {
                     usersTable.innerHTML = data.recentUsers.map(user => `
                         <tr>
-                            <td><strong>${user.username}</strong></td>
-                            <td>${user.email}</td>
-                            <td><span class="badge bg-success">${user.roleName}</span></td>
+                            <td class="py-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-3">
+                                        <i class="bi bi-person-circle text-muted"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">${user.username}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3">${user.email}</td>
+                            <td class="py-3 text-end"><span class="badge bg-success bg-opacity-10 text-success">${user.roleName}</span></td>
                         </tr>
                     `).join('');
                 } else {
-                    usersTable.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No recent users</td></tr>';
+                    usersTable.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">No recent users</td></tr>';
                 }
 
                 document.getElementById('recentActivity').style.display = 'flex';
@@ -329,39 +480,73 @@
             }, 16);
         }
 
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // Auto-refresh every 5 minutes
         setInterval(fetchDashboardData, 300000);
     </script>
 }
 
 <style>
-    .card-clickable {
+    :root {
+        --primary-color: #198754;
+        --primary-light: rgba(25, 135, 84, 0.1);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-card {
         transition: all 0.3s ease;
-        cursor: pointer;
+        border-radius: 12px;
+        overflow: hidden;
     }
 
-        .card-clickable:hover {
+        .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            box-shadow: var(--card-hover-shadow) !important;
         }
 
-    .card {
-        transition: transform 0.2s;
+    .stat-icon {
+        transition: all 0.3s ease;
     }
 
-        .card:hover {
-            transform: translateY(-2px);
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1);
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    }
+
+    .avatar-sm {
+        width: 36px;
+        height: 36px;
+    }
+
+    .table-borderless tbody tr {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+        .table-borderless tbody tr:hover {
+            background-color: rgba(25, 135, 84, 0.05);
         }
 
-    a.text-decoration-none:hover .card-clickable {
-        border-color: var(--bs-success) !important;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: rgba(0, 123, 255, 0.05);
-    }
-
-    .card-footer .btn:hover {
-        transform: translateX(5px);
+    .btn-outline-success:hover {
+        transform: translateX(3px);
         transition: transform 0.2s ease;
     }
+
+    .progress {
+        border-radius: 2px;
+    }
+
+    .card-header h5 {
+        font-size: 1.1rem;
+    }
+
+    
 </style>

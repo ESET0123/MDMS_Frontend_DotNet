@@ -1,4 +1,4 @@
-﻿@{
+﻿@* @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Organization Unit Hierarchy";
 }
@@ -548,4 +548,867 @@
             if (!response.ok) throw new Error('Failed to create DTR');
         }
     </script>
+} *@
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Organization Unit Hierarchy";
 }
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-diagram-3 text-success me-2"></i>Organization Unit Hierarchy
+            </h2>
+            <p class="text-muted mb-0">Manage and navigate through your organizational structure</p>
+        </div>
+        <button class="btn btn-success px-4" onclick="addOrgUnit()">
+            <i class="bi bi-plus-circle me-2"></i> Add Org Unit
+        </button>
+    </div>
+
+    <!-- Hierarchy Navigation Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-compass me-2 text-success"></i>Navigate Hierarchy
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-xl-3 col-md-6">
+                    <label for="zoneSelect" class="form-label small fw-semibold text-muted">ZONE</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-globe"></i>
+                        </span>
+                        <select class="form-select" id="zoneSelect" onchange="onZoneChange()">
+                            <option value="">-- Select Zone --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <label for="substationSelect" class="form-label small fw-semibold text-muted">SUBSTATION</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-building"></i>
+                        </span>
+                        <select class="form-select" id="substationSelect" onchange="onSubstationChange()" disabled>
+                            <option value="">-- Select Substation --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <label for="feederSelect" class="form-label small fw-semibold text-muted">FEEDER</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-lightning-charge"></i>
+                        </span>
+                        <select class="form-select" id="feederSelect" onchange="onFeederChange()" disabled>
+                            <option value="">-- Select Feeder --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <label for="dtrSelect" class="form-label small fw-semibold text-muted">DTR</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-router"></i>
+                        </span>
+                        <select class="form-select" id="dtrSelect" onchange="onDtrChange()" disabled>
+                            <option value="">-- Select DTR --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick DTR Selection Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-search me-2 text-success"></i>Quick DTR Selection
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-8">
+                    <label for="directDtrSelect" class="form-label small fw-semibold text-muted">SELECT DTR DIRECTLY</label>
+                    <select class="form-select" id="directDtrSelect" onchange="onDirectDtrChange()">
+                        <option value="">-- Select DTR from complete list --</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid">
+                        <button class="btn btn-outline-success" onclick="clearSelection()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Clear Selection
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Hierarchy Display -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-success text-white py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-diagram-3 me-2"></i>Selected Hierarchy
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <div id="hierarchyDisplay" class="text-center text-muted py-5">
+                <div class="hierarchy-placeholder">
+                    <i class="bi bi-diagram-3 display-4 text-light"></i>
+                    <h5 class="mt-3 text-muted">No Hierarchy Selected</h5>
+                    <p class="text-muted mb-0">Select organizational units above to view the complete hierarchy</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Organization Unit Modal -->
+<div class="modal fade" id="addOrgUnitModal" tabindex="-1" aria-labelledby="addOrgUnitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addOrgUnitModalLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Add Organization Unit
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Unit Type Selection -->
+                <div class="mb-4">
+                    <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                        <i class="bi bi-tag me-2"></i>Unit Type
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="orgUnitType" class="form-label fw-semibold">Unit Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="orgUnitType" onchange="onOrgUnitTypeChange()">
+                                <option value="">-- Select Organization Unit Type --</option>
+                                <option value="zone">Zone</option>
+                                <option value="substation">Substation</option>
+                                <option value="feeder">Feeder</option>
+                                <option value="dtr">DTR</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Forms -->
+                <div id="zoneForm" style="display: none;">
+                    <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                        <i class="bi bi-globe me-2"></i>Zone Details
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="zoneName" class="form-label fw-semibold">Zone Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="zoneName" placeholder="Enter zone name">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="substationForm" style="display: none;">
+                    <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                        <i class="bi bi-building me-2"></i>Substation Details
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="substationZone" class="form-label fw-semibold">Zone <span class="text-danger">*</span></label>
+                            <select class="form-select" id="substationZone">
+                                <option value="">-- Select Zone --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="substationName" class="form-label fw-semibold">Substation Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="substationName" placeholder="Enter substation name">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="feederForm" style="display: none;">
+                    <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                        <i class="bi bi-lightning-charge me-2"></i>Feeder Details
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="feederSubstation" class="form-label fw-semibold">Substation <span class="text-danger">*</span></label>
+                            <select class="form-select" id="feederSubstation">
+                                <option value="">-- Select Substation --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="feederName" class="form-label fw-semibold">Feeder Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="feederName" placeholder="Enter feeder name">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dtrForm" style="display: none;">
+                    <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                        <i class="bi bi-router me-2"></i>DTR Details
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dtrFeeder" class="form-label fw-semibold">Feeder <span class="text-danger">*</span></label>
+                            <select class="form-select" id="dtrFeeder">
+                                <option value="">-- Select Feeder --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="dtrName" class="form-label fw-semibold">DTR Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="dtrName" placeholder="Enter DTR name">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-4" onclick="saveOrgUnit()">
+                    <i class="bi bi-save me-2"></i> Save Unit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
+
+        let zones = [];
+        let substations = [];
+        let feeders = [];
+        let dtrs = [];
+        let addOrgUnitModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            addOrgUnitModal = new bootstrap.Modal(document.getElementById('addOrgUnitModal'));
+            loadAllData();
+        });
+
+        async function loadAllData() {
+            await Promise.all([
+                loadZones(),
+                loadSubstations(),
+                loadFeeders(),
+                loadDtrs()
+            ]);
+        }
+
+        async function loadZones() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Zone/AllZones`);
+                if (!response.ok) throw new Error('Failed to load zones');
+                zones = await response.json();
+                populateZoneDropdowns();
+            } catch (error) {
+                console.error('Error loading zones:', error);
+                showNotification('Error loading zones', 'danger');
+            }
+        }
+
+        async function loadSubstations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Substation/AllSubstations`);
+                if (!response.ok) throw new Error('Failed to load substations');
+                substations = await response.json();
+            } catch (error) {
+                console.error('Error loading substations:', error);
+                showNotification('Error loading substations', 'danger');
+            }
+        }
+
+        async function loadFeeders() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Feeder/AllFeeders`);
+                if (!response.ok) throw new Error('Failed to load feeders');
+                feeders = await response.json();
+            } catch (error) {
+                console.error('Error loading feeders:', error);
+                showNotification('Error loading feeders', 'danger');
+            }
+        }
+
+        async function loadDtrs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Dtr/AllDtrs`);
+                if (!response.ok) throw new Error('Failed to load DTRs');
+                dtrs = await response.json();
+                populateDirectDtrDropdown();
+            } catch (error) {
+                console.error('Error loading DTRs:', error);
+                showNotification('Error loading DTRs', 'danger');
+            }
+        }
+
+        function populateZoneDropdowns() {
+            const zoneSelect = document.getElementById('zoneSelect');
+            const substationZone = document.getElementById('substationZone');
+
+            zoneSelect.innerHTML = '<option value="">-- Select Zone --</option>';
+            substationZone.innerHTML = '<option value="">-- Select Zone --</option>';
+
+            zones.forEach(zone => {
+                zoneSelect.innerHTML += `<option value="${zone.zoneId}">${zone.zoneName}</option>`;
+                substationZone.innerHTML += `<option value="${zone.zoneId}">${zone.zoneName}</option>`;
+            });
+        }
+
+        function populateDirectDtrDropdown() {
+            const directDtrSelect = document.getElementById('directDtrSelect');
+            directDtrSelect.innerHTML = '<option value="">-- Select DTR from complete list --</option>';
+
+            dtrs.forEach(dtr => {
+                directDtrSelect.innerHTML += `<option value="${dtr.dtrid}" data-feeder="${dtr.feederId}">${dtr.dtrname} (${dtr.feederName})</option>`;
+            });
+        }
+
+        function onZoneChange() {
+            const zoneId = document.getElementById('zoneSelect').value;
+            const substationSelect = document.getElementById('substationSelect');
+            const feederSelect = document.getElementById('feederSelect');
+            const dtrSelect = document.getElementById('dtrSelect');
+
+            substationSelect.innerHTML = '<option value="">-- Select Substation --</option>';
+            feederSelect.innerHTML = '<option value="">-- Select Feeder --</option>';
+            dtrSelect.innerHTML = '<option value="">-- Select DTR --</option>';
+            feederSelect.disabled = true;
+            dtrSelect.disabled = true;
+
+            if (zoneId) {
+                const zoneSubstations = substations.filter(s => s.zoneId == zoneId);
+                zoneSubstations.forEach(sub => {
+                    substationSelect.innerHTML += `<option value="${sub.substationId}">${sub.substationName}</option>`;
+                });
+                substationSelect.disabled = false;
+                updateHierarchyDisplay();
+            } else {
+                substationSelect.disabled = true;
+                updateHierarchyDisplay();
+            }
+        }
+
+        function onSubstationChange() {
+            const substationId = document.getElementById('substationSelect').value;
+            const feederSelect = document.getElementById('feederSelect');
+            const dtrSelect = document.getElementById('dtrSelect');
+
+            feederSelect.innerHTML = '<option value="">-- Select Feeder --</option>';
+            dtrSelect.innerHTML = '<option value="">-- Select DTR --</option>';
+            dtrSelect.disabled = true;
+
+            if (substationId) {
+                const substationFeeders = feeders.filter(f => f.substationId == substationId);
+                substationFeeders.forEach(feeder => {
+                    feederSelect.innerHTML += `<option value="${feeder.feederId}">${feeder.feederName}</option>`;
+                });
+                feederSelect.disabled = false;
+                updateHierarchyDisplay();
+            } else {
+                feederSelect.disabled = true;
+                updateHierarchyDisplay();
+            }
+        }
+
+        function onFeederChange() {
+            const feederId = document.getElementById('feederSelect').value;
+            const dtrSelect = document.getElementById('dtrSelect');
+
+            dtrSelect.innerHTML = '<option value="">-- Select DTR --</option>';
+
+            if (feederId) {
+                const feederDtrs = dtrs.filter(d => d.feederId == feederId);
+                feederDtrs.forEach(dtr => {
+                    dtrSelect.innerHTML += `<option value="${dtr.dtrid}">${dtr.dtrname}</option>`;
+                });
+                dtrSelect.disabled = false;
+                updateHierarchyDisplay();
+            } else {
+                dtrSelect.disabled = true;
+                updateHierarchyDisplay();
+            }
+        }
+
+        function onDtrChange() {
+            updateHierarchyDisplay();
+        }
+
+        function onDirectDtrChange() {
+            const directDtrSelect = document.getElementById('directDtrSelect');
+            const dtrId = directDtrSelect.value;
+
+            if (dtrId) {
+                const selectedDtr = dtrs.find(d => d.dtrid == dtrId);
+                if (selectedDtr) {
+                    const feeder = feeders.find(f => f.feederId == selectedDtr.feederId);
+                    if (feeder) {
+                        const substation = substations.find(s => s.substationId == feeder.substationId);
+                        if (substation) {
+                            const zone = zones.find(z => z.zoneId == substation.zoneId);
+
+                            document.getElementById('zoneSelect').value = zone.zoneId;
+                            onZoneChange();
+
+                            setTimeout(() => {
+                                document.getElementById('substationSelect').value = substation.substationId;
+                                onSubstationChange();
+
+                                setTimeout(() => {
+                                    document.getElementById('feederSelect').value = feeder.feederId;
+                                    onFeederChange();
+
+                                    setTimeout(() => {
+                                        document.getElementById('dtrSelect').value = selectedDtr.dtrid;
+                                        updateHierarchyDisplay();
+                                    }, 50);
+                                }, 50);
+                            }, 50);
+                        }
+                    }
+                }
+            }
+        }
+
+        function updateHierarchyDisplay() {
+            const zoneId = document.getElementById('zoneSelect').value;
+            const substationId = document.getElementById('substationSelect').value;
+            const feederId = document.getElementById('feederSelect').value;
+            const dtrId = document.getElementById('dtrSelect').value;
+
+            const display = document.getElementById('hierarchyDisplay');
+
+            if (!zoneId && !substationId && !feederId && !dtrId) {
+                display.innerHTML = `
+                    <div class="hierarchy-placeholder">
+                        <i class="bi bi-diagram-3 display-4 text-light"></i>
+                        <h5 class="mt-3 text-muted">No Hierarchy Selected</h5>
+                        <p class="text-muted mb-0">Select organizational units above to view the complete hierarchy</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let hierarchyHtml = '<div class="hierarchy-visualization">';
+
+            if (zoneId) {
+                const zone = zones.find(z => z.zoneId == zoneId);
+                hierarchyHtml += `
+                    <div class="hierarchy-level zone-level">
+                        <div class="hierarchy-node">
+                            <div class="node-icon bg-success">
+                                <i class="bi bi-globe"></i>
+                            </div>
+                            <div class="node-content">
+                                <h6 class="node-title">Zone</h6>
+                                <p class="node-value mb-0">${zone.zoneName}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (substationId) {
+                const substation = substations.find(s => s.substationId == substationId);
+                hierarchyHtml += `
+                    <div class="hierarchy-level substation-level">
+                        <div class="hierarchy-connector"></div>
+                        <div class="hierarchy-node">
+                            <div class="node-icon bg-info">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="node-content">
+                                <h6 class="node-title">Substation</h6>
+                                <p class="node-value mb-0">${substation.substationName}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (feederId) {
+                const feeder = feeders.find(f => f.feederId == feederId);
+                hierarchyHtml += `
+                    <div class="hierarchy-level feeder-level">
+                        <div class="hierarchy-connector"></div>
+                        <div class="hierarchy-node">
+                            <div class="node-icon bg-success">
+                                <i class="bi bi-lightning-charge"></i>
+                            </div>
+                            <div class="node-content">
+                                <h6 class="node-title">Feeder</h6>
+                                <p class="node-value mb-0">${feeder.feederName}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (dtrId) {
+                const dtr = dtrs.find(d => d.dtrid == dtrId);
+                hierarchyHtml += `
+                    <div class="hierarchy-level dtr-level">
+                        <div class="hierarchy-connector"></div>
+                        <div class="hierarchy-node">
+                            <div class="node-icon bg-warning">
+                                <i class="bi bi-router"></i>
+                            </div>
+                            <div class="node-content">
+                                <h6 class="node-title">DTR</h6>
+                                <p class="node-value mb-0">${dtr.dtrname}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            hierarchyHtml += '</div>';
+            display.innerHTML = hierarchyHtml;
+        }
+
+        function clearSelection() {
+            document.getElementById('zoneSelect').value = '';
+            document.getElementById('substationSelect').value = '';
+            document.getElementById('feederSelect').value = '';
+            document.getElementById('dtrSelect').value = '';
+            document.getElementById('directDtrSelect').value = '';
+
+            document.getElementById('substationSelect').disabled = true;
+            document.getElementById('feederSelect').disabled = true;
+            document.getElementById('dtrSelect').disabled = true;
+
+            updateHierarchyDisplay();
+        }
+
+        function addOrgUnit() {
+            document.getElementById('orgUnitType').value = '';
+            hideAllForms();
+            addOrgUnitModal.show();
+        }
+
+        function onOrgUnitTypeChange() {
+            const unitType = document.getElementById('orgUnitType').value;
+            hideAllForms();
+
+            if (unitType === 'zone') {
+                document.getElementById('zoneForm').style.display = 'block';
+            } else if (unitType === 'substation') {
+                document.getElementById('substationForm').style.display = 'block';
+                populateSubstationFormDropdowns();
+            } else if (unitType === 'feeder') {
+                document.getElementById('feederForm').style.display = 'block';
+                populateFeederFormDropdowns();
+            } else if (unitType === 'dtr') {
+                document.getElementById('dtrForm').style.display = 'block';
+                populateDtrFormDropdowns();
+            }
+        }
+
+        function hideAllForms() {
+            document.getElementById('zoneForm').style.display = 'none';
+            document.getElementById('substationForm').style.display = 'none';
+            document.getElementById('feederForm').style.display = 'none';
+            document.getElementById('dtrForm').style.display = 'none';
+        }
+
+        function populateSubstationFormDropdowns() {
+            const substationZone = document.getElementById('substationZone');
+            substationZone.innerHTML = '<option value="">-- Select Zone --</option>';
+            zones.forEach(zone => {
+                substationZone.innerHTML += `<option value="${zone.zoneId}">${zone.zoneName}</option>`;
+            });
+        }
+
+        function populateFeederFormDropdowns() {
+            const feederSubstation = document.getElementById('feederSubstation');
+            feederSubstation.innerHTML = '<option value="">-- Select Substation --</option>';
+            substations.forEach(sub => {
+                feederSubstation.innerHTML += `<option value="${sub.substationId}">${sub.substationName} (${sub.zoneName})</option>`;
+            });
+        }
+
+        function populateDtrFormDropdowns() {
+            const dtrFeeder = document.getElementById('dtrFeeder');
+            dtrFeeder.innerHTML = '<option value="">-- Select Feeder --</option>';
+            feeders.forEach(feeder => {
+                dtrFeeder.innerHTML += `<option value="${feeder.feederId}">${feeder.feederName} (${feeder.substationName})</option>`;
+            });
+        }
+
+        async function saveOrgUnit() {
+            const unitType = document.getElementById('orgUnitType').value;
+
+            if (!unitType) {
+                showNotification('Please select a unit type', 'warning');
+                return;
+            }
+
+            try {
+                if (unitType === 'zone') {
+                    await saveZone();
+                } else if (unitType === 'substation') {
+                    await saveSubstation();
+                } else if (unitType === 'feeder') {
+                    await saveFeeder();
+                } else if (unitType === 'dtr') {
+                    await saveDtr();
+                }
+
+                addOrgUnitModal.hide();
+                await loadAllData();
+                showNotification('Organization unit saved successfully!', 'success');
+            } catch (error) {
+                showNotification('Error saving: ' + error.message, 'danger');
+            }
+        }
+
+        async function saveZone() {
+            const zoneName = document.getElementById('zoneName').value;
+            if (!zoneName) throw new Error('Zone name is required');
+
+            const response = await fetch(`${API_BASE_URL}/api/Zone/Create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ zoneName })
+            });
+
+            if (!response.ok) throw new Error('Failed to create zone');
+        }
+
+        async function saveSubstation() {
+            const substationName = document.getElementById('substationName').value;
+            const zoneId = document.getElementById('substationZone').value;
+
+            if (!substationName || !zoneId) throw new Error('All fields are required');
+
+            const response = await fetch(`${API_BASE_URL}/api/Substation/Create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ substationName, zoneId: parseInt(zoneId) })
+            });
+
+            if (!response.ok) throw new Error('Failed to create substation');
+        }
+
+        async function saveFeeder() {
+            const feederName = document.getElementById('feederName').value;
+            const substationId = document.getElementById('feederSubstation').value;
+
+            if (!feederName || !substationId) throw new Error('All fields are required');
+
+            const response = await fetch(`${API_BASE_URL}/api/Feeder/Create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ feederName, substationId: parseInt(substationId) })
+            });
+
+            if (!response.ok) throw new Error('Failed to create feeder');
+        }
+
+        async function saveDtr() {
+            const dtrname = document.getElementById('dtrName').value;
+            const feederId = document.getElementById('dtrFeeder').value;
+
+            if (!dtrname || !feederId) throw new Error('All fields are required');
+
+            const response = await fetch(`${API_BASE_URL}/api/Dtr/Create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dtrname, feederId: parseInt(feederId) })
+            });
+
+            if (!response.ok) throw new Error('Failed to create DTR');
+        }
+
+        function showNotification(message, type) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            container.appendChild(toast);
+
+            document.body.appendChild(container);
+
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+
+            toast.addEventListener('hidden.bs.toast', () => {
+                container.remove();
+            });
+        }
+    </script>
+}
+
+<style>
+    :root {
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .input-group-text {
+        border-radius: 8px 0 0 8px;
+        border: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-select, .form-control {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+
+    /* Hierarchy Visualization Styles */
+    .hierarchy-visualization {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .hierarchy-level {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .hierarchy-connector {
+        position: absolute;
+        left: 2rem;
+        top: -1.5rem;
+        width: 2px;
+        height: 1.5rem;
+        background: linear-gradient(to bottom, #198754, #6c757d);
+        z-index: 1;
+    }
+
+    .hierarchy-node {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+    }
+
+        .hierarchy-node:hover {
+            transform: translateX(5px);
+            box-shadow: var(--card-hover-shadow);
+        }
+
+    .node-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+
+    .node-content {
+        flex: 1;
+    }
+
+    .node-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .node-value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #212529;
+    }
+
+    /* Level-specific styling */
+    .zone-level .hierarchy-node {
+        border-left: 4px solid #198754;
+    }
+
+    .substation-level .hierarchy-node {
+        border-left: 4px solid #0dcaf0;
+    }
+
+    .feeder-level .hierarchy-node {
+        border-left: 4px solid #198754;
+    }
+
+    .dtr-level .hierarchy-node {
+        border-left: 4px solid #ffc107;
+    }
+
+    /* Placeholder styling */
+    .hierarchy-placeholder {
+        opacity: 0.7;
+    }
+
+        .hierarchy-placeholder .bi {
+            opacity: 0.3;
+        }
+
+    /* Button hover effects */
+    .btn {
+        transition: all 0.2s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    /* Modal enhancements */
+    .modal-header {
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-footer {
+        border-radius: 0 0 12px 12px;
+    }
+
+
+
+    /* Toast notifications */
+    .toast-container {
+        z-index: 9999;
+    }
+
+    .toast {
+        border-radius: 8px;
+    }
+</style>

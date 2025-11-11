@@ -4,151 +4,313 @@
 }
 
 <div class="container-fluid">
+    <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-clock-history"></i> Time-of-Day (TOD) Rules</h2>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#todRuleModal" onclick="prepareAddRule()">
-            <i class="bi bi-plus-circle"></i> Add TOD Rule
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-clock-history text-success me-2"></i>Time-of-Day (TOD) Rules
+            </h2>
+            <p class="text-muted mb-0">Manage time-based electricity pricing rules and surge charges</p>
+        </div>
+        <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#todRuleModal" onclick="prepareAddRule()">
+            <i class="bi bi-plus-circle me-2"></i> Add TOD Rule
         </button>
     </div>
 
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL RULES</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="totalRules">0</h2>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-clock-history fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">ACTIVE RULES</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="activeRules">0</h2>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">PEAK HOUR RULES</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="peakRules">0</h2>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">DISCOUNT RULES</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="discountRules">0</h2>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-percent fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Filter Section -->
-    <div class="card shadow-sm mb-4">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-funnel me-2 text-success"></i>Filter Rules
+            </h6>
+        </div>
         <div class="card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label for="tariffFilter" class="form-label">Filter by Tariff</label>
+            <div class="row g-4 align-items-end">
+                <div class="col-xl-4 col-md-6">
+                    <label for="tariffFilter" class="form-label small fw-semibold text-muted">FILTER BY TARIFF</label>
                     <select class="form-select" id="tariffFilter">
                         <option value="all">All Tariffs</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <label for="statusFilter" class="form-label">Filter by Status</label>
+                <div class="col-xl-4 col-md-6">
+                    <label for="statusFilter" class="form-label small fw-semibold text-muted">FILTER BY STATUS</label>
                     <select class="form-select" id="statusFilter">
                         <option value="all">All Status</option>
                         <option value="active">Active Only</option>
                         <option value="inactive">Inactive Only</option>
                     </select>
                 </div>
-                <div class="col-md-4">
-                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
-                        <i class="bi bi-arrow-clockwise"></i> Clear Filters
-                    </button>
+                <div class="col-xl-4 col-md-12">
+                    <div class="d-grid">
+                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="bi bi-arrow-clockwise me-2"></i> Reset Filters
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
-        <div class="spinner-border text-success" role="status">
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center my-5 py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2">Loading TOD rules...</p>
-    </div>
-    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showError('')"></button>
-        <span id="errorText"></span>
-    </div>
-    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
-        <span id="successText"></span>
+        <p class="mt-3 text-muted">Loading TOD rules...</p>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+    <!-- Messages -->
+    <div id="errorMessage" class="alert alert-danger border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Operation Failed</h6>
+                <span id="errorText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="successMessage" class="alert alert-success border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Success</h6>
+                <span id="successText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOD Rules Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-table me-2 text-success"></i>Time-of-Day Rules
+            </h6>
+            <span class="badge bg-success bg-opacity-10 text-success" id="rulesCount">0 rules</span>
+        </div>
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                    <thead class="table-dark">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th>Rule ID</th>
+                            <th class="ps-4">Rule ID</th>
                             <th>Rule Name</th>
                             <th>Time Period</th>
-                            <th>Tariff</th>
-                            <th>Surge Charge</th>
-                            <th>Discount</th>
+                            <th>Tariff Plan</th>
+                            <th>Pricing Adjustment</th>
                             <th>Status</th>
-                            <th>Actions</th>
+                            <th class="text-center pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="todRulesTableBody">
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-clock-history display-6 text-light"></i>
+                                    <p class="mt-3">No TOD rules found</p>
+                                    <button class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#todRuleModal" onclick="prepareAddRule()">
+                                        <i class="bi bi-plus-circle me-2"></i> Create First Rule
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-5" style="display: none;">
+        <div class="empty-state">
+            <i class="bi bi-clock-history display-1 text-light"></i>
+            <h4 class="mt-4 text-muted">No TOD Rules Found</h4>
+            <p class="text-muted mb-4">Get started by creating your first time-based pricing rule</p>
+            <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#todRuleModal" onclick="prepareAddRule()">
+                <i class="bi bi-plus-circle me-2"></i> Create TOD Rule
+            </button>
+        </div>
+    </div>
 </div>
 
+<!-- Add/Edit TOD Rule Modal -->
 <div class="modal fade" id="todRuleModal" tabindex="-1" aria-labelledby="todRuleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="todRuleModalLabel">Add TOD Rule</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="todRuleModalLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Add TOD Rule
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="todRuleForm">
                     <input type="hidden" id="todRuleId" value="0" />
 
+                    <!-- Basic Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-info-circle me-2"></i>Basic Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="ruleName" class="form-label fw-semibold">Rule Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ruleName" placeholder="e.g., Evening Peak Hours" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="tariffId" class="form-label fw-semibold">Tariff Plan <span class="text-danger">*</span></label>
+                                <select class="form-select" id="tariffId" required>
+                                    <option value="">-- Select Tariff Plan --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Configuration -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-clock me-2"></i>Time Configuration
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="startTime" class="form-label fw-semibold">Start Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="startTime" required>
+                                <small class="form-text text-muted">Start of the time period</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="endTime" class="form-label fw-semibold">End Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="endTime" required>
+                                <small class="form-text text-muted">End of the time period</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Adjustment -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-currency-rupee me-2"></i>Pricing Adjustment
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="surgeChargePercent" class="form-label fw-semibold">Surge Charge (%)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="surgeChargePercent" placeholder="0.00" value="0" min="0" max="200">
+                                    <span class="input-group-text bg-light">%</span>
+                                </div>
+                                <small class="form-text text-muted">Additional charge during peak hours (0-200%)</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="discountPercent" class="form-label fw-semibold">Discount (%)</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="discountPercent" placeholder="0.00" value="0" min="0" max="100">
+                                    <span class="input-group-text bg-light">%</span>
+                                </div>
+                                <small class="form-text text-muted">Discount during off-peak hours (0-100%)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status & Preview -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="ruleName" class="form-label">Rule Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="ruleName" placeholder="e.g., Peak Hours" required>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isActive" checked>
+                                <label class="form-check-label fw-semibold" for="isActive">
+                                    Active Rule
+                                </label>
+                            </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="tariffId" class="form-label">Tariff Plan <span class="text-danger">*</span></label>
-                            <select class="form-select" id="tariffId" required>
-                                <option value="">-- Select Tariff --</option>
-                            </select>
+                            <div class="text-end">
+                                <small class="text-muted">Duration: </small>
+                                <span class="fw-semibold" id="durationPreview">0 hours</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="startTime" class="form-label">Start Time <span class="text-danger">*</span></label>
-                            <input type="time" class="form-control" id="startTime" required>
-                            <small class="form-text text-muted">Start of the time period</small>
+                    <!-- Rule Preview -->
+                    <div class="alert alert-info border-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-lightbulb me-3 fs-4"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Rule Preview</h6>
+                                <p class="mb-0 small" id="rulePreview">Rule details will be displayed here</p>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="endTime" class="form-label">End Time <span class="text-danger">*</span></label>
-                            <input type="time" class="form-control" id="endTime" required>
-                            <small class="form-text text-muted">End of the time period</small>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="surgeChargePercent" class="form-label">Surge Charge (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="surgeChargePercent" placeholder="e.g., 50" value="0">
-                            <small class="form-text text-muted">Additional charge during peak hours (0-200%)</small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="discountPercent" class="form-label">Discount (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="discountPercent" placeholder="e.g., 20" value="0">
-                            <small class="form-text text-muted">Discount during off-peak hours (0-100%)</small>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="isActive" checked>
-                            <label class="form-check-label" for="isActive">
-                                Active Rule
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Note:</strong> Surge charges increase the rate, while discounts decrease it. Only one should typically be applied at a time.
                     </div>
 
                     <input type="hidden" id="createdBy" value="Admin" />
                     <input type="hidden" id="updatedBy" value="" />
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="saveTodRule()">
-                    <i class="bi bi-save"></i> Save Rule
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-4" onclick="saveTodRule()">
+                    <i class="bi bi-save me-2"></i> Save Rule
                 </button>
             </div>
         </div>
@@ -173,11 +335,71 @@
             // Add event listeners for filters
             document.getElementById('tariffFilter').addEventListener('change', applyFilters);
             document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+            // Add event listeners for rule preview
+            document.getElementById('startTime')?.addEventListener('change', updateRulePreview);
+            document.getElementById('endTime')?.addEventListener('change', updateRulePreview);
+            document.getElementById('surgeChargePercent')?.addEventListener('input', updateRulePreview);
+            document.getElementById('discountPercent')?.addEventListener('input', updateRulePreview);
         });
+
+        function updateRulePreview() {
+            const startTime = document.getElementById('startTime')?.value;
+            const endTime = document.getElementById('endTime')?.value;
+            const surgeCharge = parseFloat(document.getElementById('surgeChargePercent')?.value) || 0;
+            const discount = parseFloat(document.getElementById('discountPercent')?.value) || 0;
+
+            let duration = '0 hours';
+            if (startTime && endTime) {
+                const start = new Date(`2000-01-01T${startTime}`);
+                const end = new Date(`2000-01-01T${endTime}`);
+                const diff = (end - start) / (1000 * 60 * 60);
+                duration = `${diff.toFixed(1)} hours`;
+            }
+
+            const preview = document.getElementById('rulePreview');
+            const durationElement = document.getElementById('durationPreview');
+
+            if (durationElement) {
+                durationElement.textContent = duration;
+            }
+
+            if (preview) {
+                let adjustmentText = '';
+                if (surgeCharge > 0 && discount > 0) {
+                    adjustmentText = `<span class="text-warning">+${surgeCharge}% surge charge and -${discount}% discount</span>`;
+                } else if (surgeCharge > 0) {
+                    adjustmentText = `<span class="text-danger">+${surgeCharge}% surge charge</span>`;
+                } else if (discount > 0) {
+                    adjustmentText = `<span class="text-success">-${discount}% discount</span>`;
+                } else {
+                    adjustmentText = '<span class="text-muted">No pricing adjustment</span>';
+                }
+
+                preview.innerHTML = `
+                    Time: <strong>${startTime || '--:--'} - ${endTime || '--:--'}</strong>
+                    (${duration})<br>
+                    Adjustment: ${adjustmentText}
+                `;
+            }
+        }
 
         async function fetchAllData() {
             await fetchTariffs();
             await fetchTodRules();
+        }
+
+        function updateStats(rules) {
+            const total = rules.length;
+            const active = rules.filter(rule => rule.isActive).length;
+            const peak = rules.filter(rule => rule.surgeChargePercent > 0).length;
+            const discount = rules.filter(rule => rule.discountPercent > 0).length;
+
+            document.getElementById('totalRules').textContent = total;
+            document.getElementById('activeRules').textContent = active;
+            document.getElementById('peakRules').textContent = peak;
+            document.getElementById('discountRules').textContent = discount;
+            document.getElementById('rulesCount').textContent = `${total} rule${total !== 1 ? 's' : ''}`;
         }
 
         async function fetchTariffs() {
@@ -195,10 +417,10 @@
 
         function populateTariffDropdown() {
             const select = document.getElementById('tariffId');
-            select.innerHTML = '<option value="">-- Select Tariff --</option>';
+            select.innerHTML = '<option value="">-- Select Tariff Plan --</option>';
 
             allTariffs.forEach(tariff => {
-                select.innerHTML += `<option value="${tariff.tariffId}">${tariff.name} - $${tariff.baseRate.toFixed(4)}/kWh</option>`;
+                select.innerHTML += `<option value="${tariff.tariffId}">${tariff.name} - ₹${tariff.baseRate.toFixed(4)}/kWh</option>`;
             });
         }
 
@@ -221,6 +443,7 @@
 
                 allRules = await response.json();
                 filteredRules = [...allRules];
+                updateStats(allRules);
                 applyFilters();
                 showLoading(false);
             } catch (error) {
@@ -249,6 +472,7 @@
                 return tariffMatch && statusMatch;
             });
 
+            updateStats(filteredRules);
             renderTodRulesTable(filteredRules);
         }
 
@@ -260,55 +484,98 @@
 
         function renderTodRulesTable(rules) {
             const tbody = document.getElementById('todRulesTableBody');
-            tbody.innerHTML = '';
+            const emptyState = document.getElementById('emptyState');
 
             if (rules && rules.length > 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'none';
+
                 rules.forEach(rule => {
                     const statusBadge = rule.isActive
-                        ? '<span class="badge bg-success">Active</span>'
-                        : '<span class="badge bg-secondary">Inactive</span>';
+                        ? '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>'
+                        : '<span class="badge bg-secondary"><i class="bi bi-pause-circle me-1"></i>Inactive</span>';
 
-                    const surgeDisplay = rule.surgeChargePercent > 0
-                        ? `<span class="text-danger">+${rule.surgeChargePercent}%</span>`
-                        : '<span class="text-muted">None</span>';
-
-                    const discountDisplay = rule.discountPercent > 0
-                        ? `<span class="text-success">-${rule.discountPercent}%</span>`
-                        : '<span class="text-muted">None</span>';
+                    let adjustmentHtml = '';
+                    if (rule.surgeChargePercent > 0 && rule.discountPercent > 0) {
+                        adjustmentHtml = `
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-arrow-up me-1"></i>+${rule.surgeChargePercent}%
+                                </span>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-arrow-down me-1"></i>-${rule.discountPercent}%
+                                </span>
+                            </div>
+                        `;
+                    } else if (rule.surgeChargePercent > 0) {
+                        adjustmentHtml = `
+                            <span class="badge bg-danger">
+                                <i class="bi bi-arrow-up me-1"></i>+${rule.surgeChargePercent}% Surge
+                            </span>
+                        `;
+                    } else if (rule.discountPercent > 0) {
+                        adjustmentHtml = `
+                            <span class="badge bg-success">
+                                <i class="bi bi-arrow-down me-1"></i>-${rule.discountPercent}% Discount
+                            </span>
+                        `;
+                    } else {
+                        adjustmentHtml = '<span class="text-muted small">No adjustment</span>';
+                    }
 
                     const rowHtml = `
                         <tr>
-                            <td><strong>${rule.todRuleId}</strong></td>
-                            <td>${rule.ruleName}</td>
-                            <td><span class="badge bg-success">${rule.startTime} - ${rule.endTime}</span></td>
-                            <td>${rule.tariffName}</td>
-                            <td>${surgeDisplay}</td>
-                            <td>${discountDisplay}</td>
-                            <td>${statusBadge}</td>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">${rule.todRuleId}</div>
+                            </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="editTodRule(${rule.todRuleId})" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTodRule(${rule.todRuleId}, '${rule.ruleName}')" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="fw-semibold">${rule.ruleName}</div>
+                            </td>
+                            <td>
+                                <div class="time-period">
+                                    <span class="badge bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-clock me-1"></i>${rule.startTime} - ${rule.endTime}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">${rule.tariffName}</span>
+                            </td>
+                            <td>
+                                ${adjustmentHtml}
+                            </td>
+                            <td>
+                                ${statusBadge}
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success" onclick="editTodRule(${rule.todRuleId})" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteTodRule(${rule.todRuleId}, '${rule.ruleName}')" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
                     tbody.insertAdjacentHTML('beforeend', rowHtml);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No TOD rules found matching the current filters.</td></tr>';
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
             }
         }
 
         function prepareAddRule() {
-            document.getElementById('todRuleModalLabel').textContent = 'Add TOD Rule';
+            document.getElementById('todRuleModalLabel').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add TOD Rule';
             document.getElementById('todRuleForm').reset();
             document.getElementById('todRuleId').value = '0';
             document.getElementById('isActive').checked = true;
             document.getElementById('createdBy').value = 'Admin';
             document.getElementById('updatedBy').value = '';
+            document.getElementById('rulePreview').textContent = 'Rule details will be displayed here';
+            document.getElementById('durationPreview').textContent = '0 hours';
         }
 
         async function editTodRule(id) {
@@ -318,7 +585,7 @@
                 return;
             }
 
-            document.getElementById('todRuleModalLabel').textContent = 'Edit TOD Rule';
+            document.getElementById('todRuleModalLabel').innerHTML = '<i class="bi bi-pencil me-2"></i>Edit TOD Rule';
             document.getElementById('todRuleId').value = rule.todRuleId;
             document.getElementById('ruleName').value = rule.ruleName;
             document.getElementById('tariffId').value = rule.tariffId;
@@ -328,6 +595,7 @@
             document.getElementById('discountPercent').value = rule.discountPercent;
             document.getElementById('isActive').checked = rule.isActive;
             document.getElementById('updatedBy').value = 'Admin';
+            updateRulePreview();
 
             todRuleModal.show();
         }
@@ -397,7 +665,7 @@
         }
 
         async function deleteTodRule(id, name) {
-            if (!confirm(`Are you sure you want to delete TOD rule "${name}"?`)) {
+            if (!confirm(`Are you sure you want to delete TOD rule "${name}"?\n\nThis action cannot be undone.`)) {
                 return;
             }
 
@@ -448,3 +716,123 @@
         }
     </script>
 }
+
+<style>
+    :root {
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .table th {
+        font-weight: 600;
+        white-space: nowrap;
+        border-bottom: 2px solid #e9ecef;
+        padding: 1rem;
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .input-group-text {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+
+    /* Stats cards */
+    .bg-opacity-10 {
+        background-opacity: 0.1 !important;
+    }
+
+    /* Button hover effects */
+    .btn {
+        transition: all 0.2s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    /* Table row hover effects */
+    .table-hover tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(25, 135, 84, 0.08) !important;
+            transform: translateX(2px);
+        }
+
+    /* Modal enhancements */
+    .modal-header {
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-footer {
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 8px;
+    }
+
+    /* Empty state styling */
+    .empty-state .bi {
+        opacity: 0.3;
+    }
+
+    /* Time period styling */
+    .time-period {
+        line-height: 1.4;
+    }
+
+    /* Form switch styling */
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+
+    /* Loading animation */
+    .spinner-border {
+        animation-duration: 0.75s;
+    }
+
+
+
+    /* Custom badge variants */
+    .bg-success.bg-opacity-10 {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .bg-success {
+        background-color: #198754 !important;
+    }
+</style>

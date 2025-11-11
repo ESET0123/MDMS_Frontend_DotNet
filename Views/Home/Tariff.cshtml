@@ -4,75 +4,219 @@
 }
 
 <div class="container-fluid">
+    <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-receipt"></i> Tariff Plans</h2>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
-            <i class="bi bi-plus-circle"></i> Add Tariff
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-receipt text-success me-2"></i>Tariff Plans Management
+            </h2>
+            <p class="text-muted mb-0">Manage electricity tariff plans and pricing structures</p>
+        </div>
+        <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
+            <i class="bi bi-plus-circle me-2"></i> Add Tariff Plan
         </button>
     </div>
 
-    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
-        <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL TARIFFS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="totalTariffs">0</h2>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-receipt fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p class="mt-2">Loading tariff plans...</p>
-    </div>
-    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showError('')"></button>
-        <span id="errorText"></span>
-    </div>
-    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
-        <span id="successText"></span>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">ACTIVE TARIFFS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="activeTariffs">0</h2>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">EXPIRED TARIFFS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="expiredTariffs">0</h2>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-clock-history fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">AVG BASE RATE</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="avgBaseRate">₹0.00</h2>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center my-5 py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Loading tariff plans...</p>
+    </div>
+
+    <!-- Messages -->
+    <div id="errorMessage" class="alert alert-danger border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Unable to Load Data</h6>
+                <span id="errorText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="successMessage" class="alert alert-success border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Success</h6>
+                <span id="successText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tariff Cards Grid -->
     <div class="row" id="tariffCardsContainer">
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-5" style="display: none;">
+        <div class="empty-state">
+            <i class="bi bi-receipt display-1 text-light"></i>
+            <h4 class="mt-4 text-muted">No Tariff Plans Found</h4>
+            <p class="text-muted mb-4">Get started by creating your first tariff plan</p>
+            <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#tariffModal" onclick="prepareAddTariff()">
+                <i class="bi bi-plus-circle me-2"></i> Create Tariff Plan
+            </button>
+        </div>
     </div>
 </div>
 
+<!-- Add/Edit Tariff Modal -->
 <div class="modal fade" id="tariffModal" tabindex="-1" aria-labelledby="tariffModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tariffModalLabel">Add New Tariff</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="tariffModalLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Tariff Plan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="tariffForm">
                     <input type="hidden" id="tariffId" name="TariffId" value="0" />
 
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Tariff Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="name" placeholder="e.g., Residential Basic" required>
+                    <!-- Basic Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-info-circle me-2"></i>Basic Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="name" class="form-label fw-semibold">Tariff Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" placeholder="e.g., Residential Basic Plan" required>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="effectiveFrom" class="form-label">Effective From <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="effectiveFrom" required>
+
+                    <!-- Effective Period -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-calendar-range me-2"></i>Effective Period
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="effectiveFrom" class="form-label fw-semibold">Effective From <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="effectiveFrom" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="effectiveTo" class="form-label fw-semibold">Effective To (Optional)</label>
+                                <input type="date" class="form-control" id="effectiveTo">
+                                <div class="form-text">Leave empty if the tariff has no expiration</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="effectiveTo" class="form-label">Effective To (Optional)</label>
-                        <input type="date" class="form-control" id="effectiveTo">
+
+                    <!-- Pricing Details -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-currency-rupee me-2"></i>Pricing Details
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="baseRate" class="form-label fw-semibold">Base Rate (₹/kWh) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success bg-opacity-10 text-success">₹</span>
+                                    <input type="number" step="0.0001" class="form-control" id="baseRate" placeholder="0.1500" required>
+                                    <span class="input-group-text bg-light">per kWh</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="taxRate" class="form-label fw-semibold">Tax Rate (%) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="taxRate" placeholder="8.50" required>
+                                    <span class="input-group-text bg-light">%</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="baseRate" class="form-label">Base Rate (₹/kWh) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.0001" class="form-control" id="baseRate" placeholder="e.g., 0.15" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="taxRate" class="form-label">Tax Rate (%) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control" id="taxRate" placeholder="e.g., 8.5" required>
+
+                    <!-- Rate Preview -->
+                    <div class="alert alert-info border-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-lightbulb me-3 fs-4"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Rate Preview</h6>
+                                <p class="mb-0 small" id="ratePreview">Base rate will be displayed here after input</p>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-success" onclick="saveTariff()">
-                    <i class="bi bi-save"></i> Save Tariff
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-4" onclick="saveTariff()">
+                    <i class="bi bi-save me-2"></i> Save Tariff Plan
                 </button>
             </div>
         </div>
     </div>
 </div>
-
 
 @section Scripts {
     <script>
@@ -82,10 +226,31 @@
 
         document.addEventListener('DOMContentLoaded', (event) => {
             fetchTariffPlans();
+
+            // Add event listeners for rate preview
+            document.getElementById('baseRate')?.addEventListener('input', updateRatePreview);
+            document.getElementById('taxRate')?.addEventListener('input', updateRatePreview);
         });
+
+        function updateRatePreview() {
+            const baseRate = parseFloat(document.getElementById('baseRate')?.value) || 0;
+            const taxRate = parseFloat(document.getElementById('taxRate')?.value) || 0;
+            const totalRate = baseRate * (1 + taxRate / 100);
+
+            const preview = document.getElementById('ratePreview');
+            if (preview) {
+                preview.innerHTML = `
+                    <strong>Base Rate:</strong> ₹${baseRate.toFixed(4)}/kWh
+                    <strong>+ Tax (${taxRate}%):</strong> ₹${(baseRate * taxRate / 100).toFixed(4)}/kWh
+                    = <strong class="text-success">₹${totalRate.toFixed(4)}/kWh total</strong>
+                `;
+            }
+        }
 
         function showLoading(isLoading) {
             document.getElementById('loadingIndicator').style.display = isLoading ? 'block' : 'none';
+            document.getElementById('tariffCardsContainer').style.display = isLoading ? 'none' : 'flex';
+            document.getElementById('emptyState').style.display = 'none';
         }
 
         function showError(message) {
@@ -124,6 +289,23 @@
             return dateString.split('T')[0] || dateString;
         }
 
+        function updateStats(plans) {
+            const total = plans.length;
+            const active = plans.filter(plan => {
+                const effectiveTo = plan.effectiveTo ? new Date(plan.effectiveTo) : null;
+                return !effectiveTo || effectiveTo > new Date();
+            }).length;
+            const expired = total - active;
+            const avgBaseRate = plans.length > 0
+                ? plans.reduce((sum, plan) => sum + plan.baseRate, 0) / plans.length
+                : 0;
+
+            document.getElementById('totalTariffs').textContent = total;
+            document.getElementById('activeTariffs').textContent = active;
+            document.getElementById('expiredTariffs').textContent = expired;
+            document.getElementById('avgBaseRate').textContent = `₹${avgBaseRate.toFixed(4)}`;
+        }
+
         async function fetchTariffPlans() {
             try {
                 showLoading(true);
@@ -135,6 +317,7 @@
                 }
 
                 allTariffs = await response.json();
+                updateStats(allTariffs);
                 renderTariffCards(allTariffs);
                 showLoading(false);
 
@@ -147,47 +330,89 @@
 
         function renderTariffCards(plans) {
             const container = document.getElementById('tariffCardsContainer');
-            container.innerHTML = '';
+            const emptyState = document.getElementById('emptyState');
 
             if (plans && plans.length > 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'none';
+
                 plans.forEach(plan => {
                     const isActive = plan.effectiveTo ? new Date(plan.effectiveTo) > new Date() : true;
-                    const statusBadge = isActive
-                        ? '<span class="badge bg-success">Active</span>'
-                        : '<span class="badge bg-secondary">Expired</span>';
+                    const statusClass = isActive ? 'bg-success' : 'bg-secondary';
+                    const statusText = isActive ? 'Active' : 'Expired';
+                    const statusIcon = isActive ? 'bi-check-circle' : 'bi-clock-history';
 
                     const cardHtml = `
-                        <div class="col-md-4 mb-4">
-                            <div class="card shadow-sm h-100 border-top border-success border-3">
-                                <div class="card-body">
+                        <div class="col-xl-4 col-lg-6 mb-4">
+                            <div class="card tariff-card border-0 shadow-sm h-100">
+                                <div class="card-header bg-transparent border-0 pt-4 pb-0">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <h5 class="card-title mb-0">${plan.name}</h5>
-                                        ${statusBadge}
-                                    </div>
-                                    <div class="mb-3">
-                                        <small class="text-muted">Effective From</small>
-                                        <div class="fw-semibold">${formatDate(plan.effectiveFrom)}</div>
-                                    </div>
-                                    <div class="text-center py-3 bg-light rounded mb-3">
-                                        <h3 class="text-success mb-0">₹${plan.baseRate.toFixed(4)}</h3>
-                                        <small class="text-muted">per kWh</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <small class="text-muted">Tax Rate:</small>
-                                        <span class="fw-semibold">${plan.taxRate}%</span>
-                                    </div>
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-outline-success btn-sm" onclick="viewTariffSlabs(${plan.tariffId}, '${plan.name}')">
-                                            <i class="bi bi-layers"></i> View Tariff Slabs
-                                        </button>
-                                        <div class="btn-group" role="group">
-                                            <button class="btn btn-outline-success btn-sm" onclick="viewTariffDetails(${plan.tariffId})">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteTariff(${plan.tariffId}, '${plan.name}')">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
+                                        <div class="flex-grow-1">
+                                            <h5 class="card-title fw-bold text-dark mb-1">${plan.name}</h5>
+                                            <span class="badge ${statusClass}">
+                                                <i class="bi ${statusIcon} me-1"></i>${statusText}
+                                            </span>
                                         </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="viewTariffDetails(${plan.tariffId})">
+                                                    <i class="bi bi-pencil me-2"></i>Edit
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="viewTariffSlabs(${plan.tariffId}, '${plan.name}')">
+                                                    <i class="bi bi-layers me-2"></i>Manage Slabs
+                                                </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteTariff(${plan.tariffId}, '${plan.name}')">
+                                                    <i class="bi bi-trash me-2"></i>Delete
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body pt-2">
+                                    <!-- Effective Period -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center text-muted small mb-1">
+                                            <span>Effective Period</span>
+                                            <i class="bi bi-calendar"></i>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <small class="fw-semibold">From</small>
+                                            <small class="fw-semibold">${formatDate(plan.effectiveFrom)}</small>
+                                        </div>
+                                        ${plan.effectiveTo ? `
+                                        <div class="d-flex justify-content-between">
+                                            <small class="fw-semibold">To</small>
+                                            <small class="fw-semibold">${formatDate(plan.effectiveTo)}</small>
+                                        </div>
+                                        ` : '<div class="text-center"><small class="text-success fw-semibold">No Expiration</small></div>'}
+                                    </div>
+
+                                    <!-- Rate Display -->
+                                    <div class="text-center py-3 bg-light bg-opacity-50 rounded mb-3">
+                                        <h3 class="text-success mb-1">₹${plan.baseRate.toFixed(4)}</h3>
+                                        <small class="text-muted">Base Rate per kWh</small>
+                                        <div class="mt-1">
+                                            <small class="text-muted">+ ${plan.taxRate}% tax = </small>
+                                            <small class="fw-semibold text-dark">₹${(plan.baseRate * (1 + plan.taxRate / 100)).toFixed(4)}</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quick Actions -->
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-success btn-sm d-flex align-items-center justify-content-center"
+                                                onclick="viewTariffSlabs(${plan.tariffId}, '${plan.name}')">
+                                            <i class="bi bi-layers me-2"></i>
+                                            View & Manage Slabs
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                                    <div class="text-center">
+                                        <small class="text-muted">Tariff ID: ${plan.tariffId}</small>
                                     </div>
                                 </div>
                             </div>
@@ -196,14 +421,14 @@
                     container.insertAdjacentHTML('beforeend', cardHtml);
                 });
             } else {
-                container.innerHTML = '<div class="col-12"><div class="alert alert-info">No tariff plans found. Click "Add Tariff" to create one.</div></div>';
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
             }
         }
 
         function viewTariffSlabs(tariffId, tariffName) {
             sessionStorage.setItem('selectedTariffId', tariffId);
             sessionStorage.setItem('selectedTariffName', tariffName);
-
             window.location.href = '@Url.Action("TariffSlab", "Home")';
         }
 
@@ -244,7 +469,7 @@
                     var modal = bootstrap.Modal.getInstance(modalElement);
                     modal.hide();
 
-                    showSuccess(isUpdate ? 'Tariff updated successfully!' : 'Tariff created successfully!');
+                    showSuccess(isUpdate ? 'Tariff plan updated successfully!' : 'Tariff plan created successfully!');
                     await fetchTariffPlans();
                 } else {
                     const errorText = await response.text();
@@ -259,7 +484,8 @@
         function prepareAddTariff() {
             document.getElementById('tariffForm').reset();
             document.getElementById('tariffId').value = '0';
-            document.getElementById('tariffModalLabel').textContent = 'Add New Tariff';
+            document.getElementById('tariffModalLabel').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add New Tariff Plan';
+            document.getElementById('ratePreview').textContent = 'Base rate will be displayed here after input';
             showError('');
         }
 
@@ -273,7 +499,8 @@
                 document.getElementById('effectiveTo').value = formatInputDate(plan.effectiveTo);
                 document.getElementById('baseRate').value = plan.baseRate;
                 document.getElementById('taxRate').value = plan.taxRate;
-                document.getElementById('tariffModalLabel').textContent = `Edit Tariff: ${plan.name}`;
+                document.getElementById('tariffModalLabel').innerHTML = `<i class="bi bi-pencil me-2"></i>Edit Tariff: ${plan.name}`;
+                updateRatePreview();
                 showError('');
 
                 var modal = new bootstrap.Modal(document.getElementById('tariffModal'));
@@ -284,7 +511,7 @@
         }
 
         async function deleteTariff(id, name) {
-            if (!confirm(`Are you sure you want to delete the tariff "${name}"?\n\nWarning: This will also delete all associated tariff slabs!`)) {
+            if (!confirm(`Are you sure you want to delete the tariff plan "${name}"?\n\n⚠️ Warning: This will also delete all associated tariff slabs!`)) {
                 return;
             }
 
@@ -294,7 +521,7 @@
                 });
 
                 if (response.ok) {
-                    showSuccess('Tariff deleted successfully!');
+                    showSuccess('Tariff plan deleted successfully!');
                     await fetchTariffPlans();
                 } else {
                     const errorText = await response.text();
@@ -305,17 +532,106 @@
                 showError('An error occurred while communicating with the API.');
             }
         }
-
     </script>
 }
 
 <style>
-    .card {
-        transition: transform 0.2s, box-shadow 0.2s;
+    :root {
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
-        .card:hover {
+    .card {
+        border-radius: 12px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .tariff-card {
+        border-top: 4px solid #198754 !important;
+    }
+
+        .tariff-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            box-shadow: var(--card-hover-shadow) !important;
         }
+
+    .empty-state .bi {
+        opacity: 0.3;
+    }
+
+    .input-group-text {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    .dropdown-menu {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        box-shadow: var(--card-shadow);
+    }
+
+    .dropdown-item {
+        border-radius: 6px;
+        margin: 0.125rem;
+    }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+    /* Button hover effects */
+    .btn {
+        transition: all 0.2s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    /* Modal enhancements */
+    .modal-header {
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-footer {
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 8px;
+    }
+
+
+    /* Stats cards styling */
+    .bg-opacity-10 {
+        background-opacity: 0.1 !important;
+    }
+
+    /* Loading animation */
+    .spinner-border {
+        animation-duration: 0.75s;
+    }
 </style>

@@ -4,150 +4,334 @@
 }
 
 <div class="container-fluid">
+    <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-cash-stack"></i> Tariff Slab Management</h2>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tariffSlabModal" onclick="prepareAddSlab()">
-            <i class="bi bi-plus-circle"></i> Add Tariff Slab
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-cash-stack text-success me-2"></i>Tariff Slab Management
+            </h2>
+            <p class="text-muted mb-0">Manage electricity consumption slabs and progressive pricing</p>
+        </div>
+        <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#tariffSlabModal" onclick="prepareAddSlab()">
+            <i class="bi bi-plus-circle me-2"></i> Add Tariff Slab
         </button>
     </div>
 
-    <div class="card shadow-sm mb-4">
+    <!-- Tariff Selection Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-funnel me-2 text-success"></i>Select Tariff Plan
+            </h6>
+        </div>
         <div class="card-body">
             <div class="row align-items-center">
-                <div class="col-md-6">
-                    <label for="filterTariffId" class="form-label fw-bold">Select Tariff Plan:</label>
+                <div class="col-md-8">
+                    <label for="filterTariffId" class="form-label small fw-semibold text-muted">SELECT TARIFF PLAN</label>
                     <select class="form-select" id="filterTariffId" onchange="filterSlabsByTariff()">
-                        <option value="">-- Select Tariff --</option>
+                        <option value="">-- Select Tariff Plan --</option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <div class="mt-4" id="selectedTariffInfo" style="display: none;">
-                        <small class="text-muted">Selected Tariff:</small>
-                        <div class="fw-bold" id="selectedTariffDetails"></div>
+                <div class="col-md-4">
+                    <div class="mt-3">
+                        <button class="btn btn-outline-success w-100" onclick="clearSelection()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Clear Selection
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
-        <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <!-- Selected Tariff Info -->
+    <div id="selectedTariffInfo" class="card border-0 shadow-sm mb-4" style="display: none;">
+        <div class="card-header bg-success text-white py-3">
+            <h6 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>Selected Tariff Details
+            </h6>
         </div>
-        <p class="mt-2">Loading tariff slabs...</p>
-    </div>
-    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showError('')"></button>
-        <span id="errorText"></span>
-    </div>
-    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
-        <span id="successText"></span>
+        <div class="card-body">
+            <div class="row" id="selectedTariffDetails">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center my-5 py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Loading tariff slabs...</p>
+    </div>
+
+    <!-- Messages -->
+    <div id="errorMessage" class="alert alert-danger border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Operation Failed</h6>
+                <span id="errorText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="successMessage" class="alert alert-success border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Success</h6>
+                <span id="successText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slabs Overview Cards -->
+    <div id="slabsOverview" class="row mb-4" style="display: none;">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL SLABS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="totalSlabs">0</h2>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-layers fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">RATE RANGE</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="rateRange">₹0.00</h2>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-graph-up fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">CONSUMPTION RANGE</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="consumptionRange">0 kWh</h2>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-lightning-charge fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">AVG RATE</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="avgRate">₹0.00</h2>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-calculator fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tariff Slabs Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-table me-2 text-success"></i>Tariff Slabs
+            </h6>
+            <span class="badge bg-success bg-opacity-10 text-success" id="slabsCount">0 slabs</span>
+        </div>
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                    <thead class="table-dark">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th>Slab ID</th>
-                            <th>Tariff Name</th>
-                            <th>From (kWh)</th>
-                            <th>To (kWh)</th>
-                            <th>Rate (₹/kWh)</th>
-                            <th>Actions</th>
+                            <th class="ps-4">Slab ID</th>
+                            <th>Consumption Range</th>
+                            <th>Rate</th>
+                            <th>Slab Width</th>
+                            <th class="text-center pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="tariffSlabsTableBody">
                         <tr>
-                            <td colspan="6" class="text-center text-muted">Please select a tariff to view slabs</td>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-funnel display-6 text-light"></i>
+                                    <p class="mt-3">Please select a tariff plan to view slabs</p>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="text-center py-5" style="display: none;">
+        <div class="empty-state">
+            <i class="bi bi-layers display-1 text-light"></i>
+            <h4 class="mt-4 text-muted">No Tariff Slabs Found</h4>
+            <p class="text-muted mb-4">Get started by creating your first tariff slab for the selected plan</p>
+            <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#tariffSlabModal" onclick="prepareAddSlab()">
+                <i class="bi bi-plus-circle me-2"></i> Create Tariff Slab
+            </button>
+        </div>
+    </div>
 </div>
 
+<!-- Add/Edit Tariff Slab Modal -->
 <div class="modal fade" id="tariffSlabModal" tabindex="-1" aria-labelledby="tariffSlabModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="tariffSlabModalLabel">Add Tariff Slab</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="tariffSlabModalLabel">
+                    <i class="bi bi-plus-circle me-2"></i>Add Tariff Slab
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="tariffSlabForm">
                     <input type="hidden" id="slabId" />
 
-                    <div class="mb-3">
-                        <label for="tariffId" class="form-label">Tariff Plan <span class="text-danger">*</span></label>
-                        <select class="form-select" id="tariffId" required>
-                            <option value="">-- Select Tariff --</option>
-                        </select>
+                    <!-- Tariff Selection -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-receipt me-2"></i>Tariff Plan Selection
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="tariffId" class="form-label fw-semibold">Tariff Plan <span class="text-danger">*</span></label>
+                                <select class="form-select" id="tariffId" required>
+                                    <option value="">-- Select Tariff Plan --</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="fromKwh" class="form-label">From (kWh) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control" id="fromKwh" placeholder="e.g., 0" required>
-                        <small class="form-text text-muted">Starting unit for this slab</small>
+                    <!-- Consumption Range -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-lightning-charge me-2"></i>Consumption Range (kWh)
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fromKwh" class="form-label fw-semibold">From (kWh) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="fromKwh" placeholder="0.00" required>
+                                    <span class="input-group-text bg-light">kWh</span>
+                                </div>
+                                <small class="form-text text-muted">Starting consumption for this slab</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="toKwh" class="form-label fw-semibold">To (kWh) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" class="form-control" id="toKwh" placeholder="100.00" required>
+                                    <span class="input-group-text bg-light">kWh</span>
+                                </div>
+                                <small class="form-text text-muted">Ending consumption for this slab</small>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="toKwh" class="form-label">To (kWh) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" class="form-control" id="toKwh" placeholder="e.g., 100" required>
-                        <small class="form-text text-muted">Ending unit for this slab</small>
+                    <!-- Rate Configuration -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-currency-rupee me-2"></i>Rate Configuration
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="ratePerKwh" class="form-label fw-semibold">Rate (₹/kWh) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success bg-opacity-10 text-success">₹</span>
+                                    <input type="number" step="0.0001" class="form-control" id="ratePerKwh" placeholder="0.1500" required>
+                                    <span class="input-group-text bg-light">per kWh</span>
+                                </div>
+                                <small class="form-text text-muted">Rate charged per kWh for this consumption range</small>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="ratePerKwh" class="form-label">Rate (₹/kWh) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.0001" class="form-control" id="ratePerKwh" placeholder="e.g., 0.15" required>
-                        <small class="form-text text-muted">Rate charged per kWh for this slab</small>
+                    <!-- Slab Preview -->
+                    <div class="alert alert-info border-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-lightbulb me-3 fs-4"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Slab Preview</h6>
+                                <p class="mb-0 small" id="slabPreview">Slab details will be displayed here</p>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="saveTariffSlab()">
-                    <i class="bi bi-save"></i> Save Slab
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-4" onclick="saveTariffSlab()">
+                    <i class="bi bi-save me-2"></i> Save Slab
                 </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- View Slab Details Modal -->
 <div class="modal fade" id="viewSlabModal" tabindex="-1" aria-labelledby="viewSlabModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewSlabModalLabel">Tariff Slab Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="viewSlabModalLabel">
+                    <i class="bi bi-eye me-2"></i>Tariff Slab Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Slab ID:</div>
-                    <div class="col-8" id="viewSlabId"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Tariff Name:</div>
-                    <div class="col-8" id="viewTariffName"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">From (kWh):</div>
-                    <div class="col-8" id="viewFromKwh"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">To (kWh):</div>
-                    <div class="col-8" id="viewToKwh"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Rate:</div>
-                    <div class="col-8" id="viewRatePerKwh"></div>
+            <div class="modal-body p-4">
+                <div class="slab-details">
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">SLAB ID</div>
+                        <div class="detail-value fw-bold" id="viewSlabId">-</div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">TARIFF PLAN</div>
+                        <div class="detail-value">
+                            <span class="badge bg-success" id="viewTariffName">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">CONSUMPTION RANGE</div>
+                        <div class="detail-value fw-bold">
+                            <span id="viewFromKwh">0</span> kWh - <span id="viewToKwh">0</span> kWh
+                            <small class="text-muted d-block">(Range: <span id="viewRange">0</span> kWh)</small>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label small text-muted">RATE</div>
+                        <div class="detail-value">
+                            <h4 class="text-success mb-0" id="viewRatePerKwh">₹0.0000</h4>
+                            <small class="text-muted">per kWh</small>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -176,7 +360,32 @@
                 sessionStorage.removeItem('selectedTariffId');
                 sessionStorage.removeItem('selectedTariffName');
             }
+
+            // Add event listeners for slab preview
+            document.getElementById('fromKwh')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('toKwh')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('ratePerKwh')?.addEventListener('input', updateSlabPreview);
         });
+
+        function updateSlabPreview() {
+            const fromKwh = parseFloat(document.getElementById('fromKwh')?.value) || 0;
+            const toKwh = parseFloat(document.getElementById('toKwh')?.value) || 0;
+            const ratePerKwh = parseFloat(document.getElementById('ratePerKwh')?.value) || 0;
+            const range = toKwh - fromKwh;
+
+            const preview = document.getElementById('slabPreview');
+            if (preview) {
+                if (fromKwh >= toKwh) {
+                    preview.innerHTML = '<span class="text-danger">To (kWh) must be greater than From (kWh)</span>';
+                } else {
+                    preview.innerHTML = `
+                        Consumption: <strong>${fromKwh.toFixed(2)} - ${toKwh.toFixed(2)} kWh</strong>
+                        (Range: <strong>${range.toFixed(2)} kWh</strong>)<br>
+                        Rate: <strong class="text-success">₹${ratePerKwh.toFixed(4)}/kWh</strong>
+                    `;
+                }
+            }
+        }
 
         async function fetchAllData(preselectedTariffId) {
             await fetchTariffs();
@@ -205,8 +414,8 @@
             const select = document.getElementById('tariffId');
             const filterSelect = document.getElementById('filterTariffId');
 
-            select.innerHTML = '<option value="">-- Select Tariff --</option>';
-            filterSelect.innerHTML = '<option value="">-- Select Tariff --</option>';
+            select.innerHTML = '<option value="">-- Select Tariff Plan --</option>';
+            filterSelect.innerHTML = '<option value="">-- Select Tariff Plan --</option>';
 
             allTariffs.forEach(tariff => {
                 const option = document.createElement('option');
@@ -242,47 +451,88 @@
             }
         }
 
+        function updateSlabsStats(slabs) {
+            if (!slabs || slabs.length === 0) {
+                document.getElementById('slabsOverview').style.display = 'none';
+                return;
+            }
+
+            const totalSlabs = slabs.length;
+            const rates = slabs.map(s => s.ratePerKwh);
+            const minRate = Math.min(...rates);
+            const maxRate = Math.max(...rates);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+
+            const consumptions = slabs.map(s => s.toKwh);
+            const maxConsumption = Math.max(...consumptions);
+
+            document.getElementById('totalSlabs').textContent = totalSlabs;
+            document.getElementById('rateRange').textContent = `₹${minRate.toFixed(4)} - ₹${maxRate.toFixed(4)}`;
+            document.getElementById('consumptionRange').textContent = `0 - ${maxConsumption.toFixed(0)} kWh`;
+            document.getElementById('avgRate').textContent = `₹${avgRate.toFixed(4)}`;
+            document.getElementById('slabsCount').textContent = `${totalSlabs} slab${totalSlabs !== 1 ? 's' : ''}`;
+
+            document.getElementById('slabsOverview').style.display = 'flex';
+        }
+
         function renderTariffSlabsTable(slabs) {
             const tbody = document.getElementById('tariffSlabsTableBody');
-            tbody.innerHTML = '';
+            const emptyState = document.getElementById('emptyState');
 
             if (slabs && slabs.length > 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'none';
+
                 slabs.forEach(slab => {
+                    const range = slab.toKwh - slab.fromKwh;
                     const rowHtml = `
                         <tr>
-                            <td><strong>${slab.slabId}</strong></td>
-                            <td><span class="badge bg-success">${slab.tariffName}</span></td>
-                            <td>${slab.fromKwh.toFixed(2)}</td>
-                            <td>${slab.toKwh.toFixed(2)}</td>
-                            <td><strong>₹${slab.ratePerKwh.toFixed(4)}</strong></td>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">${slab.slabId}</div>
+                            </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="viewSlabDetails(${slab.slabId})" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="editTariffSlab(${slab.slabId})" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTariffSlab(${slab.slabId})" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="consumption-range">
+                                    <div class="fw-semibold">${slab.fromKwh.toFixed(2)} - ${slab.toKwh.toFixed(2)} kWh</div>
+                                    <small class="text-muted">Range: ${range.toFixed(2)} kWh</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="rate-display">
+                                    <h6 class="text-success mb-0">₹${slab.ratePerKwh.toFixed(4)}</h6>
+                                    <small class="text-muted">per kWh</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">${range.toFixed(2)} kWh</span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success" onclick="viewSlabDetails(${slab.slabId})" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="editTariffSlab(${slab.slabId})" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteTariffSlab(${slab.slabId})" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
                     tbody.insertAdjacentHTML('beforeend', rowHtml);
                 });
             } else {
-                const filterTariffId = document.getElementById('filterTariffId').value;
-                const message = filterTariffId
-                    ? 'No tariff slabs found for the selected tariff. Click "Add Tariff Slab" to create one.'
-                    : 'Please select a tariff to view slabs';
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">${message}</td></tr>`;
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('slabsOverview').style.display = 'none';
             }
         }
 
         function filterSlabsByTariff() {
             const filterTariffId = document.getElementById('filterTariffId').value;
             const selectedOption = document.getElementById('filterTariffId').selectedOptions[0];
-            const infoDiv = document.getElementById('selectedTariffInfo');
+            const infoCard = document.getElementById('selectedTariffInfo');
             const detailsDiv = document.getElementById('selectedTariffDetails');
 
             if (filterTariffId) {
@@ -292,25 +542,52 @@
                 const effectiveFrom = new Date(selectedOption.dataset.effectiveFrom).toLocaleDateString();
 
                 detailsDiv.innerHTML = `
-                    <span class="badge bg-success me-2">${name}</span>
-                    <span class="text-muted">Base Rate:</span> <strong>₹${baseRate}/kWh</strong> |
-                    <span class="text-muted">Tax:</span> <strong>${taxRate}%</strong> |
-                    <span class="text-muted">Effective:</span> <strong>${effectiveFrom}</strong>
+                    <div class="col-md-4">
+                        <div class="detail-item">
+                            <div class="small text-muted">TARIFF NAME</div>
+                            <div class="fw-bold text-success">${name}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-item">
+                            <div class="small text-muted">BASE RATE</div>
+                            <div class="fw-bold">₹${baseRate}/kWh</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="detail-item">
+                            <div class="small text-muted">TAX RATE</div>
+                            <div class="fw-bold">${taxRate}%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-item">
+                            <div class="small text-muted">EFFECTIVE FROM</div>
+                            <div class="fw-bold">${effectiveFrom}</div>
+                        </div>
+                    </div>
                 `;
-                infoDiv.style.display = 'block';
+                infoCard.style.display = 'block';
 
                 const filteredSlabs = allSlabs.filter(slab => slab.tariffId == filterTariffId);
+                updateSlabsStats(filteredSlabs);
                 renderTariffSlabsTable(filteredSlabs);
             } else {
-                infoDiv.style.display = 'none';
+                infoCard.style.display = 'none';
                 renderTariffSlabsTable([]);
             }
         }
 
+        function clearSelection() {
+            document.getElementById('filterTariffId').value = '';
+            filterSlabsByTariff();
+        }
+
         function prepareAddSlab() {
-            document.getElementById('tariffSlabModalLabel').textContent = 'Add Tariff Slab';
+            document.getElementById('tariffSlabModalLabel').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add Tariff Slab';
             document.getElementById('tariffSlabForm').reset();
             document.getElementById('slabId').value = '';
+            document.getElementById('slabPreview').textContent = 'Slab details will be displayed here';
 
             const filterTariffId = document.getElementById('filterTariffId').value;
             if (filterTariffId) {
@@ -325,12 +602,13 @@
                 return;
             }
 
-            document.getElementById('tariffSlabModalLabel').textContent = 'Edit Tariff Slab';
+            document.getElementById('tariffSlabModalLabel').innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Tariff Slab';
             document.getElementById('slabId').value = slab.slabId;
             document.getElementById('tariffId').value = slab.tariffId;
             document.getElementById('fromKwh').value = slab.fromKwh;
             document.getElementById('toKwh').value = slab.toKwh;
             document.getElementById('ratePerKwh').value = slab.ratePerKwh;
+            updateSlabPreview();
 
             tariffSlabModal.show();
         }
@@ -390,7 +668,12 @@
 
         async function deleteTariffSlab(id) {
             const slab = allSlabs.find(s => s.slabId === id);
-            if (!confirm(`Are you sure you want to delete the slab from ${slab.fromKwh} to ${slab.toKwh} kWh?`)) {
+            if (!slab) {
+                showError('Slab not found');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete the slab for consumption range ${slab.fromKwh.toFixed(2)} - ${slab.toKwh.toFixed(2)} kWh?\n\nRate: ₹${slab.ratePerKwh.toFixed(4)}/kWh`)) {
                 return;
             }
 
@@ -420,11 +703,14 @@
                 return;
             }
 
+            const range = slab.toKwh - slab.fromKwh;
+
             document.getElementById('viewSlabId').textContent = slab.slabId;
             document.getElementById('viewTariffName').textContent = slab.tariffName;
-            document.getElementById('viewFromKwh').textContent = slab.fromKwh.toFixed(2) + ' kWh';
-            document.getElementById('viewToKwh').textContent = slab.toKwh.toFixed(2) + ' kWh';
-            document.getElementById('viewRatePerKwh').textContent = '₹' + slab.ratePerKwh.toFixed(4) + '/kWh';
+            document.getElementById('viewFromKwh').textContent = slab.fromKwh.toFixed(2);
+            document.getElementById('viewToKwh').textContent = slab.toKwh.toFixed(2);
+            document.getElementById('viewRange').textContent = range.toFixed(2);
+            document.getElementById('viewRatePerKwh').textContent = `₹${slab.ratePerKwh.toFixed(4)}`;
 
             viewSlabModal.show();
         }
@@ -458,3 +744,127 @@
         }
     </script>
 }
+
+<style>
+    :root {
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .table th {
+        font-weight: 600;
+        white-space: nowrap;
+        border-bottom: 2px solid #e9ecef;
+        padding: 1rem;
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .input-group-text {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+
+    /* Detail item styling */
+    .detail-item {
+        padding: 0.5rem 0;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+    }
+
+    /* Stats cards */
+    .bg-opacity-10 {
+        background-opacity: 0.1 !important;
+    }
+
+    /* Button hover effects */
+    .btn {
+        transition: all 0.2s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    /* Table row hover effects */
+    .table-hover tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(25, 135, 84, 0.08) !important;
+            transform: translateX(2px);
+        }
+
+    /* Modal enhancements */
+    .modal-header {
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-footer {
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 8px;
+    }
+
+    /* Empty state styling */
+    .empty-state .bi {
+        opacity: 0.3;
+    }
+
+    /* Consumption range styling */
+    .consumption-range {
+        line-height: 1.4;
+    }
+
+    .rate-display {
+        line-height: 1.4;
+    }
+
+    /* Loading animation */
+    .spinner-border {
+        animation-duration: 0.75s;
+    }
+
+    /* Slab details modal specific */
+    .slab-details .detail-item:not(:last-child) {
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 1rem;
+    }
+</style>
