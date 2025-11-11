@@ -2,17 +2,16 @@
     ViewData["Title"] = "Consumers";
 }
 
-
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-people"></i> Consumer Management</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#consumerModal" onclick="prepareAddConsumer()">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#consumerModal" onclick="prepareAddConsumer()">
             <i class="bi bi-person-plus"></i> Add Consumer
         </button>
     </div>
 
     <div id="loadingIndicator" class="text-center my-4" style="display:none;">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-success" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-2">Loading consumers...</p>
@@ -77,8 +76,8 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="tel" class="form-control" id="phone" placeholder="+1234567890">
+                            <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" placeholder="+1234567890" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
@@ -94,6 +93,17 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">
+                                Password
+                                <span class="text-danger" id="passwordRequired">*</span>
+                                <small class="text-muted" id="passwordOptional" style="display:none;">(Leave blank to keep current)</small>
+                            </label>
+                            <input type="password" class="form-control" id="password" placeholder="Enter password">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="createdBy" class="form-label">Created By</label>
                             <input type="text" class="form-control" id="createdBy" placeholder="Admin or Staff">
                         </div>
@@ -102,7 +112,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" onclick="saveConsumer()"><i class="bi bi-save"></i> Save</button>
+                <button class="btn btn-success" onclick="saveConsumer()"><i class="bi bi-save"></i> Save</button>
             </div>
         </div>
     </div>
@@ -110,7 +120,6 @@
 
 @section Scripts {
     <script>
-        const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
         const CONSUMER_API_URL = `${API_BASE_URL}/api/Consumer`;
         const STATUS_API_URL = `${API_BASE_URL}/api/Status`;
 
@@ -131,7 +140,7 @@
                 allStatuses = await res.json();
 
                 const select = document.getElementById('statusId');
-                select.innerHTML = '<option value="">-- Select Status --</option>';
+                select.innerHTML = '<option value=""> -- Select Status -- </option>';
 
                 allStatuses.forEach(s => {
                     select.innerHTML += `<option value="${s.statusId}">${s.name}</option>`;
@@ -165,7 +174,7 @@
             }
 
             allConsumers.forEach(c => {
-                const statusName = c.status?.name || 'Unknown';
+                const statusName = c.statusName || 'Unknown';
                 const badgeClass = statusName.toLowerCase() === 'active' ? 'success' : 'secondary';
 
                 const row = `
@@ -194,6 +203,9 @@
             document.getElementById('consumerForm').reset();
             document.getElementById('isEdit').value = 'false';
             document.getElementById('consumerModalLabel').textContent = 'Add Consumer';
+            document.getElementById('password').required = true;
+            document.getElementById('passwordRequired').style.display = 'inline';
+            document.getElementById('passwordOptional').style.display = 'none';
         }
 
         function editConsumer(id) {
@@ -209,27 +221,60 @@
             document.getElementById('address').value = c.address;
             document.getElementById('statusId').value = c.statusId;
             document.getElementById('createdBy').value = c.createdBy;
+            document.getElementById('password').value = '';
+            document.getElementById('password').required = false;
+            document.getElementById('passwordRequired').style.display = 'none';
+            document.getElementById('passwordOptional').style.display = 'inline';
 
             consumerModal.show();
         }
 
+        function hashPassword(password) {
+            return crypto.subtle.digest('SHA-256', new TextEncoder().encode(password))
+                .then(buf => {
+                    return btoa(String.fromCharCode(...new Uint8Array(buf)));
+                });
+        }
+
         async function saveConsumer() {
             const isEdit = document.getElementById('isEdit').value === 'true';
-            const data = {
-                consumerId: isEdit ? parseInt(document.getElementById('consumerId').value) : 0,
-                name: document.getElementById('name').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                address: document.getElementById('address').value.trim(),
-                statusId: parseInt(document.getElementById('statusId').value),
-                createdBy: document.getElementById('createdBy').value.trim() || "System",
-                updatedBy: isEdit ? "System" : null
-            };
+            const passwordValue = document.getElementById('password').value.trim();
 
-            if (!data.name || !data.email || !data.address || !data.statusId) {
+            // Validate required fields
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const statusId = parseInt(document.getElementById('statusId').value);
+
+            if (!name || !email || !phone || !address || !statusId) {
                 showError('Please fill in all required fields');
                 return;
             }
+
+            // Check password requirement for new consumers
+            if (!isEdit && !passwordValue) {
+                showError('Password is required for new consumers');
+                return;
+            }
+
+            // Hash password if provided
+            let passwordHash = null;
+            if (passwordValue) {
+                passwordHash = await hashPassword(passwordValue);
+            }
+
+            const data = {
+                consumerId: isEdit ? parseInt(document.getElementById('consumerId').value) : 0,
+                name: name,
+                email: email,
+                phone: phone,
+                address: address,
+                statusId: statusId,
+                passwordHash: passwordHash,
+                createdBy: document.getElementById('createdBy').value.trim() || "System",
+                updatedBy: isEdit ? "System" : null
+            };
 
             const endpoint = isEdit ? `${CONSUMER_API_URL}/Update` : `${CONSUMER_API_URL}/Create`;
             const method = isEdit ? 'PUT' : 'POST';
@@ -241,7 +286,11 @@
                     body: JSON.stringify(data)
                 });
 
-                if (!res.ok) throw new Error(await res.text());
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(errorText || 'Operation failed');
+                }
+
                 showSuccess(isEdit ? 'Consumer updated successfully' : 'Consumer added successfully');
                 consumerModal.hide();
                 await fetchConsumers();
@@ -279,5 +328,5 @@
             el.style.display = msg ? 'block' : 'none';
             if (msg) setTimeout(() => el.style.display = 'none', 3000);
         }
-    </script> 
-    }
+    </script>
+}

@@ -1,4 +1,4 @@
-﻿@{
+﻿@* @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Meters Management";
     ViewData["ActivePage"] = "Meters";
@@ -7,13 +7,47 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Meters Management</h2>
-        <button class="btn btn-primary" id="addMeterBtn">
+        <button class="btn btn-success" id="addMeterBtn">
             <i class="bi bi-plus-circle"></i> Add New Meter
         </button>
     </div>
 
+    <!-- Filter Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label for="filterMeter" class="form-label">Meter Id</label>
+                    <input type="text" class="form-control" id="filterMeter" placeholder="Search by meter id...">
+                </div>
+                <div class="col-md-2">
+                    <label for="filterConsumer" class="form-label">Consumer Name</label>
+                    <input type="text" class="form-control" id="filterConsumer" placeholder="Search by consumer name...">
+                </div>
+                <div class="col-md-2">
+                    <label for="filterDtr" class="form-label">DTR Name</label>
+                    <input type="text" class="form-control" id="filterDtr" placeholder="Search by DTR name...">
+                </div>
+                <div class="col-md-2">
+                    <label for="filterStatus" class="form-label">Status</label>
+                    <select class="form-select" id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Decommissioned">Decommissioned</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-x-circle"></i> Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="loadingSpinner" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border text-success" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-2">Loading meters data...</p>
@@ -26,7 +60,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Meter Serial No.</th>
-                            <th>Consumer ID</th>
+                            <th>Consumer Name</th>
+                            <th>DTR Name</th>
                             <th>IP Address</th>
                             <th>ICCID</th>
                             <th>IMSI</th>
@@ -34,7 +69,6 @@
                             <th>Firmware</th>
                             <th>Category</th>
                             <th>Install Date</th>
-                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -132,7 +166,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveMeter()">Save Meter</button>
+                <button type="button" class="btn btn-success" onclick="saveMeter()">Save Meter</button>
             </div>
         </div>
     </div>
@@ -186,7 +220,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" onclick="saveNewConsumer()"><i class="bi bi-save"></i> Save</button>
+                <button class="btn btn-success" onclick="saveNewConsumer()"><i class="bi bi-save"></i> Save</button>
             </div>
         </div>
     </div>
@@ -198,6 +232,7 @@
         let currentPage = 1;
         const itemsPerPage = 10;
         let allMeters = [];
+        let filteredMeters = [];
         let allManufacturers = [];
         let allTariffs = [];
         let allStatuses = [];
@@ -210,7 +245,6 @@
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initMeterPage);
             } else {
-                // DOM already loaded, but wait a bit for Bootstrap
                 setTimeout(initMeterPage, 100);
             }
         })();
@@ -229,7 +263,6 @@
                 const consumerModalEl = document.getElementById('addConsumerModal');
 
                 if (meterModalEl) {
-                    // Allow keyboard close, block only accidental click outside
                     meterModal = new bootstrap.Modal(meterModalEl, {
                         backdrop: true,
                         keyboard: true
@@ -237,7 +270,6 @@
                 }
 
                 if (consumerModalEl) {
-                    // For nested modal – ensure backdrop doesn’t overlay main modal
                     consumerModal = new bootstrap.Modal(consumerModalEl, {
                         backdrop: false,
                         keyboard: true
@@ -248,6 +280,11 @@
                     e.preventDefault();
                     openAddMeterModal();
                 });
+
+                // Add filter event listeners
+                document.getElementById('filterConsumer')?.addEventListener('input', applyFilters);
+                document.getElementById('filterDtr')?.addEventListener('input', applyFilters);
+                document.getElementById('filterStatus')?.addEventListener('change', applyFilters);
 
                 loadMeters();
                 loadDropdowns();
@@ -278,7 +315,6 @@
                     });
                 }
 
-
                 console.log('✓ Meter management page initialized');
             } catch (error) {
                 console.error('Initialization error:', error);
@@ -286,6 +322,34 @@
             }
         }
 
+        function applyFilters() {
+            const consumerFilter = document.getElementById('filterConsumer').value.toLowerCase().trim();
+            const dtrFilter = document.getElementById('filterDtr').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            filteredMeters = allMeters.filter(meter => {
+                const matchesConsumer = !consumerFilter ||
+                    meter.consumerName.toLowerCase().includes(consumerFilter);
+                const matchesDtr = !dtrFilter ||
+                    meter.dtrName.toLowerCase().includes(dtrFilter);
+                const matchesStatus = !statusFilter ||
+                    meter.statusName === statusFilter;
+
+                return matchesConsumer && matchesDtr && matchesStatus;
+            });
+
+            currentPage = 1;
+            displayMeters(currentPage);
+        }
+
+        function clearFilters() {
+            document.getElementById('filterConsumer').value = '';
+            document.getElementById('filterDtr').value = '';
+            document.getElementById('filterStatus').value = '';
+            filteredMeters = [...allMeters];
+            currentPage = 1;
+            displayMeters(currentPage);
+        }
 
         function openAddMeterModal() {
             console.log('Opening Add Meter Modal...');
@@ -326,6 +390,11 @@
                 validationDiv.innerHTML = '';
             }
 
+            const dtrValidationDiv = document.getElementById('dtrValidation');
+            if (dtrValidationDiv) {
+                dtrValidationDiv.innerHTML = '';
+            }
+
             // Reset dropdowns
             document.getElementById('manufacturerId').value = '';
             document.getElementById('tariffId').value = '';
@@ -340,26 +409,26 @@
                 if (response.ok) {
                     const consumer = await response.json();
                     validationDiv.innerHTML = `
-                                <div class="alert alert-success py-2 mb-0">
-                                    <i class="bi bi-check-circle"></i> <strong>Consumer Found:</strong> ${consumer.name}
-                                </div>`;
+                        <div class="alert alert-success py-2 mb-0">
+                            <i class="bi bi-check-circle"></i> <strong>Consumer Found:</strong> ${consumer.name}
+                        </div>`;
                 } else if (response.status === 404) {
                     validationDiv.innerHTML = `
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="openCreateConsumerModal()">
-                                    <i class="bi bi-person-plus"></i> Create New Consumer
-                                </button>`;
+                        <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="openCreateConsumerModal()">
+                            <i class="bi bi-person-plus"></i> Create New Consumer
+                        </button>`;
                 } else {
                     validationDiv.innerHTML = `
-                                <div class="alert alert-warning py-2 mb-0">
-                                    <i class="bi bi-exclamation-triangle"></i> Unable to verify consumer
-                                </div>`;
+                        <div class="alert alert-warning py-2 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> Unable to verify consumer
+                        </div>`;
                 }
             } catch (error) {
                 console.error('Error checking consumer:', error);
                 document.getElementById('consumerValidation').innerHTML = `
-                            <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="openCreateConsumerModal()">
-                                <i class="bi bi-person-plus"></i> Create New Consumer
-                            </button>`;
+                    <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="openCreateConsumerModal()">
+                        <i class="bi bi-person-plus"></i> Create New Consumer
+                    </button>`;
             }
         }
 
@@ -378,7 +447,7 @@
                 }
                 else if (response.status === 404) {
                     validationDiv.innerHTML = `
-                        <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                        <button type="button" class="btn btn-outline-success btn-sm w-100"
                                 onclick="redirectToAddDtr()">
                             <i class="bi bi-diagram-3"></i> Create New DTR
                         </button>`;
@@ -392,7 +461,7 @@
             } catch (error) {
                 console.error('Error checking DTR:', error);
                 document.getElementById('dtrValidation').innerHTML = `
-                    <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                    <button type="button" class="btn btn-outline-success btn-sm w-100"
                             onclick="redirectToAddDtr()">
                         <i class="bi bi-diagram-3"></i> Create New DTR
                     </button>`;
@@ -404,7 +473,6 @@
                 document.getElementById('consumerForm').reset();
                 document.getElementById('consumerStatusId').innerHTML = '<option value="">-- Select Status --</option>';
 
-                // Populate status dropdown
                 allStatuses.forEach(status => {
                     const option = document.createElement('option');
                     option.value = status.statusId;
@@ -497,6 +565,7 @@
                 }
 
                 allMeters = await response.json();
+                filteredMeters = [...allMeters];
                 displayMeters(currentPage);
                 showLoading(false);
             } catch (error) {
@@ -509,7 +578,7 @@
         function displayMeters(page) {
             const startIndex = (page - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            const metersToDisplay = allMeters.slice(startIndex, endIndex);
+            const metersToDisplay = filteredMeters.slice(startIndex, endIndex);
 
             const tbody = document.getElementById('metersTableBody');
             tbody.innerHTML = '';
@@ -521,36 +590,50 @@
 
             metersToDisplay.forEach(meter => {
                 const row = document.createElement('tr');
+                const rowClass = getStatusRowClass(meter.statusName);
+                row.className = rowClass;
+
                 row.innerHTML = `
-                            <td>MTR${meter.meterId.toString().padStart(4, '0')}</td>
-                            <td>${meter.consumerId}</td>
-                            <td>${meter.ipaddress}</td>
-                            <td>${meter.iccid || 'N/A'}</td>
-                            <td>${meter.imsi || 'N/A'}</td>
-                            <td>${meter.manufacturerName}</td>
-                            <td>${meter.firmware || 'N/A'}</td>
-                            <td>${meter.tariffName}</td>
-                            <td>${formatDate(meter.installDate)}</td>
-                            <td><span class="badge bg-${getStatusColor(meter.statusName)}">${meter.statusName}</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-primary" onclick="editMeter(${meter.meterId})" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="deleteMeter(${meter.meterId})" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        `;
+                    <td>MTR${meter.meterId.toString().padStart(4, '0')}</td>
+                    <td>${meter.consumerName}</td>
+                    <td>${meter.dtrName}</td>
+                    <td>${meter.ipaddress}</td>
+                    <td>${meter.iccid || 'N/A'}</td>
+                    <td>${meter.imsi || 'N/A'}</td>
+                    <td>${meter.manufacturerName}</td>
+                    <td>${meter.firmware || 'N/A'}</td>
+                    <td>${meter.tariffName}</td>
+                    <td>${formatDate(meter.installDate)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="editMeter(${meter.meterId})" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMeter(${meter.meterId})" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
                 tbody.appendChild(row);
             });
 
             displayPagination();
         }
 
+        function getStatusRowClass(status) {
+            const statusClasses = {
+                'Active': 'table-success',
+                'Inactive': 'table-secondary',
+                'Decommissioned': 'table-dark'
+            };
+            return statusClasses[status] || '';
+        }
+
         function displayPagination() {
-            const totalPages = Math.ceil(allMeters.length / itemsPerPage);
+            const totalPages = Math.ceil(filteredMeters.length / itemsPerPage);
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
+
+            if (totalPages <= 1) return;
 
             const prevLi = document.createElement('li');
             prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
@@ -578,7 +661,7 @@
         }
 
         function changePage(page) {
-            const totalPages = Math.ceil(allMeters.length / itemsPerPage);
+            const totalPages = Math.ceil(filteredMeters.length / itemsPerPage);
             if (page >= 1 && page <= totalPages) {
                 currentPage = page;
                 displayMeters(currentPage);
@@ -670,14 +753,18 @@
                 document.getElementById('ipaddress').value = meter.ipaddress;
                 document.getElementById('iccid').value = meter.iccid || '';
                 document.getElementById('imsi').value = meter.imsi || '';
-                document.getElementById('manufacturerId').value = meter.manufacturerId;
                 document.getElementById('firmware').value = meter.firmware || '';
-                document.getElementById('tariffId').value = meter.tariffId;
                 document.getElementById('installDate').value = meter.installDate.split('T')[0];
-                document.getElementById('statusId').value = meter.statusId;
                 document.getElementById('latestReading').value = meter.latestReading;
 
+                // Prepopulate dropdowns
+                document.getElementById('manufacturerId').value = meter.manufacturerId;
+                document.getElementById('tariffId').value = meter.tariffId;
+                document.getElementById('statusId').value = meter.statusId;
+
+                // Show validation for consumer and DTR
                 checkConsumerExists(meter.consumerId);
+                checkDtrExists(meter.dtrid);
 
                 document.getElementById('addMeterModalLabel').textContent = 'Edit Meter';
 
@@ -731,6 +818,7 @@
                 }
                 form.reset();
                 document.getElementById('consumerValidation').innerHTML = '';
+                document.getElementById('dtrValidation').innerHTML = '';
                 loadMeters();
                 alert('Meter saved successfully!');
             } catch (error) {
@@ -760,20 +848,6 @@
             return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
         }
 
-        function getStatusColor(status) {
-            const statusColors = {
-                'Active': 'success',
-                'Inactive': 'secondary',
-                'Suspended': 'warning',
-                'Disconnected': 'danger',
-                'Under Maintenance': 'info',
-                'Pending Activation': 'warning',
-                'Decommissioned': 'dark',
-                'Faulty': 'danger'
-            };
-            return statusColors[status] || 'secondary';
-        }
-
         function showLoading(show) {
             document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
             document.getElementById('metersTableContainer').style.display = show ? 'none' : 'block';
@@ -786,7 +860,6 @@
         }
 
         function redirectToAddDtr() {
-            // Redirect user to Org Unit Hierarchy page (adjust path if needed)
             window.location.href = '/Organization/OrgUnitHierarchy';
         }
     </script>
@@ -808,6 +881,32 @@
         padding: 0.35em 0.65em;
     }
 
+    /* Row color coding based on status */
+    .table-success {
+        background-color: #d1e7dd !important;
+    }
+
+        .table-success:hover {
+            background-color: #c3e0d0 !important;
+        }
+
+    .table-secondary {
+        background-color: #e2e3e5 !important;
+    }
+
+        .table-secondary:hover {
+            background-color: #d4d5d7 !important;
+        }
+
+    .table-dark {
+        background-color: #dee2e6 !important;
+        color: #495057 !important;
+    }
+
+        .table-dark:hover {
+            background-color: #d0d4d8 !important;
+        }
+
     /* Ensure proper modal stacking */
     .modal {
         z-index: 1050 !important;
@@ -817,17 +916,17 @@
         z-index: 1040 !important;
     }
 
-    .modal-backdrop.fade {
-        opacity: 0.35 !important; /* Softer dim */
-        transition: opacity 0.2s ease-in-out;
-    }
+        .modal-backdrop.fade {
+            opacity: 0.35 !important;
+            transition: opacity 0.2s ease-in-out;
+        }
 
-    .modal-backdrop.show:nth-of-type(even) {
-        z-index: 1055;
-    }
+        .modal-backdrop.show:nth-of-type(even) {
+            z-index: 1055;
+        }
 
     #addConsumerModal {
-        z-index: 1060 !important; /* Always above Add Meter modal */
+        z-index: 1060 !important;
     }
 
     #addMeterModal .modal-dialog {
@@ -849,4 +948,971 @@
             transform: scale(1.02);
         }
 
+    /* Filter section styling */
+    .card {
+        border: none;
+    }
+</style> *@
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Meters Management";
+    ViewData["ActivePage"] = "Meters";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Meters Management</h2>
+        <button class="btn btn-success" id="addMeterBtn">
+            <i class="bi bi-plus-circle"></i> Add New Meter
+        </button>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <label for="filterMeterId" class="form-label">Meter ID</label>
+                    <input type="text" class="form-control" id="filterMeterId" placeholder="e.g., MTR0001">
+                </div>
+                <div class="col-md-3">
+                    <label for="filterConsumer" class="form-label">Consumer Name</label>
+                    <input type="text" class="form-control" id="filterConsumer" placeholder="Search by consumer name...">
+                </div>
+                <div class="col-md-2">
+                    <label for="filterDtr" class="form-label">DTR Name</label>
+                    <input type="text" class="form-control" id="filterDtr" placeholder="Search by DTR name...">
+                </div>
+                <div class="col-md-2">
+                    <label for="filterStatus" class="form-label">Status</label>
+                    <select class="form-select" id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Decommissioned">Decommissioned</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-x-circle"></i> Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="text-center py-5">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading meters data...</p>
+    </div>
+
+    <div id="metersTableContainer" class="card shadow-sm" style="display: none;">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="metersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Meter Serial No.</th>
+                            <th>Consumer Name</th>
+                            <th>DTR Name</th>
+                            <th>IP Address</th>
+                            <th>ICCID</th>
+                            <th>IMSI</th>
+                            <th>Manufacturer</th>
+                            <th>Firmware</th>
+                            <th>Category</th>
+                            <th>Install Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metersTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center" id="pagination">
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div id="errorMessage" class="alert alert-danger" role="alert" style="display: none;">
+        <i class="bi bi-exclamation-triangle"></i> <span id="errorText"></span>
+    </div>
+</div>
+
+<!-- Add/Edit Meter Modal -->
+<div class="modal fade" id="addMeterModal" tabindex="-1" aria-labelledby="addMeterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMeterModalLabel">Add New Meter</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="meterForm">
+                    <input type="hidden" id="meterId" name="meterId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerId" class="form-label">Consumer ID <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="consumerId" name="consumerId" required>
+                            <div id="consumerValidation" class="mt-2"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="dtrid" class="form-label">DTR ID <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="dtrid" name="dtrid" required>
+                            <div id="dtrValidation" class="mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="ipaddress" class="form-label">IP Address <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="ipaddress" name="ipaddress" placeholder="192.168.1.1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="iccid" class="form-label">ICCID</label>
+                            <input type="text" class="form-control" id="iccid" name="iccid">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="imsi" class="form-label">IMSI</label>
+                            <input type="text" class="form-control" id="imsi" name="imsi">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="manufacturerId" class="form-label">Manufacturer <span class="text-danger">*</span></label>
+                            <select class="form-select" id="manufacturerId" name="manufacturerId" required>
+                                <option value="">Select Manufacturer</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firmware" class="form-label">Firmware</label>
+                            <input type="text" class="form-control" id="firmware" name="firmware">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tariffId" class="form-label">Tariff <span class="text-danger">*</span></label>
+                            <select class="form-select" id="tariffId" name="tariffId" required>
+                                <option value="">Select Tariff</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="installDate" class="form-label">Install Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="installDate" name="installDate" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="statusId" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="statusId" name="statusId" required>
+                                <option value="">Select Status</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="latestReading" class="form-label">Latest Reading (kWh) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="latestReading" name="latestReading" value="0" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveMeter()">Save Meter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Consumer Modal (Nested) -->
+<div class="modal fade" id="addConsumerModal" tabindex="-1" aria-labelledby="addConsumerModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addConsumerModalLabel">Add Consumer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="consumerForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerName" class="form-label">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="consumerName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="consumerEmail" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerPhone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="consumerPhone" placeholder="+1234567890">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerAddress" class="form-label">Address <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="consumerAddress" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerStatusId" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="consumerStatusId" required>
+                                <option value="">-- Select Status --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="consumerCreatedBy" class="form-label">Created By</label>
+                            <input type="text" class="form-control" id="consumerCreatedBy" placeholder="Admin or Staff">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success" onclick="saveNewConsumer()"><i class="bi bi-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let allMeters = [];
+        let filteredMeters = [];
+        let allManufacturers = [];
+        let allTariffs = [];
+        let allStatuses = [];
+        let meterModal = null;
+        let consumerModal = null;
+        let consumerCheckTimeout;
+
+        // Wait for everything to be ready
+        (function () {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initMeterPage);
+            } else {
+                setTimeout(initMeterPage, 100);
+            }
+        })();
+
+        function initMeterPage() {
+            console.log('Initializing Meter Management Page...');
+
+            if (typeof bootstrap === 'undefined') {
+                console.error('Bootstrap not loaded, retrying...');
+                setTimeout(initMeterPage, 100);
+                return;
+            }
+
+            try {
+                const meterModalEl = document.getElementById('addMeterModal');
+                const consumerModalEl = document.getElementById('addConsumerModal');
+
+                if (meterModalEl) {
+                    meterModal = new bootstrap.Modal(meterModalEl, {
+                        backdrop: true,
+                        keyboard: true
+                    });
+                }
+
+                if (consumerModalEl) {
+                    consumerModal = new bootstrap.Modal(consumerModalEl, {
+                        backdrop: false,
+                        keyboard: true
+                    });
+                }
+
+                document.getElementById('addMeterBtn')?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openAddMeterModal();
+                });
+
+                // Add filter event listeners
+                document.getElementById('filterMeterId')?.addEventListener('input', applyFilters);
+                document.getElementById('filterConsumer')?.addEventListener('input', applyFilters);
+                document.getElementById('filterDtr')?.addEventListener('input', applyFilters);
+                document.getElementById('filterStatus')?.addEventListener('change', applyFilters);
+
+                loadMeters();
+                loadDropdowns();
+
+                const consumerIdInput = document.getElementById('consumerId');
+                if (consumerIdInput) {
+                    consumerIdInput.addEventListener('input', function () {
+                        clearTimeout(consumerCheckTimeout);
+                        const consumerId = this.value.trim();
+                        if (consumerId && consumerId > 0) {
+                            consumerCheckTimeout = setTimeout(() => checkConsumerExists(consumerId), 500);
+                        } else {
+                            document.getElementById('consumerValidation').innerHTML = '';
+                        }
+                    });
+                }
+
+                const dtrIdInput = document.getElementById('dtrid');
+                if (dtrIdInput) {
+                    dtrIdInput.addEventListener('input', function () {
+                        clearTimeout(consumerCheckTimeout);
+                        const dtrId = this.value.trim();
+                        if (dtrId && dtrId > 0) {
+                            consumerCheckTimeout = setTimeout(() => checkDtrExists(dtrId), 500);
+                        } else {
+                            document.getElementById('dtrValidation').innerHTML = '';
+                        }
+                    });
+                }
+
+                console.log('✓ Meter management page initialized');
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showError('Failed to initialize page: ' + error.message);
+            }
+        }
+
+        function applyFilters() {
+            const meterIdFilter = document.getElementById('filterMeterId').value.toLowerCase().trim();
+            const consumerFilter = document.getElementById('filterConsumer').value.toLowerCase().trim();
+            const dtrFilter = document.getElementById('filterDtr').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            filteredMeters = allMeters.filter(meter => {
+                const meterSerial = `MTR${meter.meterId.toString().padStart(4, '0')}`.toLowerCase();
+                const matchesMeterId = !meterIdFilter ||
+                    meterSerial.includes(meterIdFilter) ||
+                    meter.meterId.toString().includes(meterIdFilter);
+                const matchesConsumer = !consumerFilter ||
+                    meter.consumerName.toLowerCase().includes(consumerFilter);
+                const matchesDtr = !dtrFilter ||
+                    meter.dtrName.toLowerCase().includes(dtrFilter);
+                const matchesStatus = !statusFilter ||
+                    meter.statusName === statusFilter;
+
+                return matchesMeterId && matchesConsumer && matchesDtr && matchesStatus;
+            });
+
+            currentPage = 1;
+            displayMeters(currentPage);
+        }
+
+        function clearFilters() {
+            document.getElementById('filterMeterId').value = '';
+            document.getElementById('filterConsumer').value = '';
+            document.getElementById('filterDtr').value = '';
+            document.getElementById('filterStatus').value = '';
+            filteredMeters = [...allMeters];
+            currentPage = 1;
+            displayMeters(currentPage);
+        }
+
+        function openAddMeterModal() {
+            console.log('Opening Add Meter Modal...');
+            try {
+                prepareAddMeter();
+
+                if (meterModal) {
+                    meterModal.show();
+                    console.log('✓ Modal shown');
+                } else {
+                    console.error('✗ Modal instance not found, creating new one');
+                    const modalEl = document.getElementById('addMeterModal');
+                    if (modalEl) {
+                        meterModal = new bootstrap.Modal(modalEl);
+                        meterModal.show();
+                    } else {
+                        throw new Error('Modal element not found in DOM');
+                    }
+                }
+            } catch (error) {
+                console.error('✗ Error opening modal:', error);
+                alert('Error opening meter form. Please refresh the page and try again.');
+            }
+        }
+
+        function prepareAddMeter() {
+            console.log('Preparing Add Meter form...');
+            const form = document.getElementById('meterForm');
+            if (form) {
+                form.reset();
+            }
+            document.getElementById('meterId').value = '';
+            document.getElementById('addMeterModalLabel').textContent = 'Add New Meter';
+            document.getElementById('latestReading').value = '0';
+
+            const validationDiv = document.getElementById('consumerValidation');
+            if (validationDiv) {
+                validationDiv.innerHTML = '';
+            }
+
+            const dtrValidationDiv = document.getElementById('dtrValidation');
+            if (dtrValidationDiv) {
+                dtrValidationDiv.innerHTML = '';
+            }
+
+            // Reset dropdowns
+            document.getElementById('manufacturerId').value = '';
+            document.getElementById('tariffId').value = '';
+            document.getElementById('statusId').value = '';
+        }
+
+        async function checkConsumerExists(consumerId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Consumer/${consumerId}`);
+                const validationDiv = document.getElementById('consumerValidation');
+
+                if (response.ok) {
+                    const consumer = await response.json();
+                    validationDiv.innerHTML = `
+                        <div class="alert alert-success py-2 mb-0">
+                            <i class="bi bi-check-circle"></i> <strong>Consumer Found:</strong> ${consumer.name}
+                        </div>`;
+                } else if (response.status === 404) {
+                    validationDiv.innerHTML = `
+                        <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="openCreateConsumerModal()">
+                            <i class="bi bi-person-plus"></i> Create New Consumer
+                        </button>`;
+                } else {
+                    validationDiv.innerHTML = `
+                        <div class="alert alert-warning py-2 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> Unable to verify consumer
+                        </div>`;
+                }
+            } catch (error) {
+                console.error('Error checking consumer:', error);
+                document.getElementById('consumerValidation').innerHTML = `
+                    <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="openCreateConsumerModal()">
+                        <i class="bi bi-person-plus"></i> Create New Consumer
+                    </button>`;
+            }
+        }
+
+        async function checkDtrExists(dtrId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Dtr/${dtrId}`);
+                const validationDiv = document.getElementById('dtrValidation');
+
+                if (response.ok) {
+                    const dtr = await response.json();
+                    validationDiv.innerHTML = `
+                        <div class="alert alert-success py-2 mb-0">
+                            <i class="bi bi-check-circle"></i>
+                            <strong>DTR Found:</strong> ${dtr.dtrname}
+                        </div>`;
+                }
+                else if (response.status === 404) {
+                    validationDiv.innerHTML = `
+                        <button type="button" class="btn btn-outline-success btn-sm w-100"
+                                onclick="redirectToAddDtr()">
+                            <i class="bi bi-diagram-3"></i> Create New DTR
+                        </button>`;
+                }
+                else {
+                    validationDiv.innerHTML = `
+                        <div class="alert alert-warning py-2 mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> Unable to verify DTR
+                        </div>`;
+                }
+            } catch (error) {
+                console.error('Error checking DTR:', error);
+                document.getElementById('dtrValidation').innerHTML = `
+                    <button type="button" class="btn btn-outline-success btn-sm w-100"
+                            onclick="redirectToAddDtr()">
+                        <i class="bi bi-diagram-3"></i> Create New DTR
+                    </button>`;
+            }
+        }
+
+        function openCreateConsumerModal() {
+            try {
+                document.getElementById('consumerForm').reset();
+                document.getElementById('consumerStatusId').innerHTML = '<option value="">-- Select Status --</option>';
+
+                allStatuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status.statusId;
+                    option.textContent = status.name;
+                    document.getElementById('consumerStatusId').appendChild(option);
+                });
+
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+
+                setTimeout(() => {
+                    consumerModal.show();
+                }, 150);
+
+                if (consumerModal) {
+                    consumerModal.show();
+                } else {
+                    const modalEl = document.getElementById('addConsumerModal');
+                    if (modalEl) {
+                        consumerModal = new bootstrap.Modal(modalEl);
+                        consumerModal.show();
+                    }
+                }
+            } catch (error) {
+                console.error('Error opening consumer modal:', error);
+                alert('Error opening consumer form: ' + error.message);
+            }
+        }
+
+        async function saveNewConsumer() {
+            const form = document.getElementById('consumerForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const consumerData = {
+                name: document.getElementById('consumerName').value.trim(),
+                email: document.getElementById('consumerEmail').value.trim(),
+                phone: document.getElementById('consumerPhone').value.trim(),
+                address: document.getElementById('consumerAddress').value.trim(),
+                statusId: parseInt(document.getElementById('consumerStatusId').value),
+                createdBy: document.getElementById('consumerCreatedBy').value.trim() || "System"
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Consumer/Create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(consumerData)
+                });
+
+                if (!response.ok) throw new Error('Failed to create consumer');
+
+                const locationHeader = response.headers.get('Location');
+                let newConsumerId = null;
+
+                if (locationHeader) {
+                    const matches = locationHeader.match(/\/(\d+)$/);
+                    if (matches) {
+                        newConsumerId = matches[1];
+                    }
+                }
+
+                consumerModal.hide();
+                document.body.classList.remove('modal-open');
+                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+
+                if (newConsumerId) {
+                    document.getElementById('consumerId').value = newConsumerId;
+                    checkConsumerExists(newConsumerId);
+                }
+
+                alert('Consumer created successfully!');
+                form.reset();
+            } catch (error) {
+                alert('Error creating consumer: ' + error.message);
+            }
+        }
+
+        async function loadMeters() {
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE_URL}/api/Meter/AllMeters`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                allMeters = await response.json();
+                filteredMeters = [...allMeters];
+                displayMeters(currentPage);
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading meters:', error);
+                showError('Failed to load meters data: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function displayMeters(page) {
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const metersToDisplay = filteredMeters.slice(startIndex, endIndex);
+
+            const tbody = document.getElementById('metersTableBody');
+            tbody.innerHTML = '';
+
+            if (metersToDisplay.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="text-center py-4">No meters found</td></tr>';
+                return;
+            }
+
+            metersToDisplay.forEach(meter => {
+                const row = document.createElement('tr');
+                const rowClass = getStatusRowClass(meter.statusName);
+                row.className = rowClass;
+
+                row.innerHTML = `
+                    <td>MTR${meter.meterId.toString().padStart(4, '0')}</td>
+                    <td>${meter.consumerName}</td>
+                    <td>${meter.dtrName}</td>
+                    <td>${meter.ipaddress}</td>
+                    <td>${meter.iccid || 'N/A'}</td>
+                    <td>${meter.imsi || 'N/A'}</td>
+                    <td>${meter.manufacturerName}</td>
+                    <td>${meter.firmware || 'N/A'}</td>
+                    <td>${meter.tariffName}</td>
+                    <td>${formatDate(meter.installDate)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success" onclick="editMeter(${meter.meterId})" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                     @* <button class="btn btn-sm btn-danger" onclick="deleteMeter(${meter.meterId})" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>*@
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            displayPagination();
+        }
+
+        function getStatusRowClass(status) {
+            const statusClasses = {
+                'Active': 'table-success',
+                'Inactive': 'table-secondary',
+                'Decommissioned': 'table-dark'
+            };
+            return statusClasses[status] || '';
+        }
+
+        function displayPagination() {
+            const totalPages = Math.ceil(filteredMeters.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Previous</a>`;
+            pagination.appendChild(prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    const li = document.createElement('li');
+                    li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                    li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>`;
+                    pagination.appendChild(li);
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = '<a class="page-link" href="#">...</a>';
+                    pagination.appendChild(li);
+                }
+            }
+
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Next</a>`;
+            pagination.appendChild(nextLi);
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredMeters.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                displayMeters(currentPage);
+            }
+        }
+
+        async function loadDropdowns() {
+            try {
+                await Promise.all([
+                    loadManufacturers(),
+                    loadTariffs(),
+                    loadStatuses()
+                ]);
+            } catch (error) {
+                console.error('Error loading dropdowns:', error);
+            }
+        }
+
+        async function loadManufacturers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Manufacturer/AllManufacturers`);
+                if (!response.ok) throw new Error('Failed to load manufacturers');
+
+                allManufacturers = await response.json();
+                const select = document.getElementById('manufacturerId');
+                select.innerHTML = '<option value="">Select Manufacturer</option>';
+
+                allManufacturers.forEach(manufacturer => {
+                    const option = document.createElement('option');
+                    option.value = manufacturer.manufacturerId;
+                    option.textContent = manufacturer.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading manufacturers:', error);
+            }
+        }
+
+        async function loadTariffs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Tariff/AllTariffs`);
+                if (!response.ok) throw new Error('Failed to load tariffs');
+
+                allTariffs = await response.json();
+                const select = document.getElementById('tariffId');
+                select.innerHTML = '<option value="">Select Tariff</option>';
+
+                allTariffs.forEach(tariff => {
+                    const option = document.createElement('option');
+                    option.value = tariff.tariffId;
+                    option.textContent = tariff.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading tariffs:', error);
+            }
+        }
+
+        async function loadStatuses() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Status/AllStatuses`);
+                if (!response.ok) throw new Error('Failed to load statuses');
+
+                allStatuses = await response.json();
+                const select = document.getElementById('statusId');
+                select.innerHTML = '<option value="">Select Status</option>';
+
+                allStatuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status.statusId;
+                    option.textContent = status.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading statuses:', error);
+            }
+        }
+
+        async function editMeter(meterId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Meter/${meterId}`);
+                if (!response.ok) throw new Error('Failed to fetch meter details');
+
+                const meter = await response.json();
+
+                document.getElementById('meterId').value = meter.meterId;
+                document.getElementById('consumerId').value = meter.consumerId;
+                document.getElementById('dtrid').value = meter.dtrid;
+                document.getElementById('ipaddress').value = meter.ipaddress;
+                document.getElementById('iccid').value = meter.iccid || '';
+                document.getElementById('imsi').value = meter.imsi || '';
+                document.getElementById('firmware').value = meter.firmware || '';
+                document.getElementById('installDate').value = meter.installDate.split('T')[0];
+                document.getElementById('latestReading').value = meter.latestReading;
+
+                // Prepopulate dropdowns
+                document.getElementById('manufacturerId').value = meter.manufacturerId;
+                document.getElementById('tariffId').value = meter.tariffId;
+                document.getElementById('statusId').value = meter.statusId;
+
+                // Show validation for consumer and DTR
+                checkConsumerExists(meter.consumerId);
+                checkDtrExists(meter.dtrid);
+
+                document.getElementById('addMeterModalLabel').textContent = 'Edit Meter';
+
+                if (meterModal) {
+                    meterModal.show();
+                }
+            } catch (error) {
+                alert('Error loading meter: ' + error.message);
+            }
+        }
+
+        async function saveMeter() {
+            const form = document.getElementById('meterForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const meterId = document.getElementById('meterId').value;
+            const meterData = {
+                meterId: meterId ? parseInt(meterId) : null,
+                consumerId: parseInt(document.getElementById('consumerId').value),
+                dtrid: parseInt(document.getElementById('dtrid').value),
+                ipaddress: document.getElementById('ipaddress').value,
+                iccid: document.getElementById('iccid').value,
+                imsi: document.getElementById('imsi').value,
+                manufacturerId: parseInt(document.getElementById('manufacturerId').value),
+                firmware: document.getElementById('firmware').value,
+                tariffId: parseInt(document.getElementById('tariffId').value),
+                installDate: document.getElementById('installDate').value,
+                statusId: parseInt(document.getElementById('statusId').value),
+                latestReading: parseFloat(document.getElementById('latestReading').value)
+            };
+
+            try {
+                const url = meterId ? `${API_BASE_URL}/api/Meter/Update` : `${API_BASE_URL}/api/Meter/Create`;
+                const method = meterId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(meterData)
+                });
+
+                if (!response.ok) throw new Error('Failed to save meter');
+
+                if (meterModal) {
+                    meterModal.hide();
+                }
+                form.reset();
+                document.getElementById('consumerValidation').innerHTML = '';
+                document.getElementById('dtrValidation').innerHTML = '';
+                loadMeters();
+                alert('Meter saved successfully!');
+            } catch (error) {
+                alert('Error saving meter: ' + error.message);
+            }
+        }
+
+        // async function deleteMeter(meterId) {
+        //     if (!confirm('Are you sure you want to delete this meter?')) return;
+
+        //     try {
+        //         const response = await fetch(`${API_BASE_URL}/api/Meter/${meterId}`, {
+        //             method: 'DELETE'
+        //         });
+        //         console.log(`${API_BASE_URL}/api/Meter/${meterId}`);
+
+        //         if (!response.ok) throw new Error('Failed to delete meter');
+
+        //         loadMeters();
+        //         alert('Meter deleted successfully!');
+        //     } catch (error) {
+        //         alert('Error deleting meter: ' + error.message);
+        //     }
+        // }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+            document.getElementById('metersTableContainer').style.display = show ? 'none' : 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('metersTableContainer').style.display = 'none';
+        }
+
+        function redirectToAddDtr() {
+            window.location.href = '/Organization/OrgUnitHierarchy';
+        }
+    </script>
+}
+
+<style>
+    .table th {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .badge {
+        font-size: 0.85em;
+        padding: 0.35em 0.65em;
+    }
+
+    /* Row color coding based on status */
+    .table-success {
+        background-color: #d1e7dd !important;
+    }
+
+        .table-success:hover {
+            background-color: #c3e0d0 !important;
+        }
+
+    .table-secondary {
+        background-color: #e2e3e5 !important;
+    }
+
+        .table-secondary:hover {
+            background-color: #d4d5d7 !important;
+        }
+
+    .table-dark {
+        background-color: #dee2e6 !important;
+        color: #495057 !important;
+    }
+
+        .table-dark:hover {
+            background-color: #d0d4d8 !important;
+        }
+
+    /* Ensure proper modal stacking */
+    .modal {
+        z-index: 1050 !important;
+    }
+
+    .modal-backdrop {
+        z-index: 1040 !important;
+    }
+
+        .modal-backdrop.fade {
+            opacity: 0.35 !important;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .modal-backdrop.show:nth-of-type(even) {
+            z-index: 1055;
+        }
+
+    #addConsumerModal {
+        z-index: 1060 !important;
+    }
+
+    #addMeterModal .modal-dialog {
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    #addMeterModal.show .modal-dialog {
+        transform: translateX(0);
+    }
+
+    #dtrValidation button,
+    #consumerValidation button {
+        transition: all 0.2s ease;
+    }
+
+        #dtrValidation button:hover,
+        #consumerValidation button:hover {
+            transform: scale(1.02);
+        }
+
+    /* Filter section styling */
+    .card {
+        border: none;
+    }
 </style>
