@@ -57,14 +57,12 @@
         const consumerName = localStorage.getItem('consumerName');
         const consumerEmail = localStorage.getItem('consumerEmail');
 
-        // 🔹 Handle logout
         document.getElementById('logoutBtn').addEventListener('click', function (e) {
             e.preventDefault();
             localStorage.clear();
             window.location.href = '/Auth/Login';
         });
 
-        // 🔹 Handle "My Profile" click
         document.getElementById('myProfileBtn').addEventListener('click', async function (e) {
             e.preventDefault();
 
