@@ -1,0 +1,143 @@
+﻿<header class="top-header bg-dark py-3 shadow-sm">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <i class="bi bi-bullseye text-primary fs-4"></i>
+                <span class="ms-2 fw-bold text-primary fs-5">MDMS - Consumer Portal</span>
+            </div>
+
+            <div class="col-md-4"></div>
+
+            <div class="col-md-4">
+                <div class="d-flex justify-content-end align-items-center gap-3 position-relative">
+                    <!-- Profile Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm rounded-circle" id="profileBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-gear fs-5"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li><a class="dropdown-item" href="#" id="myProfileBtn"><i class="bi bi-person-lines-fill me-2"></i>My Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="profileModalLabel"><i class="bi bi-person-lines-fill me-2"></i>Consumer Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="profileContent" class="row g-3">
+                    <div class="text-center text-muted">Loading profile...</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        const token = localStorage.getItem('jwtToken');
+        const userType = localStorage.getItem('userType');
+        const consumerId = localStorage.getItem('consumerId');
+        const consumerName = localStorage.getItem('consumerName');
+        const consumerEmail = localStorage.getItem('consumerEmail');
+
+        // 🔹 Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', function (e) {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/Auth/Login';
+        });
+
+        // 🔹 Handle "My Profile" click
+        document.getElementById('myProfileBtn').addEventListener('click', async function (e) {
+            e.preventDefault();
+
+            const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+            document.getElementById('profileContent').innerHTML = '<div class="text-center text-muted">Loading profile...</div>';
+            modal.show();
+
+            if (!consumerId) {
+                document.getElementById('profileContent').innerHTML = '<div class="text-danger text-center">Consumer ID missing.</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Consumer/${consumerId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch consumer details.');
+
+                const data = await response.json();
+                const html = `
+                        <div class="col-md-6">
+                            <div class="mb-3"><label class="form-label fw-semibold">Consumer ID</label>
+                                <p class="form-control-plaintext">${data.consumerId}</p></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Name</label>
+                                <p class="form-control-plaintext">${data.name}</p></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Email</label>
+                                <p class="form-control-plaintext">${data.email}</p></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Phone</label>
+                                <p class="form-control-plaintext">${data.phone}</p></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3"><label class="form-label fw-semibold">Address</label>
+                                <p class="form-control-plaintext">${data.address}</p></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Status</label>
+                                <p class="form-control-plaintext">${data.statusName}</p></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Meters Linked</label>
+                                <p class="form-control-plaintext">${data.meterCount}</p></div>
+                            <div class="mb-3"><label class="form-label fw-semibold">Created At</label>
+                                <p class="form-control-plaintext">${new Date(data.createdAt).toLocaleString()}</p></div>
+                        </div>`;
+                document.getElementById('profileContent').innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                document.getElementById('profileContent').innerHTML = `<div class="text-danger text-center">${error.message}</div>`;
+            }
+        });
+    });
+</script>
+
+<style>
+    .btn-light.btn-sm.rounded-circle {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+    }
+
+    .dropdown-menu {
+        font-size: 0.9rem;
+    }
+
+    .modal-body p {
+        background: #f8f9fa;
+        padding: .5rem .75rem;
+        border-radius: 6px;
+    }
+
+    .form-label {
+        color: #0d6efd;
+        font-size: 0.9rem;
+    }
+</style>

@@ -1,0 +1,45 @@
+﻿<aside class="sidebar d-flex flex-column bg-dark text-white vh-100 shadow-lg" style="width: 250px;">
+    <nav class="sidebar-nav flex-grow-1 p-3">
+        <a href="@Url.Action("Dashboard", "Consumer")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="Dashboard">
+            <i class="bi bi-speedometer2"></i>
+            <span class="ms-3">Dashboard</span>
+        </a>
+        <a href="@Url.Action("MyMeters", "Consumer")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="MyMeters">
+            <i class="bi bi-lightning-charge"></i>
+            <span class="ms-3">My Meters</span>
+        </a>
+        <a href="@Url.Action("DailyMeterReading", "Consumer")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="DailyMeterReading">
+            <i class="bi bi-calendar-day"></i>
+            <span class="ms-3">Daily Reading</span>
+        </a>
+        <a href="@Url.Action("MonthlyBill", "Consumer")" class="nav-item d-flex align-items-center py-2 px-3 rounded text-decoration-none text-white-50 hover-link" data-page="MonthlyBill">
+            <i class="bi bi-file-earmark-text"></i>
+            <span class="ms-3">Monthly Bills</span>
+        </a>
+    </nav>
+</aside>
+
+<style>
+    .hover-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white !important;
+    }
+
+    .active-link {
+        background-color: #0d6efd;
+        color: white !important;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentPage = '@ViewContext.RouteData.Values["action"]';
+        document.querySelectorAll('.nav-item').forEach(item => {
+            if (item.getAttribute('data-page') === currentPage) {
+                item.classList.remove('text-white-50');
+                item.classList.add('active-link');
+            }
+        });
+    });
+</script>

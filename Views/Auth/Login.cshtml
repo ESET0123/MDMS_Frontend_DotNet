@@ -7,187 +7,374 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-<div class="login-wrapper d-flex align-items-center justify-content-center vh-100 bg-light">
-    <div class="login-card shadow-lg rounded-4 overflow-hidden d-flex flex-column flex-md-row fade-in">
+<div class="login-wrapper">
+    <div class="flip-scene">
+        <div class="flip-card" id="flipCard">
 
-        <!-- Left Section -->
-        <div class="login-left d-flex flex-column justify-content-center align-items-center text-white text-center px-5">
-            <div class="illustration mb-4">
-                <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" width="180">
-                    <rect x="120" y="80" width="160" height="140" rx="10" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
-                    <rect x="145" y="105" width="110" height="30" rx="6" fill="#ffffff" opacity="0.15"/>
-                    <text x="200" y="125" fill="#ffffff" font-family="monospace" font-size="20" text-anchor="middle" opacity="0.9">MDMS</text>
-                </svg>
-            </div>
-
-            <div class="text-container">
-                <h2 class="fw-semibold mb-1">Meter Data</h2>
-                <h2 class="fw-semibold mb-4">Management System</h2>
-                <p class="text-white-75 small mb-0">
-                    Powered by
-                    <a href="https://www.esyasoft.com/" target="_blank" class="fw-bold text-white text-decoration-none link-glow">
-                        Esyasoft Technologies
-                    </a>
-                </p>
-            </div>
-        </div>
-
-        <!-- Right Section -->
-        <div class="login-right bg-white p-5 d-flex flex-column justify-content-center">
-            <h3 class="fw-bold mb-3 text-dark">Sign In</h3>
-            <p class="text-muted mb-4">Enter your credentials to continue</p>
-
-            <form id="loginForm">
-                <div class="mb-3">
-                    <label for="username" class="form-label fw-semibold">
-                        <i class="bi bi-person me-1"></i> Username
-                    </label>
-                    <input type="text" id="username" class="form-control form-control-lg" placeholder="Enter username" autocomplete="username" />
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label fw-semibold">
-                        <i class="bi bi-lock me-1"></i> Password
-                    </label>
-                    <input type="password" id="password" class="form-control form-control-lg" placeholder="Enter password" autocomplete="current-password" />
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div class="form-check">
-                        <input type="checkbox" id="rememberMe" class="form-check-input" />
-                        <label for="rememberMe" class="form-check-label small">Remember me</label>
+            <!-- ADMIN SIDE -->
+            <div class="flip-face flip-front">
+                <div class="login-card shadow-lg rounded-4 overflow-hidden d-flex flex-column flex-md-row fade-in">
+                    <div class="login-left d-flex flex-column justify-content-center align-items-center text-white text-center px-5">
+                        <div class="illustration mb-4">
+                            <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" width="180">
+                                <rect x="120" y="80" width="160" height="140" rx="10" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6" />
+                                <rect x="145" y="105" width="110" height="30" rx="6" fill="#ffffff" opacity="0.15" />
+                                <text x="200" y="125" fill="#ffffff" font-family="monospace" font-size="20" text-anchor="middle" opacity="0.9">MDMS</text>
+                            </svg>
+                        </div>
+                        <div class="text-container">
+                            <h2 class="fw-semibold mb-1">Meter Data</h2>
+                            <h2 class="fw-semibold mb-4">Management System</h2>
+                            <p class="text-white-75 small mb-0">
+                                Powered by
+                                <a href="https://www.esyasoft.com/" target="_blank" class="fw-bold text-white text-decoration-none link-glow">
+                                    Esyasoft Technologies
+                                </a>
+                            </p>
+                        </div>
                     </div>
-                    <a href="#" class="small text-decoration-none text-muted">Forgot password?</a>
+
+                    <div class="login-right bg-white p-5 d-flex flex-column justify-content-center">
+                        <h3 class="fw-bold mb-1 text-dark">Admin Panel Login</h3>
+                        <p class="text-muted mb-4">Enter your credentials to continue</p>
+
+                        <form id="adminLoginForm">
+                            <div class="mb-3">
+                                <label for="admin-username" class="form-label fw-semibold">
+                                    <i class="bi bi-person me-1"></i> Username
+                                </label>
+                                <input type="text" id="admin-username" class="form-control form-control-lg" placeholder="Enter username" autocomplete="username" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="admin-password" class="form-label fw-semibold">
+                                    <i class="bi bi-lock me-1"></i> Password
+                                </label>
+                                <input type="password" id="admin-password" class="form-control form-control-lg" placeholder="Enter password" autocomplete="current-password" />
+                            </div>
+
+                            <button type="button" id="btnAdminLogin" class="btn btn-login btn-lg w-100 position-relative d-flex align-items-center justify-content-center mb-3">
+                                <span id="btnAdminText">Sign In</span>
+                                <div id="btnAdminLoader" class="spinner-border spinner-border-sm text-light ms-2" role="status" style="display:none;"></div>
+                            </button>
+
+                            <div id="admin-msg" class="mt-2 text-center fw-semibold small"></div>
+
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="goUser">
+                                    Continue as Consumer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
+            </div>
 
-                <button type="button" id="btnLogin" class="btn btn-login btn-lg w-100 position-relative d-flex align-items-center justify-content-center">
-                    <span id="btnText">Sign In</span>
-                    <div id="btnLoader" class="spinner-border spinner-border-sm text-light ms-2" role="status" style="display:none;"></div>
-                </button>
+            <!-- CONSUMER SIDE -->
+            <div class="flip-face flip-back">
+                <div class="login-card shadow-lg rounded-4 overflow-hidden d-flex flex-column flex-md-row fade-in">
+                    <div class="login-left d-flex flex-column justify-content-center align-items-center text-white text-center px-5">
+                        <div class="illustration mb-4">
+                            <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" width="180">
+                                <rect x="120" y="80" width="160" height="140" rx="10" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6" />
+                                <rect x="145" y="105" width="110" height="30" rx="6" fill="#ffffff" opacity="0.15" />
+                                <text x="200" y="125" fill="#ffffff" font-family="monospace" font-size="20" text-anchor="middle" opacity="0.9">MDMS</text>
+                            </svg>
+                        </div>
+                        <div class="text-container">
+                            <h2 class="fw-semibold mb-1">Meter Data</h2>
+                            <h2 class="fw-semibold mb-4">Management System</h2>
+                            <p class="text-white-75 small mb-0">
+                                Powered by
+                                <a href="https://www.esyasoft.com/" target="_blank" class="fw-bold text-white text-decoration-none link-glow">
+                                    Esyasoft Technologies
+                                </a>
+                            </p>
+                        </div>
+                    </div>
 
-                <div id="msg" class="mt-2 text-center fw-semibold small"></div>
-            </form>
+                    <div class="login-right bg-white p-5 d-flex flex-column justify-content-center">
+                        <h3 class="fw-bold mb-1 text-dark">Consumer Panel Login</h3>
+                        <p class="text-muted mb-4">Enter your credentials to continue</p>
+
+                        <form id="consumerLoginForm">
+                            <div class="mb-3">
+                                <label for="consumer-email" class="form-label fw-semibold">
+                                    <i class="bi bi-envelope me-1"></i> Email
+                                </label>
+                                <input type="email" id="consumer-email" class="form-control form-control-lg" placeholder="Enter your email" autocomplete="email" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="consumer-password" class="form-label fw-semibold">
+                                    <i class="bi bi-lock me-1"></i> Password
+                                </label>
+                                <input type="password" id="consumer-password" class="form-control form-control-lg" placeholder="Enter password" autocomplete="current-password" />
+                            </div>
+
+                            <button type="button" id="btnConsumerLogin" class="btn btn-login btn-lg w-100 position-relative d-flex align-items-center justify-content-center mb-3">
+                                <span id="btnConsumerText">Sign In</span>
+                                <div id="btnConsumerLoader" class="spinner-border spinner-border-sm text-light ms-2" role="status" style="display:none;"></div>
+                            </button>
+
+                            <div id="consumer-msg" class="mt-2 text-center fw-semibold small"></div>
+
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="goAdmin">
+                                    Back to Admin
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
     const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
 
-    $(document).ready(function () {
-        // Activate button on data input
-        $('#username, #password').on('input', function () {
-            const username = $('#username').val().trim();
-            const password = $('#password').val().trim();
-            const btn = $('#btnLogin');
-            if (username && password) btn.addClass('active-btn');
-            else btn.removeClass('active-btn');
-        });
+    // Flip logic
+    $(document).on('click', '#goUser', function () {
+        $('#flipCard').addClass('flipped');
+    });
+    $(document).on('click', '#goAdmin', function () {
+        $('#flipCard').removeClass('flipped');
+    });
 
-        // Enter key triggers login
-        $("#username, #password").keypress(function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                $("#btnLogin").click();
-            }
-        });
+    function showMsg(selector, msg, cls) {
+        $(selector).hide().text(msg).removeClass("text-danger text-success").addClass(cls).fadeIn(180);
+    }
 
-        $("#btnLogin").click(function () {
-            const username = $("#username").val().trim();
-            const password = $("#password").val().trim();
+    // Admin Login - Enter key
+    $('#admin-username, #admin-password').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#btnAdminLogin').click();
+        }
+    });
 
-            if (!username || !password) {
-                showMessage("Please enter both username and password", "text-danger");
-                return;
-            }
+    // Admin Login Handler
+    $('#btnAdminLogin').click(function () {
+        const username = $('#admin-username').val().trim();
+        const password = $('#admin-password').val().trim();
 
-            const $btn = $("#btnLogin");
-            const $loader = $("#btnLoader");
-            const $text = $("#btnText");
+        if (!username || !password) {
+            showMsg('#admin-msg', 'Please enter both username and password', 'text-danger');
+            return;
+        }
 
-            // Smooth loader transition
-            $btn.prop("disabled", true).addClass("loading");
-            $text.animate({ opacity: 0.6 }, 200);
-            $loader.fadeIn(300);
+        const $btn = $(this);
+        const $loader = $('#btnAdminLoader');
+        const $text = $('#btnAdminText');
 
-            $.ajax({
-                url: `${API_BASE_URL}/api/Auth/login`,
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({ username, password }),
-                success: function (response) {
-                    localStorage.setItem("jwtToken", response.token);
-                    showMessage("Login successful! Redirecting...", "text-success");
-                    setTimeout(() => {
-                        window.location.href = "/Home/Dashboard";
-                    }, 1000);
-                },
-                error: function () {
-                    showMessage("Invalid credentials", "text-danger");
-                    $btn.prop("disabled", false).removeClass("loading");
-                    $loader.fadeOut(200);
-                    $text.animate({ opacity: 1 }, 200);
+        $btn.prop('disabled', true);
+        $text.hide();
+        $loader.show();
+        $('#admin-msg').hide();
+
+        $.ajax({
+            url: `${API_BASE_URL}/api/Auth/Userlogin`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ username, password }),
+            success: function (response) {
+                localStorage.setItem('jwtToken', response.token);
+                localStorage.setItem('userType', 'admin');
+                localStorage.setItem('userId', response.userId);
+                localStorage.setItem('username', response.username);
+                showMsg('#admin-msg', 'Login successful!', 'text-success');
+                
+                setTimeout(() => {
+                    window.location.href = '/Home/Dashboard';
+                }, 800);
+            },
+            error: function (xhr) {
+                let errorMsg = 'Invalid credentials';
+                if (xhr.status === 0) {
+                    errorMsg = 'Connection failed';
+                } else if (xhr.status === 500) {
+                    errorMsg = 'Server error';
                 }
-            });
+                showMsg('#admin-msg', errorMsg, 'text-danger');
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
+                $text.show();
+                $loader.hide();
+            }
         });
     });
 
-    function showMessage(msg, cls) {
-        $("#msg").hide().text(msg).removeClass("text-danger text-success").addClass(cls).fadeIn(200);
-    }
+    // Consumer Login - Enter key
+    $('#consumer-email, #consumer-password').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            $('#btnConsumerLogin').click();
+        }
+    });
+
+    // Consumer Login Handler
+    $('#btnConsumerLogin').click(function () {
+        const email = $('#consumer-email').val().trim();
+        const password = $('#consumer-password').val().trim();
+
+        if (!email || !password) {
+            showMsg('#consumer-msg', 'Please enter both email and password', 'text-danger');
+            return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        if (!emailRegex.test(email)) {
+            showMsg('#consumer-msg', 'Please enter a valid email address', 'text-danger');
+            return;
+        }
+
+        const $btn = $(this);
+        const $loader = $('#btnConsumerLoader');
+        const $text = $('#btnConsumerText');
+
+        $btn.prop('disabled', true);
+        $text.hide();
+        $loader.show();
+        $('#consumer-msg').hide();
+
+        $.ajax({
+            url: `${API_BASE_URL}/api/Auth/ConsumerLogin`,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ email, password }),
+            success: function (response) {
+                localStorage.setItem('jwtToken', response.token);
+                localStorage.setItem('userType', 'consumer');
+                localStorage.setItem('consumerId', response.consumerId);
+                localStorage.setItem('consumerName', response.name);
+                localStorage.setItem('consumerEmail', response.email);
+
+                showMsg('#consumer-msg', 'Login successful!', 'text-success');
+                
+                setTimeout(() => {
+                    window.location.href = '/Consumer/Dashboard';
+                }, 800);
+            },
+            error: function (xhr) {
+                let errorMsg = 'Invalid credentials';
+                if (xhr.status === 0) {
+                    errorMsg = 'Connection failed';
+                } else if (xhr.status === 401) {
+                    const response = xhr.responseJSON || {};
+                    errorMsg = xhr.responseText || 'Invalid email or password';
+                } else if (xhr.status === 500) {
+                    errorMsg = 'Server error';
+                }
+                showMsg('#consumer-msg', errorMsg, 'text-danger');
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
+                $text.show();
+                $loader.hide();
+            }
+        });
+    });
 </script>
 
 <style>
-    body {
+    html, body {
+        height: 100%;
+        margin: 0;
         background-color: #f8f9fa;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+    }
+
+    .login-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .flip-scene {
+        perspective: 1200px;
+        width: 100%;
+        max-width: 900px;
+        height: 500px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .flip-card {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        max-width: 900px;
+        transform-style: preserve-3d;
+        transition: transform 0.7s ease;
+    }
+
+    .flip-card.flipped {
+        transform: rotateY(180deg);
+    }
+
+    .flip-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .flip-back {
+        transform: rotateY(180deg);
     }
 
     .login-card {
-        width: 90%;
-        max-width: 900px;
+        width: 100%;
+        height: 100%;
+        max-height: 500px;
         background-color: #fff;
         border-radius: 20px;
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
         overflow: hidden;
+        display: flex;
+        flex-direction: row;
     }
 
-    /* Left Panel */
     .login-left {
         flex: 1;
         background: #0a0a0a;
         color: #fff;
-        min-height: 420px;
-        position: relative;
-        padding-bottom: 4rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem 2rem;
+        text-align: center;
         box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.05);
     }
 
-    .text-container {
-        transform: translateY(-15px);
-    }
-
-    .login-left svg {
-        opacity: 0.9;
-        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.1));
-    }
-
-    .link-glow:hover {
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-    }
-
-    /* Right Panel */
     .login-right {
         flex: 1;
         background-color: #ffffff;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .form-control {
         border-radius: 10px;
         padding: 0.8rem 1rem;
-        font-size: 1rem;
         border: 1.8px solid #e5e7eb;
         background-color: #f9fafb;
         transition: all 0.25s ease;
@@ -204,9 +391,9 @@
         padding: 0.9rem;
         font-weight: 600;
         background: linear-gradient(135deg, #4da3ff 0%, #007bff 100%);
+        color: #fff;
         border: none;
         transition: all 0.3s ease;
-        color: #fff;
     }
 
     .btn-login:hover:not(:disabled) {
@@ -218,15 +405,6 @@
     .btn-login:disabled {
         opacity: 0.7;
         cursor: not-allowed;
-    }
-
-    .btn-login.loading {
-        pointer-events: none;
-    }
-
-    #msg {
-        font-size: 0.85rem;
-        transition: 0.3s ease;
     }
 
     .fade-in {
@@ -245,16 +423,44 @@
     }
 
     @@media (max-width: 768px) {
+        .login-wrapper {
+            padding: 10px;
+            align-items: flex-start;
+            min-height: 100vh;
+            height: auto;
+        }
+
+        .flip-scene {
+            height: auto;
+            min-height: 100vh;
+        }
+
+        .flip-card {
+            height: auto;
+            min-height: 100vh;
+        }
+
         .login-card {
             flex-direction: column;
             max-width: 500px;
+            height: auto;
+            max-height: none;
         }
+
         .login-left {
-            min-height: 220px;
             padding: 2rem;
+            flex: none;
+            min-height: 300px;
         }
+
         .login-right {
             padding: 2rem;
+            flex: none;
+        }
+
+        .flip-face {
+            position: relative;
+            height: auto;
         }
     }
 </style>
