@@ -1,8 +1,290 @@
 ﻿@{
+    Layout = "~/Views/Shared/_ConsumerLayout.cshtml";
     ViewData["Title"] = "Consumer Dashboard";
 }
 
-<div class="container mt-5">
-    <h1 class="text-primary mb-4">Consumer Dashboard</h1>
-    <p>Welcome to your personal dashboard, <strong>@ViewData["Title"]</strong>!</p>
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-5 fw-bold text-dark mb-1">Dashboard</h1>
+                    <p class="text-muted">Welcome back! Here's your connected meters and recent energy usage.</p>
+                </div>
+                <div class="text-end">
+                    <div class="text-muted small" id="currentDateTime"></div>
+                    <button class="btn btn-sm btn-outline-secondary mt-1" onclick="refreshDashboard()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center my-5 py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Loading your dashboard...</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div id="statisticsCards" class="row g-4 mb-4" style="display: none;">
+        <!-- Connected Meters -->
+        <div class="col-xl-4 col-md-6">
+            <a href="@Url.Action("MyMeters", "Consumer")" class="text-decoration-none">
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="text-muted small fw-semibold mb-2">CONNECTED METERS</h6>
+                                <h2 class="fw-bold mb-0 text-dark" id="totalMeters">0</h2>
+                                <div class="progress mt-2" style="height: 4px;">
+                                    <div class="progress-bar bg-success" id="meterProgress" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="stat-icon text-success bg-success bg-opacity-10 p-3 rounded-circle">
+                                <i class="bi bi-lightning-charge fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="border-top mt-3 pt-2">
+                            <small class="text-muted"><i class="bi bi-arrow-right-circle me-1"></i> View all meters</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Active Meters -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted small fw-semibold mb-2">ACTIVE METERS</h6>
+                            <h2 class="fw-bold mb-0 text-dark" id="activeMeters">0</h2>
+                            <div class="progress mt-2" style="height: 4px;">
+                                <div class="progress-bar bg-success" id="activeMeterProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-icon text-success bg-success bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-check-circle fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="border-top mt-3 pt-2">
+                        <small class="text-muted"><i class="bi bi-bar-chart me-1"></i> Meters transmitting data</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inactive Meters -->
+        <div class="col-xl-4 col-md-6">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted small fw-semibold mb-2">INACTIVE METERS</h6>
+                            <h2 class="fw-bold mb-0 text-dark" id="inactiveMeters">0</h2>
+                            <div class="progress mt-2" style="height: 4px;">
+                                <div class="progress-bar bg-danger" id="inactiveMeterProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="stat-icon text-danger bg-danger bg-opacity-10 p-3 rounded-circle">
+                            <i class="bi bi-slash-circle fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="border-top mt-3 pt-2">
+                        <small class="text-muted"><i class="bi bi-exclamation-triangle me-1"></i> Meters not reporting data</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Consumption Graph -->
+    <div id="consumptionGraphSection" class="row" style="display:none;">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-graph-up-arrow text-success me-2"></i>Recent Consumption (Last 7 Days)
+                    </h5>
+                    <span class="badge bg-success bg-opacity-10 text-success">kWh</span>
+                </div>
+                <div class="card-body">
+                    <canvas id="consumptionChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const token = localStorage.getItem('jwtToken');
+    const consumerId = localStorage.getItem('consumerId');
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+        fetchConsumerDashboard();
+    });
+
+    function updateDateTime() {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+    }
+
+    async function fetchConsumerDashboard() {
+        document.getElementById('loadingIndicator').style.display = 'block';
+        document.getElementById('statisticsCards').style.display = 'none';
+        document.getElementById('consumptionGraphSection').style.display = 'none';
+
+        try {
+            const meterRes = await fetch(`${API_BASE_URL}/api/Meter/AllMeters`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!meterRes.ok) throw new Error("Failed to load meter data");
+            const meters = await meterRes.json();
+
+            const consumerMeters = meters.filter(m => m.consumerId == consumerId);
+            const totalMeters = consumerMeters.length;
+            const activeMeters = consumerMeters.filter(m => m.statusName?.toLowerCase() === 'active').length;
+            const inactiveMeters = totalMeters - activeMeters;
+
+            // Animate values
+            animateValue('totalMeters', 0, totalMeters, 800);
+            animateValue('activeMeters', 0, activeMeters, 800);
+            animateValue('inactiveMeters', 0, inactiveMeters, 800);
+
+            // Set progress bars
+            setProgress('meterProgress', totalMeters, totalMeters);
+            setProgress('activeMeterProgress', activeMeters, totalMeters);
+            setProgress('inactiveMeterProgress', inactiveMeters, totalMeters);
+
+            document.getElementById('loadingIndicator').style.display = 'none';
+            document.getElementById('statisticsCards').style.display = 'flex';
+
+            if (consumerMeters.length > 0) {
+                await loadConsumptionTrend(consumerMeters[0].meterId);
+            }
+        } catch (error) {
+            console.error('Dashboard load error:', error);
+            document.getElementById('loadingIndicator').innerHTML =
+                `<div class="alert alert-danger d-inline-block">
+                    Failed to load dashboard data. 
+                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="fetchConsumerDashboard()">Retry</button>
+                </div>`;
+        }
+    }
+
+    async function loadConsumptionTrend(meterId) {
+        try {
+            const today = new Date();
+            const start = new Date(today);
+            start.setDate(today.getDate() - 6);
+
+            const startDate = start.toISOString().split('T')[0];
+            const endDate = today.toISOString().split('T')[0];
+
+            const res = await fetch(`${API_BASE_URL}/api/DailyMeterReading/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error("No consumption data found");
+            const readings = await res.json();
+
+            const labels = readings.map(r => r.readingDate);
+            const data = readings.map(r => r.consumptionKwh);
+
+            renderConsumptionChart(labels, data);
+            document.getElementById('consumptionGraphSection').style.display = 'block';
+        } catch (err) {
+            console.warn('Graph load skipped:', err.message);
+        }
+    }
+
+    function renderConsumptionChart(labels, data) {
+        const ctx = document.getElementById('consumptionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Daily Consumption (kWh)',
+                    data,
+                    fill: true,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#555' } },
+                    x: { ticks: { color: '#555' } }
+                }
+            }
+        });
+    }
+
+    function animateValue(id, start, end, duration) {
+        const el = document.getElementById(id);
+        const range = end - start;
+        const increment = range / (duration / 16);
+        let current = start;
+        const timer = setInterval(() => {
+            current += increment;
+            if ((increment > 0 && current >= end)) {
+                current = end;
+                clearInterval(timer);
+            }
+            el.textContent = Math.floor(current);
+        }, 16);
+    }
+
+    function setProgress(id, value, total) {
+        const percent = total === 0 ? 0 : (value / total) * 100;
+        document.getElementById(id).style.width = percent + '%';
+    }
+
+    function refreshDashboard() {
+        fetchConsumerDashboard();
+    }
+</script>
+
+<style>
+    :root {
+        --primary-color: #198754;
+        --primary-light: rgba(25, 135, 84, 0.1);
+    }
+
+    .stat-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1);
+    }
+</style>
+}
