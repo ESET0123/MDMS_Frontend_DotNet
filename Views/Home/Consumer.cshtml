@@ -831,12 +831,7 @@
             consumerModal.show();
         }
 
-        function hashPassword(password) {
-            return crypto.subtle.digest('SHA-256', new TextEncoder().encode(password))
-                .then(buf => {
-                    return btoa(String.fromCharCode(...new Uint8Array(buf)));
-                });
-        }
+        
 
         async function saveConsumer() {
             const isEdit = document.getElementById('isEdit').value === 'true';
@@ -867,10 +862,8 @@
             }
 
             // Hash password if provided
-            let passwordHash = null;
-            if (passwordValue) {
-                passwordHash = await hashPassword(passwordValue);
-            }
+            // let passwordHash = null;
+            
 
             const data = {
                 consumerId: isEdit ? parseInt(document.getElementById('consumerId').value) : 0,
@@ -879,7 +872,7 @@
                 phone: phone,
                 address: address,
                 statusId: statusId,
-                passwordHash: passwordHash,
+                passwordHash: passwordValue,
                 createdBy: document.getElementById('createdBy').value.trim() || "System",
                 updatedBy: isEdit ? "System" : null
             };
