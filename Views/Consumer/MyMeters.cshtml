@@ -1,8 +1,224 @@
 ﻿@{
+    Layout = "~/Views/Shared/_ConsumerLayout.cshtml";
     ViewData["Title"] = "My Meters";
 }
 
-<div class="container mt-5">
-    <h2 class="text-info">My Meters</h2>
-    <p>This is where your meter list and details will appear.</p>
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">My Meters</h2>
+            <p class="text-muted mb-0">View and monitor all meters linked to your account</p>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold"><i class="bi bi-funnel me-2"></i>Filter Meters</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-xl-3 col-md-4">
+                    <label class="form-label small fw-semibold text-muted">METER ID</label>
+                    <input type="text" class="form-control" id="filterMeterId" placeholder="e.g., MTR0001">
+                </div>
+                <div class="col-xl-3 col-md-4">
+                    <label class="form-label small fw-semibold text-muted">DTR NAME</label>
+                    <input type="text" class="form-control" id="filterDtr" placeholder="Search DTR...">
+                </div>
+                <div class="col-xl-3 col-md-4">
+                    <label class="form-label small fw-semibold text-muted">STATUS</label>
+                    <select class="form-select" id="filterStatus">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Decommissioned">Decommissioned</option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-md-12 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingSpinner" class="text-center py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Fetching your connected meters...</p>
+    </div>
+
+    <!-- Table -->
+    <div id="metersTableContainer" class="card border-0 shadow-sm" style="display: none;">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold"><i class="bi bi-lightning-charge me-2"></i>Connected Meters</h6>
+            <span class="badge bg-success bg-opacity-10 text-success" id="metersCount">0 meters</span>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Meter Serial No.</th>
+                            <th>DTR Name</th>
+                            <th>IP Address</th>
+                            <th>ICCID</th>
+                            <th>IMSI</th>
+                            <th>Manufacturer</th>
+                            <th>Firmware</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+<script>
+    const token = localStorage.getItem('jwtToken');
+    const consumerId = localStorage.getItem('consumerId');
+
+    document.addEventListener('DOMContentLoaded', loadMyMeters);
+
+    async function loadMyMeters() {
+        showLoading(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/Meter/AllMeters`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error('Failed to fetch meters');
+
+            const allMeters = await res.json();
+            let myMeters = allMeters.filter(m => m.consumerId == consumerId);
+
+            window.filteredMeters = myMeters;
+
+            displayMeters(myMeters);
+            document.getElementById('metersCount').textContent = `${myMeters.length} meter${myMeters.length !== 1 ? 's' : ''}`;
+
+            // Filters
+            document.getElementById('filterMeterId').addEventListener('input', applyFilters);
+            document.getElementById('filterDtr').addEventListener('input', applyFilters);
+            document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        } catch (error) {
+            console.error(error);
+            document.getElementById('metersTableBody').innerHTML = `
+                <tr><td colspan="8" class="text-center text-danger py-5">Unable to load meters.</td></tr>`;
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function applyFilters() {
+        const meterIdFilter = document.getElementById('filterMeterId').value.toLowerCase().trim();
+        const dtrFilter = document.getElementById('filterDtr').value.toLowerCase().trim();
+        const statusFilter = document.getElementById('filterStatus').value;
+
+        const filtered = window.filteredMeters.filter(m => {
+            const meterSerial = `MTR${m.meterId.toString().padStart(4, '0')}`.toLowerCase();
+            const matchesMeter = !meterIdFilter || meterSerial.includes(meterIdFilter);
+            const matchesDtr = !dtrFilter || m.dtrName?.toLowerCase().includes(dtrFilter);
+            const matchesStatus = !statusFilter || m.statusName === statusFilter;
+            return matchesMeter && matchesDtr && matchesStatus;
+        });
+
+        displayMeters(filtered);
+        document.getElementById('metersCount').textContent = `${filtered.length} meter${filtered.length !== 1 ? 's' : ''}`;
+    }
+
+    function clearFilters() {
+        document.getElementById('filterMeterId').value = '';
+        document.getElementById('filterDtr').value = '';
+        document.getElementById('filterStatus').value = '';
+        displayMeters(window.filteredMeters);
+        document.getElementById('metersCount').textContent = `${window.filteredMeters.length} meters`;
+    }
+
+    function displayMeters(meters) {
+        const tbody = document.getElementById('metersTableBody');
+        tbody.innerHTML = '';
+
+        if (!meters.length) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted">
+                <i class="bi bi-search display-6"></i>
+                <p class="mt-3">No meters found.</p>
+            </td></tr>`;
+            return;
+        }
+
+        meters.forEach(m => {
+            const row = document.createElement('tr');
+            const rowClass = getStatusClass(m.statusName);
+            row.className = rowClass;
+
+            row.innerHTML = `
+                <td class="ps-4 fw-semibold">MTR${m.meterId.toString().padStart(4, '0')}</td>
+                <td><span class="badge bg-light text-dark">${m.dtrName}</span></td>
+                <td><code>${m.ipaddress || '-'}</code></td>
+                <td>${m.iccid || '<span class="text-muted">N/A</span>'}</td>
+                <td>${m.imsi || '<span class="text-muted">N/A</span>'}</td>
+                <td><span class="badge bg-secondary bg-opacity-10 text-secondary">${m.manufacturerName || '-'}</span></td>
+                <td>${m.firmware || '<span class="text-muted">N/A</span>'}</td>
+                <td>${m.statusName || '<span class="text-muted">Unknown</span>'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function getStatusClass(status) {
+        const classes = {
+            'Active': 'table-success',
+            'Inactive': 'table-secondary',
+            'Decommissioned': 'table-dark'
+        };
+        return classes[status] || '';
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        document.getElementById('metersTableContainer').style.display = show ? 'none' : 'block';
+    }
+</script>
+
+<style>
+    .card { border-radius: 12px; border: none; }
+    .table th { font-weight: 600; white-space: nowrap; border-bottom: 2px solid #e9ecef; padding: 1rem; }
+    .table td { padding: 1rem; vertical-align: middle; }
+
+    .table-success { background-color: rgba(25, 135, 84, 0.05) !important; border-left: 4px solid #198754; }
+    .table-secondary { background-color: rgba(108, 117, 125, 0.05) !important; border-left: 4px solid #6c757d; }
+    .table-dark { background-color: rgba(33, 37, 41, 0.05) !important; border-left: 4px solid #212529; }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(25, 135, 84, 0.08) !important;
+        transform: translateX(2px);
+    }
+
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+
+    .spinner-border { animation-duration: 0.75s; }
+</style>
+}
