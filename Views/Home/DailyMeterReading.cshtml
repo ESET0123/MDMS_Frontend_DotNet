@@ -498,7 +498,7 @@
                 const consumerName = meter.consumerName || meter.consumer?.name || 'Unknown';
                 const latestReading = meter.latestReading || 0;
                 const meterId = meter.meterId;
-                const tariffId = meter.tariffId || meter.tariff?.tariffId;
+                const tariffId = meter.tariffId ;
 
                 const option = `<option value="${meterId}"
                             data-meter-number="${meterId}"

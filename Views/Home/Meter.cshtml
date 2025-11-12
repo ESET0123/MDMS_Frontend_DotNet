@@ -310,7 +310,7 @@
         })();
 
         function initMeterPage() {
-            console.log('Initializing Meter Management Page...');
+            // console.log('Initializing Meter Management Page...');
 
             if (typeof bootstrap === 'undefined') {
                 console.error('Bootstrap not loaded, retrying...');
@@ -376,7 +376,7 @@
                     });
                 }
 
-                console.log('✓ Meter management page initialized');
+                // console.log(' Meter management page initialized');
             } catch (error) {
                 console.error('Initialization error:', error);
                 showError('Failed to initialize page: ' + error.message);
@@ -430,13 +430,13 @@
         }
 
         function openAddMeterModal() {
-            console.log('Opening Add Meter Modal...');
+            // console.log('Opening Add Meter Modal...');
             try {
                 prepareAddMeter();
 
                 if (meterModal) {
                     meterModal.show();
-                    console.log('✓ Modal shown');
+                    // console.log(' Modal shown');
                 } else {
                     console.error('✗ Modal instance not found, creating new one');
                     const modalEl = document.getElementById('addMeterModal');
@@ -454,7 +454,7 @@
         }
 
         function prepareAddMeter() {
-            console.log('Preparing Add Meter form...');
+            // console.log('Preparing Add Meter form...');
             const form = document.getElementById('meterForm');
             if (form) {
                 form.reset();
@@ -855,11 +855,17 @@
 
         async function editMeter(meterId) {
             try {
+                // First, ensure all dropdowns are loaded
+                await ensureDropdownsLoaded();
+
                 const response = await fetch(`${API_BASE_URL}/api/Meter/${meterId}`);
                 if (!response.ok) throw new Error('Failed to fetch meter details');
 
                 const meter = await response.json();
 
+                // console.log('Full meter response:', meter);
+
+                // Populate basic fields
                 document.getElementById('meterId').value = meter.meterId;
                 document.getElementById('consumerId').value = meter.consumerId;
                 document.getElementById('dtrid').value = meter.dtrid;
@@ -870,10 +876,51 @@
                 document.getElementById('installDate').value = meter.installDate.split('T')[0];
                 document.getElementById('latestReading').value = meter.latestReading;
 
-                // Prepopulate dropdowns
-                document.getElementById('manufacturerId').value = meter.manufacturerId;
-                document.getElementById('tariffId').value = meter.tariffId;
-                document.getElementById('statusId').value = meter.statusId;
+                // Wait a moment for DOM to update
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Set dropdown values
+                const manufacturerSelect = document.getElementById('manufacturerId');
+                const tariffSelect = document.getElementById('tariffId');
+                const statusSelect = document.getElementById('statusId');
+
+                // Find manufacturer ID by name if manufacturerId is missing
+                let manufacturerIdToSet = meter.manufacturerId;
+                if (!manufacturerIdToSet && meter.manufacturerName) {
+                    const manufacturer = allManufacturers.find(m => m.name === meter.manufacturerName);
+                    if (manufacturer) {
+                        manufacturerIdToSet = manufacturer.manufacturerId;
+                        // console.log('Found manufacturer by name:', meter.manufacturerName, 'ID:', manufacturerIdToSet);
+                    }
+                }
+
+                // Find status ID by name if statusId is missing
+                let statusIdToSet = meter.statusId;
+                if (!statusIdToSet && meter.statusName) {
+                    const status = allStatuses.find(s => s.name === meter.statusName);
+                    if (status) {
+                        statusIdToSet = status.statusId;
+                        // console.log('Found status by name:', meter.statusName, 'ID:', statusIdToSet);
+                    }
+                }
+
+                // Set manufacturer
+                if (manufacturerIdToSet) {
+                    manufacturerSelect.value = manufacturerIdToSet.toString();
+                    // console.log('Set manufacturer to:', manufacturerIdToSet, 'Selected value:', manufacturerSelect.value);
+                }
+
+                // Set tariff
+                if (meter.tariffId) {
+                    tariffSelect.value = meter.tariffId.toString();
+                    // console.log('Set tariff to:', meter.tariffId, 'Selected value:', tariffSelect.value);
+                }
+
+                // Set status
+                if (statusIdToSet) {
+                    statusSelect.value = statusIdToSet.toString();
+                    // console.log('Set status to:', statusIdToSet, 'Selected value:', statusSelect.value);
+                }
 
                 // Show validation for consumer and DTR
                 checkConsumerExists(meter.consumerId);
@@ -885,7 +932,185 @@
                     meterModal.show();
                 }
             } catch (error) {
+                console.error('Error loading meter:', error);
                 alert('Error loading meter: ' + error.message);
+            }
+        }
+
+        // New function to ensure dropdowns are loaded
+        async function ensureDropdownsLoaded() {
+            const promises = [];
+
+            // Check if manufacturers dropdown is loaded
+            if (allManufacturers.length === 0) {
+                promises.push(loadManufacturers());
+            }
+
+            // Check if tariffs dropdown is loaded
+            if (allTariffs.length === 0) {
+                promises.push(loadTariffs());
+            }
+
+            // Check if statuses dropdown is loaded
+            if (allStatuses.length === 0) {
+                promises.push(loadStatuses());
+            }
+
+            if (promises.length > 0) {
+                await Promise.all(promises);
+            }
+        }
+
+        // Enhanced loadManufacturers function
+        async function loadManufacturers() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Manufacturer/AllManufacturers`);
+                if (!response.ok) throw new Error('Failed to load manufacturers');
+
+                allManufacturers = await response.json();
+                const select = document.getElementById('manufacturerId');
+
+                // Only reset if empty
+                if (select.options.length <= 1) {
+                    select.innerHTML = '<option value="">Select Manufacturer</option>';
+                }
+
+                allManufacturers.forEach(manufacturer => {
+                    // Check if option already exists
+                    const existingOption = Array.from(select.options).find(opt => opt.value == manufacturer.manufacturerId);
+                    if (!existingOption) {
+                        const option = document.createElement('option');
+                        option.value = manufacturer.manufacturerId;
+                        option.textContent = manufacturer.name;
+                        select.appendChild(option);
+                    }
+                });
+
+                // console.log('Manufacturers loaded:', allManufacturers.length);
+            } catch (error) {
+                console.error('Error loading manufacturers:', error);
+                throw error; // Re-throw to handle in caller
+            }
+        }
+
+        // Enhanced loadStatuses function
+        async function loadStatuses() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Status/AllStatuses`);
+                if (!response.ok) throw new Error('Failed to load statuses');
+
+                allStatuses = await response.json();
+                const select = document.getElementById('statusId');
+
+                // Only reset if empty
+                if (select.options.length <= 1) {
+                    select.innerHTML = '<option value="">Select Status</option>';
+                }
+
+                allStatuses.forEach(status => {
+                    // Check if option already exists
+                    const existingOption = Array.from(select.options).find(opt => opt.value == status.statusId);
+                    if (!existingOption) {
+                        const option = document.createElement('option');
+                        option.value = status.statusId;
+                        option.textContent = status.name;
+                        select.appendChild(option);
+                    }
+                });
+
+                // console.log('Statuses loaded:', allStatuses.length);
+            } catch (error) {
+                console.error('Error loading statuses:', error);
+                throw error;
+            }
+        }
+
+        // Enhanced loadTariffs function
+        async function loadTariffs() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/Tariff/AllTariffs`);
+                if (!response.ok) throw new Error('Failed to load tariffs');
+
+                allTariffs = await response.json();
+                const select = document.getElementById('tariffId');
+
+                // Only reset if empty
+                if (select.options.length <= 1) {
+                    select.innerHTML = '<option value="">Select Tariff</option>';
+                }
+
+                allTariffs.forEach(tariff => {
+                    // Check if option already exists
+                    const existingOption = Array.from(select.options).find(opt => opt.value == tariff.tariffId);
+                    if (!existingOption) {
+                        const option = document.createElement('option');
+                        option.value = tariff.tariffId;
+                        option.textContent = tariff.name;
+                        select.appendChild(option);
+                    }
+                });
+
+                // console.log('Tariffs loaded:', allTariffs.length);
+            } catch (error) {
+                console.error('Error loading tariffs:', error);
+                throw error;
+            }
+        }
+
+        // Update the openAddMeterModal function to ensure dropdowns are loaded
+        function openAddMeterModal() {
+            // console.log('Opening Add Meter Modal...');
+            try {
+                prepareAddMeter();
+
+                // Ensure dropdowns are loaded when opening modal
+                ensureDropdownsLoaded().catch(error => {
+                    console.error('Error loading dropdowns:', error);
+                });
+
+                if (meterModal) {
+                    meterModal.show();
+                    // console.log('✓ Modal shown');
+                } else {
+                    console.error('✗ Modal instance not found, creating new one');
+                    const modalEl = document.getElementById('addMeterModal');
+                    if (modalEl) {
+                        meterModal = new bootstrap.Modal(modalEl);
+                        meterModal.show();
+                    } else {
+                        throw new Error('Modal element not found in DOM');
+                    }
+                }
+            } catch (error) {
+                console.error('✗ Error opening modal:', error);
+                alert('Error opening meter form. Please refresh the page and try again.');
+            }
+        }
+
+        // Enhanced prepareAddMeter function
+        function prepareAddMeter() {
+            // console.log('Preparing Add Meter form...');
+            const form = document.getElementById('meterForm');
+            if (form) {
+                form.reset();
+            }
+            document.getElementById('meterId').value = '';
+            document.getElementById('addMeterModalLabel').textContent = 'Add New Meter';
+            document.getElementById('latestReading').value = '0';
+
+            // Don't reset dropdowns completely, just set to empty selection
+            document.getElementById('manufacturerId').value = '';
+            document.getElementById('tariffId').value = '';
+            document.getElementById('statusId').value = '';
+
+            const validationDiv = document.getElementById('consumerValidation');
+            if (validationDiv) {
+                validationDiv.innerHTML = '';
+            }
+
+            const dtrValidationDiv = document.getElementById('dtrValidation');
+            if (dtrValidationDiv) {
+                dtrValidationDiv.innerHTML = '';
             }
         }
 
@@ -1066,10 +1291,10 @@
         transition: all 0.2s ease;
     }
 
-        .table-hover tbody tr:hover {
-            background-color: rgba(25, 135, 84, 0.08) !important;
-            transform: translateX(2px);
-        }
+    .table-hover tbody tr:hover {
+        background-color: rgba(25, 135, 84, 0.08) !important;
+        transform: translateX(2px);
+    }
 
     /* Filter section improvements */
     .form-control, .form-select {
@@ -1078,12 +1303,22 @@
         transition: all 0.2s ease;
     }
 
-        .form-control:focus, .form-select:focus {
-            border-color: #198754;
-            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
-        }
+    .form-control:focus, .form-select:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
 
-    
+    .form-select:valid {
+        border-color: #198754;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .dropdown-loaded {
+        border-left: 3px solid #198754 !important;
+    }
 
     /* Loading animation */
     .spinner-border {
