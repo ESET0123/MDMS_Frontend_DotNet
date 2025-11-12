@@ -1,48 +1,191 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "User";
+    ViewData["Title"] = "User Management";
 }
 
 <div class="container-fluid">
+    <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-people"></i> User Management</h2>
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#userModal" onclick="prepareAddUser()">
-            <i class="bi bi-person-plus"></i> Add User
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-people text-success me-2"></i>User Management
+            </h2>
+            <p class="text-muted mb-0">Manage system users and their permissions</p>
+        </div>
+        <button class="btn btn-success px-4" data-bs-toggle="modal" data-bs-target="#userModal" onclick="prepareAddUser()">
+            <i class="bi bi-person-plus me-2"></i> Add User
         </button>
     </div>
 
-    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
-        <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">Loading...</span>
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL USERS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="totalUsers">0</h2>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p class="mt-2">Loading users...</p>
-    </div>
-    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showError('')"></button>
-        <span id="errorText"></span>
-    </div>
-    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
-        <span id="successText"></span>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">ACTIVE USERS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="activeUsers">0</h2>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-person-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">ADMIN USERS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="adminUsers">0</h2>
+                        </div>
+                        <div class="text-warning">
+                            <i class="bi bi-shield-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm bg-primary bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted small fw-semibold">RECENT LOGINS</h6>
+                            <h2 class="card-title mb-0 text-dark fw-bold" id="recentLogins">0</h2>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-clock-history fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="card shadow-sm">
+    <!-- Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-funnel me-2 text-success"></i>Filter Users
+            </h6>
+        </div>
         <div class="card-body">
+            <div class="row g-4 align-items-end">
+                <div class="col-xl-3 col-md-6">
+                    <label for="searchFilter" class="form-label small fw-semibold text-muted">SEARCH USERS</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="searchFilter" placeholder="Search by name or email...">
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <label for="roleFilter" class="form-label small fw-semibold text-muted">FILTER BY ROLE</label>
+                    <select class="form-select" id="roleFilter">
+                        <option value="all">All Roles</option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <label for="statusFilter" class="form-label small fw-semibold text-muted">FILTER BY STATUS</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="all">All Status</option>
+                        <option value="active">Active Only</option>
+                        <option value="inactive">Inactive Only</option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="bi bi-arrow-clockwise me-2"></i> Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center my-5 py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Loading users data...</p>
+    </div>
+
+    <!-- Messages -->
+    <div id="errorMessage" class="alert alert-danger border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Operation Failed</h6>
+                <span id="errorText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="successMessage" class="alert alert-success border-0 shadow-sm mb-4" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+            <div>
+                <h6 class="alert-heading mb-1">Success</h6>
+                <span id="successText" class="small"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+                <i class="bi bi-table me-2 text-success"></i>Users List
+            </h6>
+            <span class="badge bg-success bg-opacity-10 text-success" id="usersCount">0 users</span>
+        </div>
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                    <thead class="table-dark">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th>User ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Role</th>
-                            <th>Last Login</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="ps-4">User ID</th>
+                            <th>User Details</th>
+                            <th>Contact Information</th>
+                            <th>Role & Status</th>
+                            <th>Last Activity</th>
+                            <th class="text-center pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-people display-6 text-light"></i>
+                                    <p class="mt-3">No users found</p>
+                                    <button class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#userModal" onclick="prepareAddUser()">
+                                        <i class="bi bi-person-plus me-2"></i> Add First User
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -50,130 +193,186 @@
     </div>
 </div>
 
+<!-- Add/Edit User Modal -->
 <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="userModalLabel">Add User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="userModalLabel">
+                    <i class="bi bi-person-plus me-2"></i>Add User
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="userForm">
                     <input type="hidden" id="isEdit" value="false" />
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3" id="userIdField" style="display: none;">
-                            <label for="userId" class="form-label">User ID</label>
-                            <input type="text" class="form-control" id="userId" readonly>
-                            <small class="form-text text-muted">Auto-generated based on role</small>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="username" placeholder="e.g., John Doe" required>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" placeholder="e.g., user@example.com" required>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="tel" class="form-control" id="phone" placeholder="e.g., +1234567890">
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="roleId" class="form-label">Role <span class="text-danger">*</span></label>
-                            <select class="form-select" id="roleId" required>
-                                <option value="">-- Select Role --</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="active" class="form-label">Status</label>
-                            <select class="form-select" id="active">
-                                <option value="true">Active</option>
-                                <option value="false">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <label for="passwordString" class="form-label">
-                                Password
-                                <span id="passwordRequired" class="text-danger">*</span>
-                                <span id="passwordOptional" class="text-muted" style="display: none;">(Leave blank to keep current)</span>
-                            </label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="passwordString" placeholder="Enter password">
-                                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">
-                                    <i class="bi bi-eye" id="passwordToggleIcon"></i>
-                                </button>
+                    <!-- User Identification -->
+                    <div class="mb-4" id="userIdField" style="display: none;">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-person-badge me-2"></i>User Identification
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="userId" class="form-label fw-semibold">User ID</label>
+                                <input type="text" class="form-control" id="userId" readonly>
+                                <small class="form-text text-muted">System-generated user identifier</small>
                             </div>
-                            <small class="form-text text-muted">Minimum 6 characters recommended</small>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-person me-2"></i>Personal Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" placeholder="Enter full name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" placeholder="user@example.com" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-telephone me-2"></i>Contact Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-phone"></i>
+                                    </span>
+                                    <input type="tel" class="form-control" id="phone" placeholder="+1234567890">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Settings -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-shield-lock me-2"></i>Account Settings
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="roleId" class="form-label fw-semibold">User Role <span class="text-danger">*</span></label>
+                                <select class="form-select" id="roleId" required>
+                                    <option value="">-- Select Role --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="active" class="form-label fw-semibold">Account Status</label>
+                                <select class="form-select" id="active">
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Settings -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-key me-2"></i>Security Settings
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="passwordString" class="form-label fw-semibold">
+                                    Password
+                                    <span id="passwordRequired" class="text-danger">*</span>
+                                    <span id="passwordOptional" class="text-muted" style="display: none;">(Leave blank to keep current)</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="passwordString" placeholder="Enter secure password">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">
+                                        <i class="bi bi-eye" id="passwordToggleIcon"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">Minimum 6 characters with letters and numbers recommended</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Validation Alert -->
+                    <div class="alert alert-info border-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-lightbulb me-3 fs-4"></i>
+                            <div>
+                                <h6 class="alert-heading mb-1">Quick Tips</h6>
+                                <p class="mb-0 small">Ensure all required fields are filled. Password is mandatory for new users.</p>
+                            </div>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="saveUser()">
-                    <i class="bi bi-save"></i> Save User
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-4" onclick="saveUser()">
+                    <i class="bi bi-save me-2"></i> Save User
                 </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- View User Details Modal -->
 <div class="modal fade" id="viewUserModal" tabindex="-1" aria-labelledby="viewUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewUserModalLabel">User Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="viewUserModalLabel">
+                    <i class="bi bi-eye me-2"></i>User Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">User Number:</div>
-                    <div class="col-8" id="viewUserNumber"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">User ID:</div>
-                    <div class="col-8" id="viewUserId"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Username:</div>
-                    <div class="col-8" id="viewUsername"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Email:</div>
-                    <div class="col-8" id="viewEmail"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Phone:</div>
-                    <div class="col-8" id="viewPhone"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Role:</div>
-                    <div class="col-8" id="viewRoleName"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Last Login:</div>
-                    <div class="col-8" id="viewLastLogin"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">Status:</div>
-                    <div class="col-8" id="viewActive"></div>
+            <div class="modal-body p-4">
+                <div class="user-details">
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">USER NUMBER</div>
+                        <div class="detail-value fw-bold" id="viewUserNumber">-</div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">USER ID</div>
+                        <div class="detail-value fw-bold" id="viewUserId">-</div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">USERNAME</div>
+                        <div class="detail-value fw-bold" id="viewUsername">-</div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">EMAIL ADDRESS</div>
+                        <div class="detail-value" id="viewEmail">-</div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">PHONE NUMBER</div>
+                        <div class="detail-value" id="viewPhone">-</div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">ROLE</div>
+                        <div class="detail-value">
+                            <span class="badge bg-success" id="viewRoleName">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item mb-3">
+                        <div class="detail-label small text-muted">LAST LOGIN</div>
+                        <div class="detail-value" id="viewLastLogin">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label small text-muted">ACCOUNT STATUS</div>
+                        <div class="detail-value" id="viewActive">-</div>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -186,14 +385,79 @@
 
         let allUsers = [];
         let allRoles = [];
+        let filteredUsers = [];
         let userModal;
         let viewUserModal;
 
         document.addEventListener('DOMContentLoaded', function() {
             userModal = new bootstrap.Modal(document.getElementById('userModal'));
             viewUserModal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+
+            // Add filter event listeners
+            document.getElementById('searchFilter').addEventListener('input', applyFilters);
+            document.getElementById('roleFilter').addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
             fetchAllData();
         });
+
+        function updateStats(users) {
+            const total = users.length;
+            const active = users.filter(u => u.active).length;
+            const admin = users.filter(u => u.roleName?.toLowerCase().includes('admin')).length;
+
+            // Calculate recent logins (last 7 days)
+            const recent = users.filter(u => {
+                if (!u.lastLogin) return false;
+                const lastLogin = new Date(u.lastLogin);
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                return lastLogin > sevenDaysAgo;
+            }).length;
+
+            document.getElementById('totalUsers').textContent = total;
+            document.getElementById('activeUsers').textContent = active;
+            document.getElementById('adminUsers').textContent = admin;
+            document.getElementById('recentLogins').textContent = recent;
+            document.getElementById('usersCount').textContent = `${filteredUsers.length} user${filteredUsers.length !== 1 ? 's' : ''}`;
+        }
+
+        function applyFilters() {
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredUsers = allUsers.filter(user => {
+                // Search filter
+                const searchMatch = !searchFilter ||
+                    user.username.toLowerCase().includes(searchFilter) ||
+                    user.email.toLowerCase().includes(searchFilter) ||
+                    user.userId.toLowerCase().includes(searchFilter);
+
+                // Role filter
+                const roleMatch = roleFilter === 'all' || user.roleId.toString() === roleFilter;
+
+                // Status filter
+                let statusMatch = true;
+                if (statusFilter === 'active') {
+                    statusMatch = user.active === true;
+                } else if (statusFilter === 'inactive') {
+                    statusMatch = user.active === false;
+                }
+
+                return searchMatch && roleMatch && statusMatch;
+            });
+
+            updateStats(filteredUsers);
+            renderUsersTable(filteredUsers);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchFilter').value = '';
+            document.getElementById('roleFilter').value = 'all';
+            document.getElementById('statusFilter').value = 'all';
+            applyFilters();
+        }
 
         async function fetchAllData() {
             await fetchRoles();
@@ -206,6 +470,7 @@
                 if (!response.ok) throw new Error('Failed to load roles');
                 allRoles = await response.json();
                 populateRoleDropdown();
+                populateRoleFilter();
             } catch (error) {
                 console.error('Error loading roles:', error);
                 showError('Failed to load roles: ' + error.message);
@@ -221,6 +486,15 @@
             });
         }
 
+        function populateRoleFilter() {
+            const roleFilter = document.getElementById('roleFilter');
+            roleFilter.innerHTML = '<option value="all">All Roles</option>';
+
+            allRoles.forEach(role => {
+                roleFilter.innerHTML += `<option value="${role.roleId}">${role.roleName}</option>`;
+            });
+        }
+
         async function fetchUsers() {
             try {
                 showLoading(true);
@@ -230,7 +504,9 @@
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
                 allUsers = await response.json();
-                renderUsersTable(allUsers);
+                filteredUsers = [...allUsers];
+                updateStats(filteredUsers);
+                applyFilters();
                 showLoading(false);
             } catch (error) {
                 console.error('Error loading users:', error);
@@ -239,57 +515,111 @@
             }
         }
 
+        function getStatusRowClass(user) {
+            if (!user.active) return 'table-secondary';
+            if (user.roleName?.toLowerCase().includes('admin')) return 'table-warning';
+            return 'table-success';
+        }
+
         function renderUsersTable(users) {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
 
             if (users && users.length > 0) {
                 users.forEach(user => {
-                    const statusBadge = user.active
-                        ? '<span class="badge bg-success">Active</span>'
-                        : '<span class="badge bg-danger">Inactive</span>';
+                    const rowClass = getStatusRowClass(user);
+                    const statusIcon = user.active ? 'bi-check-circle' : 'bi-pause-circle';
+                    const statusColor = user.active ? 'text-success' : 'text-secondary';
+                    const roleColor = user.roleName?.toLowerCase().includes('admin') ? 'bg-warning' : 'bg-success';
 
                     const lastLogin = user.lastLogin
-                        ? new Date(user.lastLogin).toLocaleString()
+                        ? new Date(user.lastLogin).toLocaleDateString()
                         : '<span class="text-muted">Never</span>';
 
                     const rowHtml = `
-                        <tr>
-                            <td><strong>${user.userId}</strong></td>
-                            <td>${user.username}</td>
-                            <td>${user.email}</td>
-                            <td>${user.phone || '<span class="text-muted">N/A</span>'}</td>
-                            <td><span class="badge bg-success">${user.roleName}</span></td>
-                            <td>${lastLogin}</td>
-                            <td>${statusBadge}</td>
+                        <tr class="${rowClass}">
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">${user.userId}</div>
+                                <small class="text-muted">#${user.userNumber}</small>
+                            </td>
                             <td>
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="viewUserDetails('${user.userId}')" title="View Details">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="editUser('${user.userId}')" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user.userId}', '${user.username}')" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-light rounded-circle d-flex align-items-center justify-content-center me-3">
+                                        <i class="bi bi-person text-muted"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">${user.username}</div>
+                                        <div class="small text-muted d-flex align-items-center">
+                                            <i class="bi ${statusIcon} ${statusColor} me-1"></i>
+                                            ${user.active ? 'Active' : 'Inactive'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    <div class="fw-semibold">${user.email}</div>
+                                    <div class="small text-muted">
+                                        <i class="bi bi-telephone me-1"></i>${user.phone || 'N/A'}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="role-status">
+                                    <span class="badge ${roleColor}">${user.roleName}</span>
+                                    <div class="mt-1">
+                                        <small class="text-muted">${user.active ? 'Active' : 'Inactive'} account</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="last-activity">
+                                    <div class="fw-semibold">${lastLogin}</div>
+                                    <small class="text-muted">Last login</small>
+                                </div>
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success" onclick="viewUserDetails('${user.userId}')" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="editUser('${user.userId}')" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteUser('${user.userId}', '${user.username}')" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
                     tbody.insertAdjacentHTML('beforeend', rowHtml);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No users found. Click "Add User" to create one.</td></tr>';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-people display-6 text-light"></i>
+                                <p class="mt-3">No users found matching your filters</p>
+                                <button class="btn btn-outline-success mt-2" onclick="clearFilters()">
+                                    <i class="bi bi-arrow-clockwise me-2"></i> Clear Filters
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
             }
         }
 
         function prepareAddUser() {
-            document.getElementById('userModalLabel').textContent = 'Add User';
+            document.getElementById('userModalLabel').innerHTML = '<i class="bi bi-person-plus me-2"></i>Add User';
             document.getElementById('userForm').reset();
             document.getElementById('isEdit').value = 'false';
             document.getElementById('userIdField').style.display = 'none';
             document.getElementById('passwordString').required = true;
             document.getElementById('passwordRequired').style.display = 'inline';
             document.getElementById('passwordOptional').style.display = 'none';
+            document.getElementById('passwordString').placeholder = 'Enter secure password';
         }
 
         async function editUser(userId) {
@@ -299,7 +629,7 @@
                 return;
             }
 
-            document.getElementById('userModalLabel').textContent = 'Edit User';
+            document.getElementById('userModalLabel').innerHTML = '<i class="bi bi-pencil me-2"></i>Edit User';
             document.getElementById('isEdit').value = 'true';
             document.getElementById('userIdField').style.display = 'block';
             document.getElementById('userId').value = user.userId;
@@ -312,6 +642,7 @@
             document.getElementById('passwordString').required = false;
             document.getElementById('passwordRequired').style.display = 'none';
             document.getElementById('passwordOptional').style.display = 'inline';
+            document.getElementById('passwordString').placeholder = 'Enter new password (optional)';
 
             userModal.show();
         }
@@ -378,7 +709,7 @@
         }
 
         async function deleteUser(userId, username) {
-            if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
+            if (!confirm(`Are you sure you want to delete user "${username}"?\n\nThis action cannot be undone.`)) {
                 return;
             }
 
@@ -467,3 +798,156 @@
         }
     </script>
 }
+
+<style>
+    :root {
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card {
+        border-radius: 12px;
+        border: none;
+    }
+
+    .table th {
+        font-weight: 600;
+        white-space: nowrap;
+        border-bottom: 2px solid #e9ecef;
+        padding: 1rem;
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    /* Status-based row coloring */
+    .table-success {
+        background-color: rgba(25, 135, 84, 0.05) !important;
+        border-left: 4px solid #198754;
+    }
+
+    .table-secondary {
+        background-color: rgba(108, 117, 125, 0.05) !important;
+        border-left: 4px solid #6c757d;
+    }
+
+    .table-warning {
+        background-color: rgba(255, 193, 7, 0.08) !important;
+        border-left: 4px solid #ffc107;
+    }
+
+    .table-hover tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(25, 135, 84, 0.08) !important;
+            transform: translateX(2px);
+        }
+
+    .input-group-text {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+
+    .badge {
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+
+    /* Avatar styling */
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Stats cards */
+    .bg-opacity-10 {
+        background-opacity: 0.1 !important;
+    }
+
+    /* Button hover effects */
+    .btn {
+        transition: all 0.2s ease;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    /* Modal enhancements */
+    .modal-header {
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-footer {
+        border-radius: 0 0 12px 12px;
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 8px;
+    }
+
+    /* Empty state styling */
+    .empty-state .bi {
+        opacity: 0.3;
+    }
+
+    /* Detail item styling */
+    .detail-item {
+        padding: 0.5rem 0;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+    }
+
+    .user-details .detail-item:not(:last-child) {
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 1rem;
+    }
+
+    /* Loading animation */
+    .spinner-border {
+        animation-duration: 0.75s;
+    }
+
+    /* Contact info styling */
+    .contact-info {
+        line-height: 1.4;
+    }
+
+    .role-status {
+        line-height: 1.4;
+    }
+
+    .last-activity {
+        line-height: 1.4;
+    }
+
+   
+</style>

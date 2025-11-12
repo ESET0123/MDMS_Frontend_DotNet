@@ -11,50 +11,252 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
+        :root {
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
         body {
             background-color: #f8f9fa;
             padding: 0;
         }
 
-        .table input[type="time"],
-        .table input[type="number"],
-        .table select {
-            font-size: 0.875rem;
+        .card {
+            border-radius: 12px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
         }
 
-        .table td {
-            vertical-align: middle;
+            .card:hover {
+                box-shadow: var(--card-hover-shadow);
+            }
+
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: #198754;
+                box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+            }
+
+        .btn {
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+            .table th {
+                border-top: none;
+                font-weight: 600;
+                background-color: #f8f9fa;
+            }
+
+            .table input[type="time"],
+            .table input[type="number"],
+            .table select {
+                font-size: 0.875rem;
+                border-radius: 6px;
+            }
+
+            .table td {
+                vertical-align: middle;
+            }
 
         .validation-error {
             border-color: #dc3545 !important;
+        }
+
+        .stats-card {
+            border-top: 4px solid !important;
+        }
+
+            .stats-card.total-consumption {
+                border-color: #198754 !important;
+            }
+
+            .stats-card.base-amount {
+                border-color: #0dcaf0 !important;
+            }
+
+            .stats-card.adjustment {
+                border-color: #ffc107 !important;
+            }
+
+            .stats-card.total-amount {
+                border-color: #198754 !important;
+            }
+
+        .badge {
+            font-size: 0.75em;
+            padding: 0.35em 0.65em;
+        }
+
+        .dropdown-toggle::after {
+            display: none;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            box-shadow: var(--card-shadow);
+        }
+
+        .dropdown-item {
+            border-radius: 6px;
+            margin: 0.125rem;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .modal-header {
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-footer {
+            border-radius: 0 0 12px 12px;
+        }
+
+        .empty-state .bi {
+            opacity: 0.3;
+        }
+
+        .input-group-text {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+
+        .bg-opacity-10 {
+            background-opacity: 0.1 !important;
         }
     </style>
 </head>
 <body>
     <div class="container-fluid">
+        <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-calendar-day"></i> Daily Meter Reading Entry</h2>
             <div>
-                <button onclick="viewAllReadings()" class="btn btn-info me-2">
-                    <i class="bi bi-list-ul"></i> View All Readings
+                <h2 class="fw-bold text-dark mb-1">
+                    <i class="bi bi-calendar-day text-success me-2"></i>Daily Meter Reading Entry
+                </h2>
+                <p class="text-muted mb-0">Record electricity consumption readings with Time-of-Day pricing</p>
+            </div>
+            <div>
+                <button onclick="viewAllReadings()" class="btn btn-outline-info me-2">
+                    <i class="bi bi-list-ul me-2"></i> View All Readings
                 </button>
                 <button onclick="viewMonthlyBills()" class="btn btn-success">
-                    <i class="bi bi-file-earmark-text"></i> Monthly Bills
+                    <i class="bi bi-file-earmark-text me-2"></i> Monthly Bills
                 </button>
             </div>
         </div>
 
-        <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
-            <button type="button" class="btn-close" onclick="hideError()"></button>
-            <span id="errorText"></span>
+        <!-- Stats Overview -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card total-consumption bg-success bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL CONSUMPTION</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalConsumptionStat">0.00 kWh</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-lightning-charge fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card base-amount bg-info bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">BASE AMOUNT</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="baseAmountStat">₹0.00</h2>
+                            </div>
+                            <div class="text-info">
+                                <i class="bi bi-currency-rupee fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card adjustment bg-warning bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">SURGE/DISCOUNT</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="adjustmentAmountStat">₹0.00</h2>
+                            </div>
+                            <div class="text-warning">
+                                <i class="bi bi-graph-up-arrow fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card total-amount bg-success bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL AMOUNT</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalAmountStat">₹0.00</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-calculator fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
-            <button type="button" class="btn-close" onclick="hideSuccess()"></button>
-            <span id="successText"></span>
+        <!-- Messages -->
+        <div id="errorMessage" class="alert alert-danger border-0 shadow-sm mb-4" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Action Required</h6>
+                    <span id="errorText" class="small"></span>
+                </div>
+            </div>
         </div>
 
+        <div id="successMessage" class="alert alert-success border-0 shadow-sm mb-4" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Success</h6>
+                    <span id="successText" class="small"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reading Information Card -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Reading Information</h5>
@@ -62,47 +264,62 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="meterId" class="form-label">Select Meter <span class="text-danger">*</span></label>
+                        <label for="meterId" class="form-label fw-semibold">Select Meter <span class="text-danger">*</span></label>
                         <select class="form-select" id="meterId" onchange="loadMeterInfo()">
                             <option value="">-- Select Meter --</option>
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="readingDate" class="form-label">Reading Date <span class="text-danger">*</span></label>
+                        <label for="readingDate" class="form-label fw-semibold">Reading Date <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="readingDate" value="">
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="baseRate" class="form-label">Base Rate (₹/kWh) <span class="text-danger">*</span></label>
-                        <input type="number" step="0.0001" class="form-control" id="baseRate" placeholder="0.0000" readonly>
+                        <label for="baseRate" class="form-label fw-semibold">Base Rate (₹/kWh) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-success bg-opacity-10 text-success">₹</span>
+                            <input type="number" step="0.0001" class="form-control" id="baseRate" placeholder="0.0000" readonly>
+                            <span class="input-group-text bg-light">per kWh</span>
+                        </div>
                     </div>
                 </div>
-                <div id="meterInfoDisplay" class="alert alert-info" style="display: none;">
-                    <strong>Meter Info:</strong> <span id="meterDetails"></span>
+                <div id="meterInfoDisplay" class="alert alert-info border-0" style="display: none;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-lightbulb me-3 fs-4"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Meter Information</h6>
+                            <span id="meterDetails" class="small"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- TOD Readings Card -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>TOD Readings</h5>
+                <span class="badge bg-light text-dark" id="todRulesCount">0 rules loaded</span>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th style="width: 20%;">TOD Rule</th>
-                                <th style="width: 12%;">Start Time</th>
-                                <th style="width: 12%;">End Time</th>
-                                <th style="width: 15%;">Previous Reading</th>
-                                <th style="width: 15%;">Current Reading</th>
-                                <th style="width: 13%;">Consumption</th>
-                                <th style="width: 13%;">Actions</th>
+                                <th style="width: 20%; color: black;">TOD Rule</th>
+                                <th style="width: 12%; color: black;">Start Time</th>
+                                <th style="width: 12%; color: black;">End Time</th>
+                                <th style="width: 15%; color: black;">Previous Reading</th>
+                                <th style="width: 15%; color: black;">Current Reading</th>
+                                <th style="width: 13%; color: black;">Consumption</th>
+                                <th style="width: 13%; color: black;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="readingsTableBody">
                             <tr>
-                                <td colspan="7" class="text-center text-muted">Select a meter to load TOD slots</td>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                    Select a meter to load TOD slots
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -110,6 +327,7 @@
             </div>
         </div>
 
+        <!-- Summary Card -->
         <div class="card shadow-sm">
             <div class="card-header bg-info text-white">
                 <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Summary</h5>
@@ -135,20 +353,21 @@
                 </div>
                 <hr>
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button class="btn btn-secondary" onclick="clearForm()">
-                        <i class="bi bi-x-circle"></i> Clear
+                    <button class="btn btn-outline-secondary" onclick="clearForm()">
+                        <i class="bi bi-x-circle me-2"></i> Clear
                     </button>
-                    <button class="btn btn-success" onclick="saveReadings()">
-                        <i class="bi bi-save"></i> Save Readings
+                    <button class="btn btn-success px-4" onclick="saveReadings()">
+                        <i class="bi bi-save me-2"></i> Save Readings
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- View Readings Modal -->
     <div class="modal fade" id="viewReadingsModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
-            <div class="modal-content">
+            <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i>Daily Meter Readings</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -156,22 +375,22 @@
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-4">
-                            <label class="form-label">Filter by Meter:</label>
+                            <label class="form-label fw-semibold">Filter by Meter:</label>
                             <select class="form-select" id="filterMeterId" onchange="loadAllReadings()">
                                 <option value="">All Meters</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Start Date:</label>
+                            <label class="form-label fw-semibold">Start Date:</label>
                             <input type="date" class="form-control" id="filterStartDate" onchange="loadAllReadings()">
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">End Date:</label>
+                            <label class="form-label fw-semibold">End Date:</label>
                             <input type="date" class="form-control" id="filterEndDate" onchange="loadAllReadings()">
                         </div>
                         <div class="col-md-2 d-flex align-items-end">
                             <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
-                                <i class="bi bi-x-circle"></i> Clear
+                                <i class="bi bi-x-circle me-2"></i> Clear
                             </button>
                         </div>
                     </div>
@@ -179,20 +398,23 @@
                         <table class="table table-bordered table-hover table-sm">
                             <thead class="table-dark sticky-top">
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Meter</th>
-                                    <th>TOD Rule</th>
-                                    <th>Time Slot</th>
-                                    <th>Previous</th>
-                                    <th>Current</th>
-                                    <th>Consumption</th>
-                                    <th>Amount</th>
-                                    <th>Actions</th>
+                                    <th style ="width: 20%; color: black;">Date</th>
+                                    <th style="width: 20%; color: black;">Meter</th>
+                                    <th style="width: 20%; color: black;">TOD Rule</th>
+                                    <th style="width: 20%; color: black;">Time Slot</th>
+                                    <th style="width: 20%; color: black;">Previous</th>
+                                    <th style="width: 20%; color: black;">Current</th>
+                                    <th style="width: 20%; color: black;">Consumption</th>
+                                    <th style="width: 20%; color: black;">Amount</th>
+                                    <th style="width: 20%; color: black;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="allReadingsTableBody">
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted">Select filters to view readings</td>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                        Select filters to view readings
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -325,6 +547,7 @@
 
                 // Filter TOD rules applicable to this meter's tariff
                 currentMeterApplicableRules = allTodRules.filter(rule => rule.tariffId == tariffId);
+                document.getElementById('todRulesCount').textContent = `${currentMeterApplicableRules.length} rules loaded`;
 
                 if (currentMeterApplicableRules.length === 0) {
                     showError('No TOD rules found for this meter\'s tariff. Please check tariff configuration.');
@@ -334,11 +557,12 @@
             } else {
                 document.getElementById('baseRate').value = '';
                 document.getElementById('meterInfoDisplay').style.display = 'none';
+                document.getElementById('todRulesCount').textContent = '0 rules loaded';
                 currentMeterLatestReading = 0;
                 currentMeterApplicableRules = [];
 
                 const tbody = document.getElementById('readingsTableBody');
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a meter to load TOD slots</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select a meter to load TOD slots</td></tr>';
             }
         }
 
@@ -430,7 +654,7 @@
                         <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly
                             value="${existingReading ? existingReading.consumptionKwh.toFixed(2) : ''}"></td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-danger" onclick="removeReadingRow('${rowId}')">
+                            <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
@@ -448,7 +672,7 @@
             tbody.innerHTML = '';
 
             if (currentMeterApplicableRules.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No TOD rules configured for this meter\'s tariff</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-exclamation-triangle display-6 d-block mb-2"></i>No TOD rules configured for this meter\'s tariff</td></tr>';
                 return;
             }
 
@@ -478,7 +702,7 @@
                             placeholder="0.00" onchange="calculateConsumption('${rowId}')" required></td>
                         <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly></td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-danger" onclick="removeReadingRow('${rowId}')">
+                            <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
@@ -566,6 +790,12 @@
             document.getElementById('baseAmount').textContent = '₹' + baseAmount.toFixed(2);
             document.getElementById('adjustmentAmount').textContent = (adjustmentAmount >= 0 ? '+' : '') + '₹' + adjustmentAmount.toFixed(2);
             document.getElementById('totalAmount').textContent = '₹' + totalAmount.toFixed(2);
+
+            // Update stats cards
+            document.getElementById('totalConsumptionStat').textContent = totalConsumption.toFixed(2) + ' kWh';
+            document.getElementById('baseAmountStat').textContent = '₹' + baseAmount.toFixed(2);
+            document.getElementById('adjustmentAmountStat').textContent = (adjustmentAmount >= 0 ? '+' : '') + '₹' + adjustmentAmount.toFixed(2);
+            document.getElementById('totalAmountStat').textContent = '₹' + totalAmount.toFixed(2);
         }
 
         function removeReadingRow(rowId) {
@@ -574,7 +804,7 @@
 
             const tbody = document.getElementById('readingsTableBody');
             if (tbody.rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a meter to load TOD slots</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select a meter to load TOD slots</td></tr>';
             }
         }
 
@@ -717,11 +947,12 @@
             document.getElementById('readingDate').valueAsDate = new Date();
             document.getElementById('baseRate').value = '';
             document.getElementById('meterInfoDisplay').style.display = 'none';
+            document.getElementById('todRulesCount').textContent = '0 rules loaded';
             currentMeterLatestReading = 0;
             currentMeterApplicableRules = [];
 
             const tbody = document.getElementById('readingsTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Select a meter to load TOD slots</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select a meter to load TOD slots</td></tr>';
 
             calculateTotals();
         }
@@ -731,7 +962,7 @@
             modal.show();
             // Don't load readings automatically - wait for user to apply filters
             const tbody = document.getElementById('allReadingsTableBody');
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select filters to view readings</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select filters to view readings</td></tr>';
         }
 
         async function loadAllReadings() {
@@ -742,12 +973,12 @@
             // Don't load if no filters are selected
             if (!filterMeterId && !startDate && !endDate) {
                 const tbody = document.getElementById('allReadingsTableBody');
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select filters to view readings</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select filters to view readings</td></tr>';
                 return;
             }
 
             const tbody = document.getElementById('allReadingsTableBody');
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">Loading...</td></tr>';
 
             try {
                 let url = `${DAILY_READING_API_URL}/AllReadings`;
@@ -766,7 +997,7 @@
                 const readings = await response.json();
 
                 if (readings.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No readings found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>No readings found</td></tr>';
                     return;
                 }
 
@@ -781,14 +1012,14 @@
                         <td>${r.consumptionKwh.toFixed(2)} kWh</td>
                         <td>₹${r.amount.toFixed(2)}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-danger" onclick="deleteReading(${r.readingId})">
+                            <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteReading(${r.readingId})">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
                     </tr>
                 `).join('');
             } catch (error) {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading readings</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">Error loading readings</td></tr>';
             }
         }
 
@@ -816,7 +1047,7 @@
             document.getElementById('filterStartDate').value = '';
             document.getElementById('filterEndDate').value = '';
             const tbody = document.getElementById('allReadingsTableBody');
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Select filters to view readings</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select filters to view readings</td></tr>';
         }
 
         function viewMonthlyBills() {
