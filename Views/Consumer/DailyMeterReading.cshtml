@@ -1,243 +1,1060 @@
 ﻿@{
-    Layout = "~/Views/Shared/_ConsumerLayout.cshtml";
-    ViewData["Title"] = "Daily Meter Readings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Daily Meter Reading";
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Meter Reading</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
 
-<div class="container-fluid mt-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-dark mb-1"><i class="bi bi-calendar-week me-2 text-success"></i>Daily Meter Readings</h2>
-            <p class="text-muted mb-0">View your recent daily readings and detailed TOD breakdown</p>
-        </div>
-    </div>
+        body {
+            background-color: #f8f9fa;
+            padding: 0;
+        }
 
-    <!-- Filter Section -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-light py-3">
-            <h6 class="mb-0 fw-semibold"><i class="bi bi-funnel me-2"></i>Filter Readings</h6>
+        .card {
+            border-radius: 12px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+        }
+
+            .card:hover {
+                box-shadow: var(--card-hover-shadow);
+            }
+
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: #198754;
+                box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+            }
+
+        .btn {
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+            .table th {
+                border-top: none;
+                font-weight: 600;
+                background-color: #f8f9fa;
+            }
+
+            .table input[type="time"],
+            .table input[type="number"],
+            .table select {
+                font-size: 0.875rem;
+                border-radius: 6px;
+            }
+
+            .table td {
+                vertical-align: middle;
+            }
+
+        .validation-error {
+            border-color: #dc3545 !important;
+        }
+
+        .stats-card {
+            border-top: 4px solid !important;
+        }
+
+            .stats-card.total-consumption {
+                border-color: #198754 !important;
+            }
+
+            .stats-card.base-amount {
+                border-color: #0dcaf0 !important;
+            }
+
+            .stats-card.adjustment {
+                border-color: #ffc107 !important;
+            }
+
+            .stats-card.total-amount {
+                border-color: #198754 !important;
+            }
+
+        .badge {
+            font-size: 0.75em;
+            padding: 0.35em 0.65em;
+        }
+
+        .dropdown-toggle::after {
+            display: none;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            box-shadow: var(--card-shadow);
+        }
+
+        .dropdown-item {
+            border-radius: 6px;
+            margin: 0.125rem;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .modal-header {
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-footer {
+            border-radius: 0 0 12px 12px;
+        }
+
+        .empty-state .bi {
+            opacity: 0.3;
+        }
+
+        .input-group-text {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+
+        .bg-opacity-10 {
+            background-opacity: 0.1 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">
+                    <i class="bi bi-calendar-day text-success me-2"></i>Daily Meter Reading Entry
+                </h2>
+                <p class="text-muted mb-0">Record electricity consumption readings with Time-of-Day pricing</p>
+            </div>
+            <div>
+                <button onclick="viewAllReadings()" class="btn btn-outline-info me-2">
+                    <i class="bi bi-list-ul me-2"></i> View All Readings
+                </button>
+                <button onclick="viewMonthlyBills()" class="btn btn-success">
+                    <i class="bi bi-file-earmark-text me-2"></i> Monthly Bills
+                </button>
+            </div>
         </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-xl-3 col-md-4">
-                    <label class="form-label small fw-semibold text-muted">METER</label>
-                    <select class="form-select" id="filterMeterId">
-                        <option value="">All Meters</option>
-                    </select>
+
+        <!-- Stats Overview -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card total-consumption bg-success bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL CONSUMPTION</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalConsumptionStat">0.00 kWh</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-lightning-charge fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-xl-3 col-md-4">
-                    <label class="form-label small fw-semibold text-muted">START DATE</label>
-                    <input type="date" class="form-control" id="filterStartDate">
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card base-amount bg-info bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">BASE AMOUNT</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="baseAmountStat">₹0.00</h2>
+                            </div>
+                            <div class="text-info">
+                                <i class="bi bi-currency-rupee fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-xl-3 col-md-4">
-                    <label class="form-label small fw-semibold text-muted">END DATE</label>
-                    <input type="date" class="form-control" id="filterEndDate">
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card adjustment bg-warning bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">SURGE/DISCOUNT</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="adjustmentAmountStat">₹0.00</h2>
+                            </div>
+                            <div class="text-warning">
+                                <i class="bi bi-graph-up-arrow fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-xl-3 col-md-12 d-flex align-items-end">
-                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
-                        <i class="bi bi-x-circle me-2"></i>Clear Filters
-                    </button>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card total-amount bg-success bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL AMOUNT</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalAmountStat">₹0.00</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-calculator fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Loading -->
-    <div id="loadingSpinner" class="text-center py-5">
-        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status"></div>
-        <p class="mt-3 text-muted">Loading your readings...</p>
-    </div>
-
-    <!-- Daily Readings Table -->
-    <div id="dailyReadingsContainer" class="card border-0 shadow-sm" style="display:none;">
-        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-semibold"><i class="bi bi-list-ul me-2"></i>Daily Reading Summary</h6>
-            <span class="badge bg-success bg-opacity-10 text-success" id="readingsCount">0 days</span>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Date</th>
-                            <th>Meter</th>
-                            <th>Total Consumption (kWh)</th>
-                            <th>Total Amount (₹)</th>
-                            <th class="text-center">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dailyReadingsTableBody"></tbody>
-                </table>
+        <!-- Messages -->
+        <div id="errorMessage" class="alert alert-danger border-0 shadow-sm mb-4" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Action Required</h6>
+                    <span id="errorText" class="small"></span>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Detail Modal -->
-<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="detailsModalLabel"><i class="bi bi-clock-history me-2"></i>Detailed Readings</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div id="successMessage" class="alert alert-success border-0 shadow-sm mb-4" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Success</h6>
+                    <span id="successText" class="small"></span>
+                </div>
             </div>
-            <div class="modal-body p-4">
-                <div id="detailTableContainer" class="table-responsive">
-                    <table class="table table-bordered table-sm align-middle">
+        </div>
+
+        <!-- Reading Information Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Reading Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="meterId" class="form-label fw-semibold">Select Meter <span class="text-danger">*</span></label>
+                        <select class="form-select" id="meterId" onchange="loadMeterInfo()">
+                            <option value="">-- Select Meter --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="readingDate" class="form-label fw-semibold">Reading Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="readingDate" value="">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="baseRate" class="form-label fw-semibold">Base Rate (₹/kWh) <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-success bg-opacity-10 text-success">₹</span>
+                            <input type="number" step="0.0001" class="form-control" id="baseRate" placeholder="0.0000" readonly>
+                            <span class="input-group-text bg-light">per kWh</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="meterInfoDisplay" class="alert alert-info border-0" style="display: none;">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-lightbulb me-3 fs-4"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Meter Information</h6>
+                            <span id="meterDetails" class="small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOD Readings Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>TOD Readings</h5>
+                <span class="badge bg-light text-dark" id="todRulesCount">0 rules loaded</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
                         <thead class="table-dark">
                             <tr>
-                                <th>TOD Rule</th>
-                                <th>Time Slot</th>
-                                <th>Previous</th>
-                                <th>Current</th>
-                                <th>Consumption</th>
-                                <th>Amount</th>
+                                <th style="width: 20%; color: black;">TOD Rule</th>
+                                <th style="width: 12%; color: black;">Start Time</th>
+                                <th style="width: 12%; color: black;">End Time</th>
+                                <th style="width: 15%; color: black;">Previous Reading</th>
+                                <th style="width: 15%; color: black;">Current Reading</th>
+                                <th style="width: 13%; color: black;">Consumption</th>
+                                <th style="width: 13%; color: black;">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="detailTableBody"></tbody>
+                        <tbody id="readingsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                    Select a meter to load TOD slots
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-@section Scripts {
-<script>
-    const token = localStorage.getItem('jwtToken');
-    const consumerId = localStorage.getItem('consumerId');
-    const METER_API_URL = `${API_BASE_URL}/api/Meter`;
-    const DAILY_READING_API_URL = `${API_BASE_URL}/api/DailyMeterReading`;
-
-    document.addEventListener('DOMContentLoaded', initConsumerReadings);
-
-    async function initConsumerReadings() {
-        showLoading(true);
-        try {
-            await loadMeters();
-            await loadReadings();
-        } catch (e) {
-            console.error(e);
-            showError('Failed to load readings.');
-        } finally {
-            showLoading(false);
-        }
-    }
-
-    async function loadMeters() {
-        const res = await fetch(`${METER_API_URL}/AllMeters`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const meters = await res.json();
-        const consumerMeters = meters.filter(m => m.consumerId == consumerId);
-
-        const select = document.getElementById('filterMeterId');
-        consumerMeters.forEach(m =>
-            select.innerHTML += `<option value="${m.meterId}">Meter #${m.meterId} - ${m.dtrName}</option>`
-        );
-    }
-
-    async function loadReadings() {
-        const meterId = document.getElementById('filterMeterId').value;
-        const startDate = document.getElementById('filterStartDate').value;
-        const endDate = document.getElementById('filterEndDate').value;
-
-        let url = `${DAILY_READING_API_URL}/AllReadings`;
-        if (meterId && startDate && endDate)
-            url = `${DAILY_READING_API_URL}/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`;
-        else if (meterId)
-            url = `${DAILY_READING_API_URL}/ByMeter/${meterId}`;
-        else if (startDate && endDate)
-            url = `${DAILY_READING_API_URL}/ByDateRange?startDate=${startDate}&endDate=${endDate}`;
-
-        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-        const readings = await res.json();
-        const myReadings = readings.filter(r => r.consumerId == consumerId);
-
-        // Group by date
-        const grouped = {};
-        myReadings.forEach(r => {
-            const date = r.readingDate.split('T')[0];
-            if (!grouped[date]) grouped[date] = [];
-            grouped[date].push(r);
-        });
-
-        const summary = Object.entries(grouped).map(([date, entries]) => {
-            const totalConsumption = entries.reduce((sum, e) => sum + e.consumptionKwh, 0);
-            const totalAmount = entries.reduce((sum, e) => sum + e.amount, 0);
-            const meter = entries[0]?.meterId || '-';
-            return { date, meter, totalConsumption, totalAmount, entries };
-        });
-
-        renderSummary(summary);
-    }
-
-    function renderSummary(data) {
-        const tbody = document.getElementById('dailyReadingsTableBody');
-        tbody.innerHTML = '';
-
-        if (data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No readings found</td></tr>`;
-            return;
-        }
-
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first
-
-        data.forEach(day => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="ps-4">${day.date}</td>
-                <td>Meter #${day.meter}</td>
-                <td><strong>${day.totalConsumption.toFixed(2)}</strong> kWh</td>
-                <td><strong>₹${day.totalAmount.toFixed(2)}</strong></td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-outline-success" onclick='showDetails(${JSON.stringify(day.entries)})'>
-                        <i class="bi bi-eye"></i> View
+        <!-- Summary Card -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Total Consumption:</label>
+                        <div class="h4 text-success" id="totalConsumption">0.00 kWh</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Base Amount:</label>
+                        <div class="h4 text-secondary" id="baseAmount">₹0.00</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Surge/Discount:</label>
+                        <div class="h4 text-warning" id="adjustmentAmount">₹0.00</div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Total Amount:</label>
+                        <div class="h4 text-success" id="totalAmount">₹0.00</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button class="btn btn-outline-secondary" onclick="clearForm()">
+                        <i class="bi bi-x-circle me-2"></i> Clear
                     </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
+                    <button class="btn btn-success px-4" onclick="saveReadings()">
+                        <i class="bi bi-save me-2"></i> Save Readings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Readings Modal -->
+    <div class="modal fade" id="viewReadingsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i>Daily Meter Readings</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Filter by Meter:</label>
+                            <select class="form-select" id="filterMeterId" onchange="loadAllReadings()">
+                                <option value="">All Meters</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Start Date:</label>
+                            <input type="date" class="form-control" id="filterStartDate" onchange="loadAllReadings()">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">End Date:</label>
+                            <input type="date" class="form-control" id="filterEndDate" onchange="loadAllReadings()">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                <i class="bi bi-x-circle me-2"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-bordered table-hover table-sm">
+                            <thead class="table-dark sticky-top">
+                                <tr>
+                                    <th style="width: 20%; color: black;">Date</th>
+                                    <th style="width: 20%; color: black;">Meter</th>
+                                    <th style="width: 20%; color: black;">TOD Rule</th>
+                                    <th style="width: 20%; color: black;">Time Slot</th>
+                                    <th style="width: 20%; color: black;">Previous</th>
+                                    <th style="width: 20%; color: black;">Current</th>
+                                    <th style="width: 20%; color: black;">Consumption</th>
+                                    <th style="width: 20%; color: black;">Amount</th>
+                                    <th style="width: 20%; color: black;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allReadingsTableBody">
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                        Select filters to view readings
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DAILY_READING_API_URL = `${API_BASE_URL}/api/DailyMeterReading`;
+        const TOD_RULE_API_URL = `${API_BASE_URL}/api/TodRule`;
+        const METER_API_URL = `${API_BASE_URL}/api/Meter`;
+
+        let allTodRules = [];
+        let allMeters = [];
+        let readingRowCounter = 0;
+        let currentMeterLatestReading = 0;
+        let currentMeterApplicableRules = [];
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            document.getElementById('successText').textContent = message;
+            document.getElementById('successMessage').style.display = 'block';
+            setTimeout(hideSuccess, 5000);
+        }
+
+        function hideSuccess() {
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('readingDate').valueAsDate = new Date();
+
+            document.getElementById('readingDate').addEventListener('change', function () {
+                if (document.getElementById('meterId').value) {
+                    checkExistingReadingsForDate();
+                }
+            });
+
+            fetchAllData();
         });
 
-        document.getElementById('readingsCount').textContent = `${data.length} day${data.length !== 1 ? 's' : ''}`;
-        document.getElementById('dailyReadingsContainer').style.display = 'block';
-    }
+        async function fetchAllData() {
+            try {
+                await fetchMeters();
+                await fetchTodRules();
+            } catch (error) {
+                showError('Failed to load initial data. Please refresh the page.');
+            }
+        }
 
-    function showDetails(entries) {
-        const tbody = document.getElementById('detailTableBody');
-        tbody.innerHTML = entries.map(r => `
-            <tr>
-                <td>${r.todRuleName}</td>
-                <td>${r.startTime} - ${r.endTime}</td>
-                <td>${r.previousReading.toFixed(2)}</td>
-                <td>${r.currentReading.toFixed(2)}</td>
-                <td>${r.consumptionKwh.toFixed(2)} kWh</td>
-                <td>₹${r.amount.toFixed(2)}</td>
-            </tr>
-        `).join('');
+        async function fetchMeters() {
+            try {
+                const response = await fetch(`${METER_API_URL}/AllMeters`);
+                if (!response.ok) throw new Error('Failed to load meters');
+                allMeters = await response.json();
+                populateMeterDropdown();
+            } catch (error) {
+                throw error;
+            }
+        }
 
-        const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
-        modal.show();
-    }
+        function populateMeterDropdown() {
+            const select = document.getElementById('meterId');
+            const filterSelect = document.getElementById('filterMeterId');
 
-    function clearFilters() {
-        document.getElementById('filterMeterId').value = '';
-        document.getElementById('filterStartDate').value = '';
-        document.getElementById('filterEndDate').value = '';
-        loadReadings();
-    }
+            select.innerHTML = '<option value="">-- Select Meter --</option>';
+            filterSelect.innerHTML = '<option value="">All Meters</option>';
 
-    function showLoading(show) {
-        document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
-        document.getElementById('dailyReadingsContainer').style.display = show ? 'none' : 'block';
-    }
-</script>
+            allMeters.forEach((meter) => {
+                const baseRate = meter.baseRate || meter.tariff?.baseRate || 0;
+                const consumerName = meter.consumerName || meter.consumer?.name || 'Unknown';
+                const latestReading = meter.latestReading || 0;
+                const meterId = meter.meterId;
+                const tariffId = meter.tariffId || meter.tariff?.tariffId;
 
-<style>
-    .table th { font-weight: 600; border-bottom: 2px solid #e9ecef; }
-    .table td { vertical-align: middle; padding: 1rem; }
-    .card { border-radius: 12px; }
-    .table-hover tbody tr:hover { background-color: rgba(25, 135, 84, 0.08); }
-    .btn-outline-success:hover { background-color: #198754; color: white; }
-</style>
-}
+                const option = `<option value="${meterId}"
+                            data-meter-number="${meterId}"
+                            data-base-rate="${baseRate}"
+                            data-latest-reading="${latestReading}"
+                            data-consumer-name="${consumerName}"
+                            data-tariff-id="${tariffId}">
+                            Meter #${meterId} - ${consumerName}
+                        </option>`;
+
+                select.innerHTML += option;
+                filterSelect.innerHTML += `<option value="${meterId}">Meter #${meterId} - ${consumerName}</option>`;
+            });
+        }
+
+        async function fetchTodRules() {
+            try {
+                const response = await fetch(`${TOD_RULE_API_URL}/AllRules`);
+                if (!response.ok) throw new Error('Failed to load TOD rules');
+                const rules = await response.json();
+                allTodRules = rules.filter(r => r.isActive);
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function loadMeterInfo() {
+            const select = document.getElementById('meterId');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (select.value) {
+                const meterId = selectedOption.dataset.meterNumber;
+                const baseRate = parseFloat(selectedOption.dataset.baseRate) || 0;
+                const consumerName = selectedOption.dataset.consumerName || 'Unknown';
+                const tariffId = selectedOption.dataset.tariffId;
+                currentMeterLatestReading = parseFloat(selectedOption.dataset.latestReading) || 0;
+
+                if (baseRate === 0) {
+                    showError('WARNING: Base rate is 0 for this meter. Please check tariff configuration.');
+                }
+
+                document.getElementById('baseRate').value = baseRate.toFixed(4);
+                document.getElementById('meterDetails').textContent =
+                    `Meter: #${meterId} | Consumer: ${consumerName} | Base Rate: ₹${baseRate.toFixed(4)}/kWh | Latest Reading: ${currentMeterLatestReading.toFixed(2)} kWh`;
+                document.getElementById('meterInfoDisplay').style.display = 'block';
+
+                // Filter TOD rules applicable to this meter's tariff
+                currentMeterApplicableRules = allTodRules.filter(rule => rule.tariffId == tariffId);
+                document.getElementById('todRulesCount').textContent = `${currentMeterApplicableRules.length} rules loaded`;
+
+                if (currentMeterApplicableRules.length === 0) {
+                    showError('No TOD rules found for this meter\'s tariff. Please check tariff configuration.');
+                }
+
+                checkExistingReadingsForDate();
+            } else {
+                document.getElementById('baseRate').value = '';
+                document.getElementById('meterInfoDisplay').style.display = 'none';
+                document.getElementById('todRulesCount').textContent = '0 rules loaded';
+                currentMeterLatestReading = 0;
+                currentMeterApplicableRules = [];
+
+                const tbody = document.getElementById('readingsTableBody');
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select a meter to load TOD slots</td></tr>';
+            }
+        }
+
+        async function checkExistingReadingsForDate() {
+            const meterId = document.getElementById('meterId').value;
+            const readingDate = document.getElementById('readingDate').value;
+
+            if (!meterId || !readingDate) return;
+
+            const existingReadings = await getExistingReadings(meterId, readingDate);
+
+            if (existingReadings.length > 0) {
+                showError(`⚠️ Readings already exist for this meter on ${readingDate}. Loading existing data.`);
+                loadExistingReadings(existingReadings);
+            } else {
+                hideError();
+                loadApplicableTodSlots();
+            }
+        }
+
+        async function getExistingReadings(meterId, readingDate) {
+            try {
+                const startDate = readingDate;
+                const endDate = readingDate;
+                const response = await fetch(
+                    `${DAILY_READING_API_URL}/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`
+                );
+
+                if (response.ok) {
+                    return await response.json();
+                }
+                return [];
+            } catch (error) {
+                console.error('Error checking existing readings:', error);
+                return [];
+            }
+        }
+
+        function loadExistingReadings(existingReadings) {
+            const tbody = document.getElementById('readingsTableBody');
+            tbody.innerHTML = '';
+
+            if (existingReadings.length === 0) {
+                loadApplicableTodSlots();
+                return;
+            }
+
+            // Group readings by TOD rule for easier processing
+            const readingsByTodRule = {};
+            existingReadings.forEach(reading => {
+                readingsByTodRule[reading.todRuleId] = reading;
+            });
+
+            currentMeterApplicableRules.forEach((rule, index) => {
+                readingRowCounter++;
+                const rowId = `row_${readingRowCounter}`;
+
+                const existingReading = readingsByTodRule[rule.todRuleId];
+
+                let previousReadingValue = '';
+                let currentReadingValue = '';
+
+                if (existingReading) {
+                    previousReadingValue = existingReading.previousReading.toFixed(2);
+                    currentReadingValue = existingReading.currentReading.toFixed(2);
+                } else if (index === 0) {
+                    previousReadingValue = currentMeterLatestReading.toFixed(2);
+                }
+
+                const row = `
+                            <tr id="${rowId}">
+                                <td>
+                                    <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
+                                        <option value="${rule.todRuleId}" selected
+                                            data-start="${rule.startTime}"
+                                            data-end="${rule.endTime}"
+                                            data-surge="${rule.surgeChargePercent}"
+                                            data-discount="${rule.discountPercent}">
+                                            ${rule.ruleName} (${rule.startTime}-${rule.endTime})
+                                        </option>
+                                    </select>
+                                </td>
+                                <td><input type="time" class="form-control form-control-sm start-time" value="${rule.startTime}" required></td>
+                                <td><input type="time" class="form-control form-control-sm end-time" value="${rule.endTime}" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
+                                    placeholder="0.00" value="${previousReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
+                                    placeholder="0.00" value="${currentReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly
+                                    value="${existingReading ? existingReading.consumptionKwh.toFixed(2) : ''}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            calculateTotals();
+        }
+
+        function loadApplicableTodSlots() {
+            const tbody = document.getElementById('readingsTableBody');
+            tbody.innerHTML = '';
+
+            if (currentMeterApplicableRules.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-exclamation-triangle display-6 d-block mb-2"></i>No TOD rules configured for this meter\'s tariff</td></tr>';
+                return;
+            }
+
+            currentMeterApplicableRules.forEach((rule, index) => {
+                readingRowCounter++;
+                const rowId = `row_${readingRowCounter}`;
+                const previousReadingValue = index === 0 ? currentMeterLatestReading.toFixed(2) : '';
+
+                const row = `
+                            <tr id="${rowId}">
+                                <td>
+                                    <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
+                                        <option value="${rule.todRuleId}" selected
+                                            data-start="${rule.startTime}"
+                                            data-end="${rule.endTime}"
+                                            data-surge="${rule.surgeChargePercent}"
+                                            data-discount="${rule.discountPercent}">
+                                            ${rule.ruleName} (${rule.startTime}-${rule.endTime})
+                                        </option>
+                                    </select>
+                                </td>
+                                <td><input type="time" class="form-control form-control-sm start-time" value="${rule.startTime}" required></td>
+                                <td><input type="time" class="form-control form-control-sm end-time" value="${rule.endTime}" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
+                                    placeholder="0.00" value="${previousReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
+                                    placeholder="0.00" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function updateTimeSlot(rowId) {
+            const row = document.getElementById(rowId);
+            const select = row.querySelector('.tod-rule-select');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (select.value) {
+                row.querySelector('.start-time').value = selectedOption.dataset.start;
+                row.querySelector('.end-time').value = selectedOption.dataset.end;
+            }
+        }
+
+        function calculateConsumption(rowId) {
+            const row = document.getElementById(rowId);
+            const previous = parseFloat(row.querySelector('.previous-reading').value) || 0;
+            const current = parseFloat(row.querySelector('.current-reading').value) || 0;
+            const consumption = current - previous;
+
+            if (consumption < 0) {
+                row.querySelector('.current-reading').classList.add('validation-error');
+                row.querySelector('.consumption').value = '0.00';
+            } else {
+                row.querySelector('.current-reading').classList.remove('validation-error');
+                row.querySelector('.consumption').value = consumption.toFixed(2);
+
+                updateNextRowPreviousReading(rowId, current);
+            }
+
+            calculateTotals();
+        }
+
+        function updateNextRowPreviousReading(currentRowId, currentReading) {
+            const currentRow = document.getElementById(currentRowId);
+            const nextRow = currentRow.nextElementSibling;
+
+            if (nextRow && nextRow.id.startsWith('row_')) {
+                const nextPreviousInput = nextRow.querySelector('.previous-reading');
+                if (nextPreviousInput) {
+                    nextPreviousInput.value = currentReading.toFixed(2);
+                }
+            }
+        }
+
+        function calculateTotals() {
+            const tbody = document.getElementById('readingsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            let totalConsumption = 0;
+            let baseAmount = 0;
+            let adjustmentAmount = 0;
+
+            const baseRate = parseFloat(document.getElementById('baseRate').value) || 0;
+
+            rows.forEach(row => {
+                const consumption = parseFloat(row.querySelector('.consumption')?.value) || 0;
+                const todRuleSelect = row.querySelector('.tod-rule-select');
+                const selectedOption = todRuleSelect?.options[todRuleSelect.selectedIndex];
+
+                if (consumption > 0 && selectedOption) {
+                    const surge = parseFloat(selectedOption.dataset.surge) || 0;
+                    const discount = parseFloat(selectedOption.dataset.discount) || 0;
+
+                    totalConsumption += consumption;
+                    const rowBaseAmount = consumption * baseRate;
+                    baseAmount += rowBaseAmount;
+
+                    const surgeAmount = rowBaseAmount * (surge / 100);
+                    const discountAmount = rowBaseAmount * (discount / 100);
+                    adjustmentAmount += (surgeAmount - discountAmount);
+                }
+            });
+
+            const totalAmount = baseAmount + adjustmentAmount;
+
+            document.getElementById('totalConsumption').textContent = totalConsumption.toFixed(2) + ' kWh';
+            document.getElementById('baseAmount').textContent = '₹' + baseAmount.toFixed(2);
+            document.getElementById('adjustmentAmount').textContent = (adjustmentAmount >= 0 ? '+' : '') + '₹' + adjustmentAmount.toFixed(2);
+            document.getElementById('totalAmount').textContent = '₹' + totalAmount.toFixed(2);
+
+            // Update stats cards
+            document.getElementById('totalConsumptionStat').textContent = totalConsumption.toFixed(2) + ' kWh';
+            document.getElementById('baseAmountStat').textContent = '₹' + baseAmount.toFixed(2);
+            document.getElementById('adjustmentAmountStat').textContent = (adjustmentAmount >= 0 ? '+' : '') + '₹' + adjustmentAmount.toFixed(2);
+            document.getElementById('totalAmountStat').textContent = '₹' + totalAmount.toFixed(2);
+        }
+
+        function removeReadingRow(rowId) {
+            document.getElementById(rowId).remove();
+            calculateTotals();
+
+            const tbody = document.getElementById('readingsTableBody');
+            if (tbody.rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select a meter to load TOD slots</td></tr>';
+            }
+        }
+
+        async function saveReadings() {
+            const meterId = document.getElementById('meterId').value;
+            const readingDate = document.getElementById('readingDate').value;
+            const baseRate = parseFloat(document.getElementById('baseRate').value);
+
+            if (!meterId || !readingDate || !baseRate) {
+                showError('Please fill in meter, date, and ensure base rate is set');
+                return;
+            }
+
+            const hasDuplicate = await checkForDuplicateReadings(meterId, readingDate);
+            if (hasDuplicate) {
+                if (!confirm('Readings already exist for this meter on this date. Do you want to delete existing readings and create new ones?')) {
+                    return;
+                }
+                await deleteExistingReadings(meterId, readingDate);
+            }
+
+            const tbody = document.getElementById('readingsTableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            if (rows.length === 0 || rows[0].cells[0]?.colSpan === 7) {
+                showError('Please add at least one reading');
+                return;
+            }
+
+            const readings = [];
+
+            for (const row of rows) {
+                const todRuleId = parseInt(row.querySelector('.tod-rule-select').value);
+                const startTime = row.querySelector('.start-time').value;
+                const endTime = row.querySelector('.end-time').value;
+                const previousReading = parseFloat(row.querySelector('.previous-reading').value);
+                const currentReading = parseFloat(row.querySelector('.current-reading').value);
+
+                if (!todRuleId || !startTime || !endTime || isNaN(previousReading) || isNaN(currentReading)) {
+                    showError('Please fill in all fields for each reading row');
+                    return;
+                }
+
+                if (currentReading < previousReading) {
+                    showError('Current reading cannot be less than previous reading');
+                    return;
+                }
+
+                readings.push({
+                    todRuleId: todRuleId,
+                    startTime: startTime,
+                    endTime: endTime,
+                    previousReading: previousReading,
+                    currentReading: currentReading,
+                    baseRate: baseRate
+                });
+            }
+
+            const bulkData = {
+                meterId: parseInt(meterId),
+                readingDate: readingDate,
+                recordedBy: 'Admin',
+                readings: readings
+            };
+
+            try {
+                const response = await fetch(`${DAILY_READING_API_URL}/CreateBulk`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bulkData),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showSuccess(`Success! ${result.count} reading(s) saved.\nTotal: ₹${result.totalAmount.toFixed(2)}`);
+                    clearForm();
+                    await fetchMeters();
+                } else {
+                    if (result.errors) {
+                        showError('Errors: ' + result.errors.join(', '));
+                    } else {
+                        showError(`Failed: ${result.error || JSON.stringify(result)}`);
+                    }
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        async function checkForDuplicateReadings(meterId, readingDate) {
+            try {
+                const startDate = readingDate;
+                const endDate = readingDate;
+                const response = await fetch(
+                    `${DAILY_READING_API_URL}/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`
+                );
+
+                if (response.ok) {
+                    const readings = await response.json();
+                    return readings.length > 0;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error checking duplicates:', error);
+                return false;
+            }
+        }
+
+        async function deleteExistingReadings(meterId, readingDate) {
+            try {
+                const startDate = readingDate;
+                const endDate = readingDate;
+                const response = await fetch(
+                    `${DAILY_READING_API_URL}/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`
+                );
+
+                if (response.ok) {
+                    const readings = await response.json();
+
+                    // Delete all existing readings for this date
+                    for (const reading of readings) {
+                        await fetch(`${DAILY_READING_API_URL}/${reading.readingId}`, {
+                            method: 'DELETE'
+                        });
+                    }
+
+                    showSuccess('Existing readings deleted successfully');
+                }
+            } catch (error) {
+                console.error('Error deleting existing readings:', error);
+                showError('Failed to delete existing readings');
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('meterId').value = '';
+            document.getElementById('readingDate').valueAsDate = new Date();
+            document.getElementById('baseRate').value = '';
+            document.getElementById('meterInfoDisplay').style.display = 'none';
+            document.getElementById('todRulesCount').textContent = '0 rules loaded';
+            currentMeterLatestReading = 0;
+            currentMeterApplicableRules = [];
+
+            const tbody = document.getElementById('readingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select a meter to load TOD slots</td></tr>';
+
+            calculateTotals();
+        }
+
+        async function viewAllReadings() {
+            const modal = new bootstrap.Modal(document.getElementById('viewReadingsModal'));
+            modal.show();
+            // Don't load readings automatically - wait for user to apply filters
+            const tbody = document.getElementById('allReadingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select filters to view readings</td></tr>';
+        }
+
+        async function loadAllReadings() {
+            const filterMeterId = document.getElementById('filterMeterId').value;
+            const startDate = document.getElementById('filterStartDate').value;
+            const endDate = document.getElementById('filterEndDate').value;
+
+            // Don't load if no filters are selected
+            if (!filterMeterId && !startDate && !endDate) {
+                const tbody = document.getElementById('allReadingsTableBody');
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select filters to view readings</td></tr>';
+                return;
+            }
+
+            const tbody = document.getElementById('allReadingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">Loading...</td></tr>';
+
+            try {
+                let url = `${DAILY_READING_API_URL}/AllReadings`;
+
+                if (filterMeterId && startDate && endDate) {
+                    url = `${DAILY_READING_API_URL}/ByDateRange?meterId=${filterMeterId}&startDate=${startDate}&endDate=${endDate}`;
+                } else if (filterMeterId) {
+                    url = `${DAILY_READING_API_URL}/ByMeter/${filterMeterId}`;
+                } else if (startDate && endDate) {
+                    url = `${DAILY_READING_API_URL}/ByDateRange?startDate=${startDate}&endDate=${endDate}`;
+                }
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to load readings');
+
+                const readings = await response.json();
+
+                if (readings.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>No readings found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = readings.map(r => `
+                            <tr>
+                                <td>${r.readingDate}</td>
+                                <td>${r.meterId}</td>
+                                <td>${r.todRuleName}</td>
+                                <td>${r.startTime} - ${r.endTime}</td>
+                                <td>${r.previousReading.toFixed(2)}</td>
+                                <td>${r.currentReading.toFixed(2)}</td>
+                                <td>${r.consumptionKwh.toFixed(2)} kWh</td>
+                                <td>₹${r.amount.toFixed(2)}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteReading(${r.readingId})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">Error loading readings</td></tr>';
+            }
+        }
+
+        async function deleteReading(id) {
+            if (!confirm('Are you sure you want to delete this reading?')) return;
+
+            try {
+                const response = await fetch(`${DAILY_READING_API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showSuccess('Reading deleted successfully');
+                    await loadAllReadings();
+                } else {
+                    showError('Failed to delete reading');
+                }
+            } catch (error) {
+                showError('Error deleting reading');
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('filterMeterId').value = '';
+            document.getElementById('filterStartDate').value = '';
+            document.getElementById('filterEndDate').value = '';
+            const tbody = document.getElementById('allReadingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select filters to view readings</td></tr>';
+        }
+
+        function viewMonthlyBills() {
+            window.location.href = '/Home/MonthlyBill';
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
