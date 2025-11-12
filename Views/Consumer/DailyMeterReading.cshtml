@@ -1,5 +1,243 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    Layout = "~/Views/Shared/_ConsumerLayout.cshtml";
+    ViewData["Title"] = "Daily Meter Readings";
+}
+
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1"><i class="bi bi-calendar-week me-2 text-success"></i>Daily Meter Readings</h2>
+            <p class="text-muted mb-0">View your recent daily readings and detailed TOD breakdown</p>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-light py-3">
+            <h6 class="mb-0 fw-semibold"><i class="bi bi-funnel me-2"></i>Filter Readings</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-xl-3 col-md-4">
+                    <label class="form-label small fw-semibold text-muted">METER</label>
+                    <select class="form-select" id="filterMeterId">
+                        <option value="">All Meters</option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-md-4">
+                    <label class="form-label small fw-semibold text-muted">START DATE</label>
+                    <input type="date" class="form-control" id="filterStartDate">
+                </div>
+                <div class="col-xl-3 col-md-4">
+                    <label class="form-label small fw-semibold text-muted">END DATE</label>
+                    <input type="date" class="form-control" id="filterEndDate">
+                </div>
+                <div class="col-xl-3 col-md-12 d-flex align-items-end">
+                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="bi bi-x-circle me-2"></i>Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingSpinner" class="text-center py-5">
+        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status"></div>
+        <p class="mt-3 text-muted">Loading your readings...</p>
+    </div>
+
+    <!-- Daily Readings Table -->
+    <div id="dailyReadingsContainer" class="card border-0 shadow-sm" style="display:none;">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold"><i class="bi bi-list-ul me-2"></i>Daily Reading Summary</h6>
+            <span class="badge bg-success bg-opacity-10 text-success" id="readingsCount">0 days</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Date</th>
+                            <th>Meter</th>
+                            <th>Total Consumption (kWh)</th>
+                            <th>Total Amount (₹)</th>
+                            <th class="text-center">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dailyReadingsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="detailsModalLabel"><i class="bi bi-clock-history me-2"></i>Detailed Readings</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="detailTableContainer" class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>TOD Rule</th>
+                                <th>Time Slot</th>
+                                <th>Previous</th>
+                                <th>Current</th>
+                                <th>Consumption</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const token = localStorage.getItem('jwtToken');
+    const consumerId = localStorage.getItem('consumerId');
+    const METER_API_URL = `${API_BASE_URL}/api/Meter`;
+    const DAILY_READING_API_URL = `${API_BASE_URL}/api/DailyMeterReading`;
+
+    document.addEventListener('DOMContentLoaded', initConsumerReadings);
+
+    async function initConsumerReadings() {
+        showLoading(true);
+        try {
+            await loadMeters();
+            await loadReadings();
+        } catch (e) {
+            console.error(e);
+            showError('Failed to load readings.');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function loadMeters() {
+        const res = await fetch(`${METER_API_URL}/AllMeters`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const meters = await res.json();
+        const consumerMeters = meters.filter(m => m.consumerId == consumerId);
+
+        const select = document.getElementById('filterMeterId');
+        consumerMeters.forEach(m =>
+            select.innerHTML += `<option value="${m.meterId}">Meter #${m.meterId} - ${m.dtrName}</option>`
+        );
+    }
+
+    async function loadReadings() {
+        const meterId = document.getElementById('filterMeterId').value;
+        const startDate = document.getElementById('filterStartDate').value;
+        const endDate = document.getElementById('filterEndDate').value;
+
+        let url = `${DAILY_READING_API_URL}/AllReadings`;
+        if (meterId && startDate && endDate)
+            url = `${DAILY_READING_API_URL}/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`;
+        else if (meterId)
+            url = `${DAILY_READING_API_URL}/ByMeter/${meterId}`;
+        else if (startDate && endDate)
+            url = `${DAILY_READING_API_URL}/ByDateRange?startDate=${startDate}&endDate=${endDate}`;
+
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        const readings = await res.json();
+        const myReadings = readings.filter(r => r.consumerId == consumerId);
+
+        // Group by date
+        const grouped = {};
+        myReadings.forEach(r => {
+            const date = r.readingDate.split('T')[0];
+            if (!grouped[date]) grouped[date] = [];
+            grouped[date].push(r);
+        });
+
+        const summary = Object.entries(grouped).map(([date, entries]) => {
+            const totalConsumption = entries.reduce((sum, e) => sum + e.consumptionKwh, 0);
+            const totalAmount = entries.reduce((sum, e) => sum + e.amount, 0);
+            const meter = entries[0]?.meterId || '-';
+            return { date, meter, totalConsumption, totalAmount, entries };
+        });
+
+        renderSummary(summary);
+    }
+
+    function renderSummary(data) {
+        const tbody = document.getElementById('dailyReadingsTableBody');
+        tbody.innerHTML = '';
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No readings found</td></tr>`;
+            return;
+        }
+
+        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first
+
+        data.forEach(day => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="ps-4">${day.date}</td>
+                <td>Meter #${day.meter}</td>
+                <td><strong>${day.totalConsumption.toFixed(2)}</strong> kWh</td>
+                <td><strong>₹${day.totalAmount.toFixed(2)}</strong></td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-success" onclick='showDetails(${JSON.stringify(day.entries)})'>
+                        <i class="bi bi-eye"></i> View
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('readingsCount').textContent = `${data.length} day${data.length !== 1 ? 's' : ''}`;
+        document.getElementById('dailyReadingsContainer').style.display = 'block';
+    }
+
+    function showDetails(entries) {
+        const tbody = document.getElementById('detailTableBody');
+        tbody.innerHTML = entries.map(r => `
+            <tr>
+                <td>${r.todRuleName}</td>
+                <td>${r.startTime} - ${r.endTime}</td>
+                <td>${r.previousReading.toFixed(2)}</td>
+                <td>${r.currentReading.toFixed(2)}</td>
+                <td>${r.consumptionKwh.toFixed(2)} kWh</td>
+                <td>₹${r.amount.toFixed(2)}</td>
+            </tr>
+        `).join('');
+
+        const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        modal.show();
+    }
+
+    function clearFilters() {
+        document.getElementById('filterMeterId').value = '';
+        document.getElementById('filterStartDate').value = '';
+        document.getElementById('filterEndDate').value = '';
+        loadReadings();
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        document.getElementById('dailyReadingsContainer').style.display = show ? 'none' : 'block';
+    }
+</script>
+
+<style>
+    .table th { font-weight: 600; border-bottom: 2px solid #e9ecef; }
+    .table td { vertical-align: middle; padding: 1rem; }
+    .card { border-radius: 12px; }
+    .table-hover tbody tr:hover { background-color: rgba(25, 135, 84, 0.08); }
+    .btn-outline-success:hover { background-color: #198754; color: white; }
+</style>
 }
