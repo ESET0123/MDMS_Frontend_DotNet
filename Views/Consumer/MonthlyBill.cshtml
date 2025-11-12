@@ -8,7 +8,7 @@
         <h2><i class="bi bi-file-earmark-text"></i> My Monthly Bills</h2>
     </div>
 
-    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
+    <div id="loadingIndicator" class="text-center my-4">
         <div class="spinner-border text-success" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -20,7 +20,7 @@
     </div>
 
     <!-- Main Bills Table -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm" style="display: none;" id="billsTableCard">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0"><i class="bi bi-list"></i> All My Monthly Bills</h5>
         </div>
@@ -162,35 +162,35 @@
         let viewBillModal;
         let paymentNotificationModal;
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             viewBillModal = new bootstrap.Modal(document.getElementById('viewBillModal'));
             paymentNotificationModal = new bootstrap.Modal(document.getElementById('paymentNotificationModal'));
 
-            // Get current consumer ID (you might need to adjust this based on your authentication system)
+            // Get current consumer ID from localStorage (set during login)
             getCurrentConsumerId().then(consumerId => {
                 if (consumerId) {
                     currentConsumerId = consumerId;
                     fetchConsumerBills();
                 } else {
                     showError('Unable to load consumer information. Please log in again.');
+                    showLoading(false);
                 }
             });
         });
 
-        // Function to get current consumer ID - you'll need to implement this based on your auth system
+        // Function to get current consumer ID from localStorage
         async function getCurrentConsumerId() {
-            // This is a placeholder - implement based on your authentication system
-            // You might get this from a JWT token, session, or user context
             try {
-                // Example: if you have a current user endpoint
-                // const response = await fetch(`${API_BASE_URL}/api/User/Current`);
-                // if (response.ok) {
-                //     const user = await response.json();
-                //     return user.consumerId;
-                // }
+                // Get consumer ID from localStorage (set during consumer login)
+                const consumerId = localStorage.getItem('consumerId');
 
-                // For now, return a placeholder - you'll need to implement this
-                return 1; // Replace with actual consumer ID from your auth system
+                if (!consumerId) {
+                    console.error('No consumer ID found in localStorage');
+                    return null;
+                }
+
+                console.log('Found consumer ID:', consumerId);
+                return parseInt(consumerId);
             } catch (error) {
                 console.error('Error getting consumer ID:', error);
                 return null;
@@ -199,18 +199,30 @@
 
         async function fetchConsumerBills() {
             if (!currentConsumerId) {
-                showError('Consumer information not available');
+                showError('Consumer information not available. Please log in again.');
+                showLoading(false);
                 return;
             }
 
             try {
                 showLoading(true);
                 showError('');
-                const response = await fetch(`${BILL_API_URL}/ByConsumer/${currentConsumerId}`);
 
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                console.log('Fetching bills for consumer ID:', currentConsumerId);
+
+                const response = await fetch(`${BILL_API_URL}/ByConsumer/${currentConsumerId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 allBills = await response.json();
+                console.log('Fetched bills:', allBills);
 
                 // Sort bills by billing year and month (latest first)
                 allBills.sort((a, b) => {
@@ -222,6 +234,10 @@
 
                 renderBillsTable(allBills);
                 showLoading(false);
+
+                // Show the table card
+                document.getElementById('billsTableCard').style.display = 'block';
+
             } catch (error) {
                 console.error('Error loading bills:', error);
                 showError('Failed to load bills: ' + error.message);
@@ -239,7 +255,7 @@
                     const period = `${bill.billingMonth}/${bill.billingYear}`;
 
                     let statusBadge;
-                    switch(bill.billStatus) {
+                    switch (bill.billStatus) {
                         case 'Paid':
                             statusBadge = '<span class="badge bg-success">Paid</span>';
                             break;
@@ -257,48 +273,51 @@
                     let actionButtons;
                     if (bill.billStatus === 'Pending' || bill.billStatus === 'Overdue') {
                         actionButtons = `
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="viewBillDetails(${bill.billId})" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-success" onclick="showPaymentNotification()" title="Pay Bill">
-                                <i class="bi bi-credit-card"></i>
-                            </button>
-                        `;
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="viewBillDetails(${bill.billId})" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="showPaymentNotification()" title="Pay Bill">
+                                        <i class="bi bi-credit-card"></i>
+                                    </button>
+                                `;
                     } else {
                         actionButtons = `
-                            <button class="btn btn-sm btn-outline-primary" onclick="viewBillDetails(${bill.billId})" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        `;
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewBillDetails(${bill.billId})" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                `;
                     }
 
                     const rowHtml = `
-                        <tr>
-                            <td><strong>${bill.billId}</strong></td>
-                            <td>${bill.meterId}</td>
-                            <td>${period}</td>
-                            <td>${billingDate}</td>
-                            <td>${bill.totalConsumptionKwh.toFixed(2)}</td>
-                            <td>₹${bill.totalAmount.toFixed(2)}</td>
-                            <td>${statusBadge}</td>
-                            <td>
-                                ${actionButtons}
-                            </td>
-                        </tr>
-                    `;
+                                <tr>
+                                    <td><strong>${bill.billId}</strong></td>
+                                    <td>${bill.meterId}</td>
+                                    <td>${period}</td>
+                                    <td>${billingDate}</td>
+                                    <td>${(bill.totalConsumptionKwh || 0).toFixed(2)}</td>
+                                    <td>₹${(bill.totalAmount || 0).toFixed(2)}</td>
+                                    <td>${statusBadge}</td>
+                                    <td>
+                                        ${actionButtons}
+                                    </td>
+                                </tr>
+                            `;
                     tbody.insertAdjacentHTML('beforeend', rowHtml);
                 });
             } else {
                 tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" class="text-center py-4">
-                            <div class="text-muted">
-                                <i class="bi bi-file-earmark-x display-4"></i>
-                                <p class="mt-3">No bills found for your account.</p>
-                            </div>
-                        </td>
-                    </tr>
-                `;
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="bi bi-file-earmark-x display-4"></i>
+                                        <p class="mt-3">No bills found for your account.</p>
+                                        <button class="btn btn-outline-primary mt-2" onclick="fetchConsumerBills()">
+                                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
             }
         }
 
@@ -318,7 +337,7 @@
             const period = `${getMonthName(bill.billingMonth)} ${bill.billingYear}`;
 
             let statusBadge;
-            switch(bill.billStatus) {
+            switch (bill.billStatus) {
                 case 'Paid':
                     statusBadge = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> PAID</span>';
                     break;
@@ -337,8 +356,8 @@
             document.getElementById('viewBillingPeriod').textContent = period;
             document.getElementById('viewBillingDate').textContent = billingDate;
             document.getElementById('viewStatus').innerHTML = statusBadge;
-            document.getElementById('viewTotalConsumption').textContent = bill.totalConsumptionKwh.toFixed(2);
-            document.getElementById('viewTotalAmount').textContent = '₹ ' + bill.totalAmount.toFixed(2);
+            document.getElementById('viewTotalConsumption').textContent = (bill.totalConsumptionKwh || 0).toFixed(2);
+            document.getElementById('viewTotalAmount').textContent = '₹ ' + (bill.totalAmount || 0).toFixed(2);
 
             viewBillModal.show();
         }
