@@ -1,6 +1,6 @@
 ﻿@{
-    Layout = "~/Views/Shared/_ConsumerLayout.cshtml";
-    ViewData["Title"] = "Daily Meter Readings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Daily Meter Reading";
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -398,7 +398,7 @@
                         <table class="table table-bordered table-hover table-sm">
                             <thead class="table-dark sticky-top">
                                 <tr>
-                                    <th style ="width: 20%; color: black;">Date</th>
+                                    <th style="width: 20%; color: black;">Date</th>
                                     <th style="width: 20%; color: black;">Meter</th>
                                     <th style="width: 20%; color: black;">TOD Rule</th>
                                     <th style="width: 20%; color: black;">Time Slot</th>
@@ -423,66 +423,107 @@
             </div>
         </div>
     </div>
-</div>
 
-@section Scripts {
-<script>
-    const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
-    const METER_API = `${API_BASE_URL}/api/Meter`;
-    const DAILY_API = `${API_BASE_URL}/api/DailyMeterReading`;
-    const token = localStorage.getItem('jwtToken');
-    const consumerId = localStorage.getItem('consumerId');
+    <script>
+        const DAILY_READING_API_URL = `${API_BASE_URL}/api/DailyMeterReading`;
+        const TOD_RULE_API_URL = `${API_BASE_URL}/api/TodRule`;
+        const METER_API_URL = `${API_BASE_URL}/api/Meter`;
 
-    document.addEventListener('DOMContentLoaded', initConsumerReadings);
+        let allTodRules = [];
+        let allMeters = [];
+        let readingRowCounter = 0;
+        let currentMeterLatestReading = 0;
+        let currentMeterApplicableRules = [];
 
-    async function initConsumerReadings() {
-        try {
-            await loadConsumerMeters();
-            document.getElementById('filterBtn').addEventListener('click', loadReadings);
-            document.getElementById('resetBtn').addEventListener('click', resetFilters);
-            document.getElementById('loadingSpinner').style.display = 'block';
-            await loadReadings();
-        } catch (err) {
-            console.error('Initialization failed:', err);
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
         }
-    }
 
-    async function loadConsumerMeters() {
-        const res = await fetch(`${METER_API}/AllMeters`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            document.getElementById('successText').textContent = message;
+            document.getElementById('successMessage').style.display = 'block';
+            setTimeout(hideSuccess, 5000);
+        }
+
+        function hideSuccess() {
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('readingDate').valueAsDate = new Date();
+
+            document.getElementById('readingDate').addEventListener('change', function () {
+                if (document.getElementById('meterId').value) {
+                    checkExistingReadingsForDate();
+                }
+            });
+
+            fetchAllData();
         });
-        const meters = await res.json();
-        const consumerMeters = meters.filter(m => m.consumerId == consumerId);
-        const select = document.getElementById('filterMeter');
-        consumerMeters.forEach(m => {
-            const opt = document.createElement('option');
-            opt.value = m.meterId;
-            opt.textContent = `Meter #${m.meterId} - ${m.consumerName}`;
-            select.appendChild(opt);
-        });
-    }
 
-    async function loadReadings() {
-        document.getElementById('loadingSpinner').style.display = 'block';
-        document.getElementById('readingsContainer').style.display = 'none';
-        const tbody = document.getElementById('readingsTableBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Loading...</td></tr>';
-
-        const meterId = document.getElementById('filterMeter').value;
-        const startDate = document.getElementById('startDate').value;
-        const endDate = document.getElementById('endDate').value;
-        let readings = [];
-
-        try {
-            if (meterId && startDate && endDate) {
-                const url = `${DAILY_API}/ByDateRange?meterId=${meterId}&startDate=${startDate}&endDate=${endDate}`;
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                readings = await res.json();
-            } else if (meterId) {
-                const url = `${DAILY_API}/ByMeter/${meterId}`;
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                readings = await res.json();
+        async function fetchAllData() {
+            try {
+                await fetchMeters();
+                await fetchTodRules();
+            } catch (error) {
+                showError('Failed to load initial data. Please refresh the page.');
             }
+        }
+
+        async function fetchMeters() {
+            try {
+                const response = await fetch(`${METER_API_URL}/AllMeters`);
+                if (!response.ok) throw new Error('Failed to load meters');
+                allMeters = await response.json();
+                populateMeterDropdown();
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function populateMeterDropdown() {
+            const select = document.getElementById('meterId');
+            const filterSelect = document.getElementById('filterMeterId');
+
+            select.innerHTML = '<option value="">-- Select Meter --</option>';
+            filterSelect.innerHTML = '<option value="">All Meters</option>';
+
+            allMeters.forEach((meter) => {
+                const baseRate = meter.baseRate || meter.tariff?.baseRate || 0;
+                const consumerName = meter.consumerName || meter.consumer?.name || 'Unknown';
+                const latestReading = meter.latestReading || 0;
+                const meterId = meter.meterId;
+                const tariffId = meter.tariffId || meter.tariff?.tariffId;
+
+                const option = `<option value="${meterId}"
+                            data-meter-number="${meterId}"
+                            data-base-rate="${baseRate}"
+                            data-latest-reading="${latestReading}"
+                            data-consumer-name="${consumerName}"
+                            data-tariff-id="${tariffId}">
+                            Meter #${meterId} - ${consumerName}
+                        </option>`;
+
+                select.innerHTML += option;
+                filterSelect.innerHTML += `<option value="${meterId}">Meter #${meterId} - ${consumerName}</option>`;
+            });
+        }
+
+        async function fetchTodRules() {
+            try {
+                const response = await fetch(`${TOD_RULE_API_URL}/AllRules`);
+                if (!response.ok) throw new Error('Failed to load TOD rules');
+                const rules = await response.json();
+                allTodRules = rules.filter(r => r.isActive);
+            } catch (error) {
+                throw error;
+            }
+        }
 
         function loadMeterInfo() {
             const select = document.getElementById('meterId');
@@ -569,13 +610,11 @@
                 return;
             }
 
-        // Group by date
-        const grouped = {};
-        readings.forEach(r => {
-            const date = r.readingDate.split('T')[0];
-            if (!grouped[date]) grouped[date] = [];
-            grouped[date].push(r);
-        });
+            // Group readings by TOD rule for easier processing
+            const readingsByTodRule = {};
+            existingReadings.forEach(reading => {
+                readingsByTodRule[reading.todRuleId] = reading;
+            });
 
             currentMeterApplicableRules.forEach((rule, index) => {
                 readingRowCounter++;
@@ -594,33 +633,33 @@
                 }
 
                 const row = `
-                    <tr id="${rowId}">
-                        <td>
-                            <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
-                                <option value="${rule.todRuleId}" selected
-                                    data-start="${rule.startTime}"
-                                    data-end="${rule.endTime}"
-                                    data-surge="${rule.surgeChargePercent}"
-                                    data-discount="${rule.discountPercent}">
-                                    ${rule.ruleName} (${rule.startTime}-${rule.endTime})
-                                </option>
-                            </select>
-                        </td>
-                        <td><input type="time" class="form-control form-control-sm start-time" value="${rule.startTime}" required></td>
-                        <td><input type="time" class="form-control form-control-sm end-time" value="${rule.endTime}" required></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
-                            placeholder="0.00" value="${previousReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
-                            placeholder="0.00" value="${currentReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly
-                            value="${existingReading ? existingReading.consumptionKwh.toFixed(2) : ''}"></td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
+                            <tr id="${rowId}">
+                                <td>
+                                    <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
+                                        <option value="${rule.todRuleId}" selected
+                                            data-start="${rule.startTime}"
+                                            data-end="${rule.endTime}"
+                                            data-surge="${rule.surgeChargePercent}"
+                                            data-discount="${rule.discountPercent}">
+                                            ${rule.ruleName} (${rule.startTime}-${rule.endTime})
+                                        </option>
+                                    </select>
+                                </td>
+                                <td><input type="time" class="form-control form-control-sm start-time" value="${rule.startTime}" required></td>
+                                <td><input type="time" class="form-control form-control-sm end-time" value="${rule.endTime}" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
+                                    placeholder="0.00" value="${previousReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
+                                    placeholder="0.00" value="${currentReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly
+                                    value="${existingReading ? existingReading.consumptionKwh.toFixed(2) : ''}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
 
                 tbody.insertAdjacentHTML('beforeend', row);
             });
@@ -643,32 +682,32 @@
                 const previousReadingValue = index === 0 ? currentMeterLatestReading.toFixed(2) : '';
 
                 const row = `
-                    <tr id="${rowId}">
-                        <td>
-                            <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
-                                <option value="${rule.todRuleId}" selected
-                                    data-start="${rule.startTime}"
-                                    data-end="${rule.endTime}"
-                                    data-surge="${rule.surgeChargePercent}"
-                                    data-discount="${rule.discountPercent}">
-                                    ${rule.ruleName} (${rule.startTime}-${rule.endTime})
-                                </option>
-                            </select>
-                        </td>
-                        <td><input type="time" class="form-control form-control-sm start-time" value="${rule.startTime}" required></td>
-                        <td><input type="time" class="form-control form-control-sm end-time" value="${rule.endTime}" required></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
-                            placeholder="0.00" value="${previousReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
-                            placeholder="0.00" onchange="calculateConsumption('${rowId}')" required></td>
-                        <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly></td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
+                            <tr id="${rowId}">
+                                <td>
+                                    <select class="form-select form-select-sm tod-rule-select" onchange="updateTimeSlot('${rowId}')">
+                                        <option value="${rule.todRuleId}" selected
+                                            data-start="${rule.startTime}"
+                                            data-end="${rule.endTime}"
+                                            data-surge="${rule.surgeChargePercent}"
+                                            data-discount="${rule.discountPercent}">
+                                            ${rule.ruleName} (${rule.startTime}-${rule.endTime})
+                                        </option>
+                                    </select>
+                                </td>
+                                <td><input type="time" class="form-control form-control-sm start-time" value="${rule.startTime}" required></td>
+                                <td><input type="time" class="form-control form-control-sm end-time" value="${rule.endTime}" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm previous-reading"
+                                    placeholder="0.00" value="${previousReadingValue}" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm current-reading"
+                                    placeholder="0.00" onchange="calculateConsumption('${rowId}')" required></td>
+                                <td><input type="number" step="0.01" class="form-control form-control-sm consumption" readonly></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="removeReadingRow('${rowId}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
 
                 tbody.insertAdjacentHTML('beforeend', row);
             });
@@ -915,9 +954,8 @@
             const tbody = document.getElementById('readingsTableBody');
             tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>Select a meter to load TOD slots</td></tr>';
 
-        document.getElementById('readingCount').textContent = `${dates.length} reading${dates.length > 1 ? 's' : ''}`;
-        document.getElementById('readingsContainer').style.display = 'block';
-    }
+            calculateTotals();
+        }
 
         async function viewAllReadings() {
             const modal = new bootstrap.Modal(document.getElementById('viewReadingsModal'));
@@ -964,34 +1002,34 @@
                 }
 
                 tbody.innerHTML = readings.map(r => `
-                    <tr>
-                        <td>${r.readingDate}</td>
-                        <td>${r.meterId}</td>
-                        <td>${r.todRuleName}</td>
-                        <td>${r.startTime} - ${r.endTime}</td>
-                        <td>${r.previousReading.toFixed(2)}</td>
-                        <td>${r.currentReading.toFixed(2)}</td>
-                        <td>${r.consumptionKwh.toFixed(2)} kWh</td>
-                        <td>₹${r.amount.toFixed(2)}</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteReading(${r.readingId})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
+                            <tr>
+                                <td>${r.readingDate}</td>
+                                <td>${r.meterId}</td>
+                                <td>${r.todRuleName}</td>
+                                <td>${r.startTime} - ${r.endTime}</td>
+                                <td>${r.previousReading.toFixed(2)}</td>
+                                <td>${r.currentReading.toFixed(2)}</td>
+                                <td>${r.consumptionKwh.toFixed(2)} kWh</td>
+                                <td>₹${r.amount.toFixed(2)}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteReading(${r.readingId})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
             } catch (error) {
                 tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">Error loading readings</td></tr>';
             }
         }
 
-    function resetFilters() {
-        document.getElementById('filterMeter').value = '';
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-        loadReadings();
-    }
-</script>
+        async function deleteReading(id) {
+            if (!confirm('Are you sure you want to delete this reading?')) return;
+
+            try {
+                const response = await fetch(`${DAILY_READING_API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
 
                 if (response.ok) {
                     showSuccess('Reading deleted successfully');
