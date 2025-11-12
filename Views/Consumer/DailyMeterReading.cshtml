@@ -1,5 +1,745 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    Layout = "~/Views/Shared/_ConsumerLayout.cshtml";
+    ViewData["Title"] = "Daily Meter Readings";
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Meter Reading - Consumer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            background-color: #f8f9fa;
+            padding: 0;
+        }
+
+        .card {
+            border-radius: 12px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: var(--card-shadow);
+        }
+
+            .card:hover {
+                box-shadow: var(--card-hover-shadow);
+            }
+
+        .card-header {
+            border-radius: 12px 12px 0 0 !important;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+            .form-control:focus, .form-select:focus {
+                border-color: #198754;
+                box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+            }
+
+        .btn {
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-1px);
+            }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+            .table th {
+                border-top: none;
+                font-weight: 600;
+                background-color: #f8f9fa;
+            }
+
+            .table input[type="date"],
+            .table input[type="number"],
+            .table select {
+                font-size: 0.875rem;
+                border-radius: 6px;
+            }
+
+            .table td {
+                vertical-align: middle;
+            }
+
+        .stats-card {
+            border-top: 4px solid !important;
+        }
+
+            .stats-card.total-consumption {
+                border-color: #198754 !important;
+            }
+
+            .stats-card.total-amount {
+                border-color: #0dcaf0 !important;
+            }
+
+            .stats-card.average-consumption {
+                border-color: #ffc107 !important;
+            }
+
+            .stats-card.reading-count {
+                border-color: #6f42c1 !important;
+            }
+
+        .badge {
+            font-size: 0.75em;
+            padding: 0.35em 0.65em;
+        }
+
+        .dropdown-toggle::after {
+            display: none;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            box-shadow: var(--card-shadow);
+        }
+
+        .dropdown-item {
+            border-radius: 6px;
+            margin: 0.125rem;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .modal-header {
+            border-radius: 12px 12px 0 0;
+        }
+
+        .modal-footer {
+            border-radius: 0 0 12px 12px;
+        }
+
+        .empty-state .bi {
+            opacity: 0.3;
+        }
+
+        .input-group-text {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            background-color: #f8f9fa;
+        }
+
+        .bg-opacity-10 {
+            background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+        }
+
+        .reading-date {
+            font-weight: 600;
+            color: #198754;
+        }
+
+        .consumption-badge {
+            font-size: 0.8rem;
+        }
+
+        .text-purple {
+            color: #6f42c1 !important;
+        }
+
+        .bg-purple {
+            background-color: #6f42c1 !important;
+        }
+
+            .bg-purple.bg-opacity-10 {
+                background-color: rgba(111, 66, 193, 0.1) !important;
+            }
+
+        .surge-badge {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .discount-badge {
+            background-color: #198754;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-dark mb-1">
+                    <i class="bi bi-lightning-charge-fill text-success me-2"></i>My Daily Meter Readings
+                </h2>
+                <p class="text-muted mb-0">View your electricity consumption history with Time-of-Day pricing</p>
+            </div>
+            <div>
+                <button onclick="viewMonthlyBills()" class="btn btn-success">
+                    <i class="bi bi-file-earmark-text me-2"></i> View Monthly Bills
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="row mb-4">
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card total-consumption bg-success bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL CONSUMPTION</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalConsumptionStat">0.00 kWh</h2>
+                            </div>
+                            <div class="text-success">
+                                <i class="bi bi-lightning-charge fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card total-amount bg-info bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">TOTAL AMOUNT</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="totalAmountStat">₹0.00</h2>
+                            </div>
+                            <div class="text-info">
+                                <i class="bi bi-currency-rupee fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm stats-card reading-count bg-purple bg-opacity-10">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-subtitle mb-2 text-muted small fw-semibold">READING DAYS</h6>
+                                <h2 class="card-title mb-0 text-dark fw-bold" id="readingDaysStat">0</h2>
+                            </div>
+                            <div class="text-purple">
+                                <i class="bi bi-calendar-check fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="errorMessage" class="alert alert-danger border-0 shadow-sm mb-4" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Action Required</h6>
+                    <span id="errorText" class="small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="successMessage" class="alert alert-success border-0 shadow-sm mb-4" style="display: none;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">Success</h6>
+                    <span id="successText" class="small"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filter Readings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="filterMeter" class="form-label fw-semibold">Select Meter</label>
+                        <select class="form-select" id="filterMeter" onchange="applyFilters()">
+                            <option value="">All Meters</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="startDate" class="form-label fw-semibold">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" onchange="applyFilters()">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="endDate" class="form-label fw-semibold">End Date</label>
+                        <input type="date" class="form-control" id="endDate" onchange="applyFilters()">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                            <i class="bi bi-x-circle me-2"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Readings Card -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Daily Readings</h5>
+                <span class="badge bg-light text-dark" id="readingCount">0 readings</span>
+            </div>
+            <div class="card-body">
+                <div id="loadingSpinner" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading your readings...</p>
+                </div>
+                <div id="readingsContainer">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 20%;">Date</th>
+                                    <th style="width: 20%;">Meter</th>
+                                    <th style="width: 20%;">Total Consumption</th>
+                                    <th style="width: 20%;">Total Amount</th>
+                                    <th style="width: 20%;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="readingsTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                        No readings found. Select filters to load readings.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reading Details Modal -->
+    <div class="modal fade" id="readingDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="bi bi-clock-history me-2"></i>Reading Details - <span id="modalHeaderDate"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Date:</strong> <span id="modalReadingDate" class="fw-bold text-success"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Meter:</strong> <span id="modalMeterId" class="fw-bold text-primary"></span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>TOD Rule</th>
+                                    <th>Time Slot</th>
+                                    <th>Previous Reading</th>
+                                    <th>Current Reading</th>
+                                    <th>Consumption (kWh)</th>
+                                    <th>Base Rate</th>
+                                    <th>Effective Rate</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalReadingDetails">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <strong>Total Consumption:</strong> <span id="modalTotalConsumption" class="fw-bold text-success"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Total Amount:</strong> <span id="modalTotalAmount" class="fw-bold text-success"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Recorded By:</strong> <span id="modalRecordedBy" class="fw-bold text-info"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONSUMER_API = `${API_BASE_URL}/api/Consumer`;
+        const DAILY_API = `${API_BASE_URL}/api/DailyMeterReading`;
+        const METER_API = `${API_BASE_URL}/api/Meter`;
+        const token = localStorage.getItem('jwtToken');
+        const consumerId = localStorage.getItem('consumerId');
+        const consumerName = localStorage.getItem('consumerName');
+
+        // Store all readings globally for local filtering
+        let allReadings = [];
+        let consumerMeters = [];
+
+        document.addEventListener('DOMContentLoaded', initConsumerReadings);
+
+        async function initConsumerReadings() {
+            try {
+                // Update header with consumer name
+                if (consumerName) {
+                    document.querySelector('h2').textContent = `${consumerName}'s Daily Meter Readings`;
+                }
+
+                await loadConsumerMeters();
+                document.getElementById('loadingSpinner').style.display = 'block';
+                await loadAllReadings();
+            } catch (err) {
+                console.error('Initialization failed:', err);
+                showError('Failed to initialize page: ' + err.message);
+            }
+        }
+
+        // Function to format meter ID as MTR0001 format
+        function formatMeterId(meterId) {
+            if (!meterId) return 'MTR0000';
+            return 'MTR' + String(meterId).padStart(4, '0');
+        }
+
+        async function loadConsumerMeters() {
+            try {
+                // Get meter IDs from consumer endpoint
+                const res = await fetch(`${CONSUMER_API}/${consumerId}/Meters`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error('Failed to fetch meter IDs');
+
+                const meterIds = await res.json();
+
+                if (!Array.isArray(meterIds) || meterIds.length === 0) {
+                    showError('No meters found for your account');
+                    return;
+                }
+
+                // Store meter IDs for filtering
+                consumerMeters = meterIds;
+
+                const select = document.getElementById('filterMeter');
+
+                // Clear existing options except the first one
+                while (select.options.length > 1) {
+                    select.remove(1);
+                }
+
+                meterIds.forEach(meterId => {
+                    const opt = document.createElement('option');
+                    opt.value = meterId;
+                    opt.textContent = formatMeterId(meterId);
+                    select.appendChild(opt);
+                });
+
+                if (meterIds.length === 1) {
+                    // Auto-select if there's only one meter
+                    select.value = meterIds[0];
+                }
+
+            } catch (error) {
+                console.error('Error loading meters:', error);
+                showError('Failed to load meters: ' + error.message);
+            }
+        }
+
+        async function loadAllReadings() {
+            try {
+                // Load readings for each meter individually and combine them
+                const readingPromises = consumerMeters.map(meterId =>
+                    fetch(`${DAILY_API}/ByMeter/${meterId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(res => res.ok ? res.json() : [])
+                );
+
+                const allMeterReadings = await Promise.all(readingPromises);
+
+                // Combine all readings into one array
+                allReadings = allMeterReadings.flat();
+
+                applyFilters(); // Apply initial filters
+            } catch (error) {
+                console.error('Error loading all readings:', error);
+                showError('Failed to load readings: ' + error.message);
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+        }
+
+        function applyFilters() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('readingsContainer').style.display = 'none';
+            const tbody = document.getElementById('readingsTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>';
+
+            try {
+                const meterId = document.getElementById('filterMeter').value;
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                // Filter readings locally
+                let filteredReadings = [...allReadings];
+
+                // Filter by meter
+                if (meterId) {
+                    filteredReadings = filteredReadings.filter(reading => reading.meterId == meterId);
+                }
+
+                // Filter by date range
+                if (startDate && endDate) {
+                    filteredReadings = filteredReadings.filter(reading => {
+                        const readingDate = reading.readingDate.split('T')[0];
+                        return readingDate >= startDate && readingDate <= endDate;
+                    });
+                }
+
+                displayReadings(filteredReadings);
+                updateStats(filteredReadings);
+            } catch (error) {
+                console.error('Error filtering readings:', error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error loading readings: ' + error.message + '</td></tr>';
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('readingsContainer').style.display = 'block';
+            }
+        }
+
+        function displayReadings(readings) {
+            const tbody = document.getElementById('readingsTableBody');
+
+            if (readings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>No readings found for the selected filters</td></tr>';
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('readingsContainer').style.display = 'block';
+                return;
+            }
+
+            // Group readings by date and meter
+            const groupedReadings = {};
+
+            readings.forEach(reading => {
+                const dateKey = reading.readingDate.split('T')[0];
+                const meterKey = reading.meterId;
+                const key = `${dateKey}_${meterKey}`;
+
+                if (!groupedReadings[key]) {
+                    groupedReadings[key] = {
+                        date: dateKey,
+                        meterId: meterKey,
+                        meterNumber: formatMeterId(meterKey),
+                        readings: [],
+                        totalConsumption: 0,
+                        totalAmount: 0,
+                        recordedBy: reading.recordedBy || 'Admin'
+                    };
+                }
+
+                groupedReadings[key].readings.push(reading);
+                groupedReadings[key].totalConsumption += reading.consumptionKwh || 0;
+                groupedReadings[key].totalAmount += reading.amount || 0;
+            });
+
+            // Convert to array and sort by date (newest first)
+            const sortedReadings = Object.values(groupedReadings).sort((a, b) =>
+                new Date(b.date) - new Date(a.date)
+            );
+
+            tbody.innerHTML = sortedReadings.map(readingGroup => `
+                <tr>
+                    <td class="reading-date">${formatDate(readingGroup.date)}</td>
+                    <td>${readingGroup.meterNumber}</td>
+                    <td>
+                        <span class="fw-bold text-success">${readingGroup.totalConsumption.toFixed(2)}</span> kWh
+                    </td>
+                    <td>
+                        <span class="fw-bold text-success">₹${readingGroup.totalAmount.toFixed(2)}</span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-info border-0"
+                                onclick="viewReadingDetails('${readingGroup.date}', ${readingGroup.meterId})"
+                                title="View TOD Details">
+                            <i class="bi bi-eye"></i> View Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('readingCount').textContent = `${sortedReadings.length} reading${sortedReadings.length !== 1 ? 's' : ''}`;
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('readingsContainer').style.display = 'block';
+        }
+
+        function updateStats(readings) {
+            if (readings.length === 0) {
+                document.getElementById('totalConsumptionStat').textContent = '0.00 kWh';
+                document.getElementById('totalAmountStat').textContent = '₹0.00';
+                document.getElementById('readingDaysStat').textContent = '0';
+                return;
+            }
+
+            // Group by date to count unique reading days
+            const uniqueDates = new Set();
+            let totalConsumption = 0;
+            let totalAmount = 0;
+
+            readings.forEach(reading => {
+                const date = reading.readingDate.split('T')[0];
+                uniqueDates.add(date);
+                totalConsumption += reading.consumptionKwh || 0;
+                totalAmount += reading.amount || 0;
+            });
+
+            const readingDays = uniqueDates.size;
+
+            document.getElementById('totalConsumptionStat').textContent = `${totalConsumption.toFixed(2)} kWh`;
+            document.getElementById('totalAmountStat').textContent = `₹${totalAmount.toFixed(2)}`;
+            document.getElementById('readingDaysStat').textContent = readingDays.toString();
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        function formatTime(timeString) {
+            if (!timeString) return 'N/A';
+            // Handle both TimeOnly and string formats
+            const time = timeString.includes('T') ? timeString.split('T')[1] : timeString;
+            return time.substring(0, 5); // Return HH:mm format
+        }
+
+        function viewReadingDetails(date, meterId) {
+            try {
+                // Filter readings locally from the already loaded data
+                const readingsForDate = allReadings.filter(reading => {
+                    const readingDate = reading.readingDate.split('T')[0];
+                    return readingDate === date && reading.meterId == meterId;
+                });
+
+                if (readingsForDate.length === 0) {
+                    showError('No detailed readings found for this date');
+                    return;
+                }
+
+                // Populate modal header and basic info
+                document.getElementById('modalHeaderDate').textContent = formatDate(date);
+                document.getElementById('modalReadingDate').textContent = formatDate(date);
+                document.getElementById('modalMeterId').textContent = formatMeterId(meterId);
+
+                const detailsBody = document.getElementById('modalReadingDetails');
+
+                // Clear previous content
+                detailsBody.innerHTML = '';
+
+                let totalConsumption = 0;
+                let totalAmount = 0;
+                let recordedBy = readingsForDate[0]?.recordedBy || 'Admin';
+
+                // Populate TOD readings table using the DailyMeterReading model structure
+                readingsForDate.forEach(reading => {
+                    const surgeCharge = reading.surgeChargePercent || 0;
+                    const discount = reading.discountPercent || 0;
+                    const hasSurge = surgeCharge > 0;
+                    const hasDiscount = discount > 0;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            ${reading.todRuleName || 'N/A'}
+                            ${hasSurge ? `<span class="badge surge-badge ms-1">+${surgeCharge}%</span>` : ''}
+                            ${hasDiscount ? `<span class="badge discount-badge ms-1">-${discount}%</span>` : ''}
+                        </td>
+                        <td>${reading.startTime || 'N/A'} - ${reading.endTime || 'N/A'}</td>
+                        <td>${reading.previousReading?.toFixed(2) || '0.00'}</td>
+                        <td>${reading.currentReading?.toFixed(2) || '0.00'}</td>
+                        <td class="fw-bold text-success">${reading.consumptionKwh?.toFixed(2) || '0.00'}</td>
+                        <td>₹${reading.baseRate?.toFixed(4) || '0.0000'}</td>
+                        <td class="fw-bold">₹${reading.effectiveRate?.toFixed(4) || '0.0000'}</td>
+                        <td class="fw-bold text-success">₹${reading.amount?.toFixed(2) || '0.00'}</td>
+                    `;
+                    detailsBody.appendChild(row);
+
+                    // Calculate totals
+                    totalConsumption += reading.consumptionKwh || 0;
+                    totalAmount += reading.amount || 0;
+                });
+
+                // Update summary
+                document.getElementById('modalTotalConsumption').textContent = `${totalConsumption.toFixed(2)} kWh`;
+                document.getElementById('modalTotalAmount').textContent = `₹${totalAmount.toFixed(2)}`;
+                document.getElementById('modalRecordedBy').textContent = recordedBy;
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('readingDetailsModal'));
+                modal.show();
+            } catch (error) {
+                console.error('Error loading reading details:', error);
+                showError('Failed to load reading details: ' + error.message);
+            }
+        }
+
+        function resetFilters() {
+            document.getElementById('filterMeter').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            applyFilters();
+        }
+
+        function viewMonthlyBills() {
+            window.location.href = '/Home/MonthlyBill';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            document.getElementById('errorText').textContent = message;
+            errorDiv.style.display = 'block';
+
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            document.getElementById('successText').textContent = message;
+            successDiv.style.display = 'block';
+
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

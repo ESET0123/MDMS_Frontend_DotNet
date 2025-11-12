@@ -1,5 +1,374 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    Layout = "~/Views/Shared/_ConsumerLayout.cshtml";
+    ViewData["Title"] = "My Monthly Bills";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-file-earmark-text"></i> My Monthly Bills</h2>
+    </div>
+
+    <div id="loadingIndicator" class="text-center my-4" style="display: none;">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading bills...</p>
+    </div>
+    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
+        <button type="button" class="btn-close" onclick="showError('')"></button>
+        <span id="errorText"></span>
+    </div>
+
+    <!-- Main Bills Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-list"></i> All My Monthly Bills</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Bill ID</th>
+                            <th>Meter</th>
+                            <th>Period</th>
+                            <th>Billing Date</th>
+                            <th>Consumption (kWh)</th>
+                            <th>Amount (₹)</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal fade" id="viewBillModal" tabindex="-1" aria-labelledby="viewBillModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewBillModalLabel">Bill Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Bill Information</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Bill ID:</div>
+                                            <div class="col-7" id="viewBillId"></div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Meter:</div>
+                                            <div class="col-7" id="viewMeterId"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Billing Period:</div>
+                                            <div class="col-7" id="viewBillingPeriod"></div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Billing Date:</div>
+                                            <div class="col-7" id="viewBillingDate"></div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="col-5 fw-bold">Status:</div>
+                                            <div class="col-7" id="viewStatus"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-lightning-charge"></i> Consumption & Billing</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-light rounded">
+                                            <h6 class="text-muted">Total Consumption</h6>
+                                            <h3 id="viewTotalConsumption" class="text-success"></h3>
+                                            <small class="text-muted">kWh</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="p-3 bg-warning bg-opacity-25 rounded">
+                                            <h6 class="text-muted">Total Amount</h6>
+                                            <h3 id="viewTotalAmount" class="text-success"></h3>
+                                            <small class="text-muted">₹</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Notification Modal -->
+<div class="modal fade" id="paymentNotificationModal" tabindex="-1" aria-labelledby="paymentNotificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentNotificationModalLabel"><i class="bi bi-info-circle text-primary"></i> Payment Feature</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="bi bi-tools display-1 text-warning"></i>
+                    <h4 class="mt-3">Payment Feature Coming Soon</h4>
+                    <p class="text-muted">The online payment functionality is currently under development and will be available soon.</p>
+                    <p class="text-muted">Please contact our customer service for payment assistance.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const BILL_API_URL = `${API_BASE_URL}/api/MonthlyBill`;
+        const CONSUMER_API_URL = `${API_BASE_URL}/api/Consumer`;
+
+        let allBills = [];
+        let currentConsumerId = null;
+        let viewBillModal;
+        let paymentNotificationModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            viewBillModal = new bootstrap.Modal(document.getElementById('viewBillModal'));
+            paymentNotificationModal = new bootstrap.Modal(document.getElementById('paymentNotificationModal'));
+
+            // Get current consumer ID (you might need to adjust this based on your authentication system)
+            getCurrentConsumerId().then(consumerId => {
+                if (consumerId) {
+                    currentConsumerId = consumerId;
+                    fetchConsumerBills();
+                } else {
+                    showError('Unable to load consumer information. Please log in again.');
+                }
+            });
+        });
+
+        // Function to get current consumer ID - you'll need to implement this based on your auth system
+        async function getCurrentConsumerId() {
+            // This is a placeholder - implement based on your authentication system
+            // You might get this from a JWT token, session, or user context
+            try {
+                // Example: if you have a current user endpoint
+                // const response = await fetch(`${API_BASE_URL}/api/User/Current`);
+                // if (response.ok) {
+                //     const user = await response.json();
+                //     return user.consumerId;
+                // }
+
+                // For now, return a placeholder - you'll need to implement this
+                return 1; // Replace with actual consumer ID from your auth system
+            } catch (error) {
+                console.error('Error getting consumer ID:', error);
+                return null;
+            }
+        }
+
+        async function fetchConsumerBills() {
+            if (!currentConsumerId) {
+                showError('Consumer information not available');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                showError('');
+                const response = await fetch(`${BILL_API_URL}/ByConsumer/${currentConsumerId}`);
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                allBills = await response.json();
+
+                // Sort bills by billing year and month (latest first)
+                allBills.sort((a, b) => {
+                    if (a.billingYear !== b.billingYear) {
+                        return b.billingYear - a.billingYear;
+                    }
+                    return b.billingMonth - a.billingMonth;
+                });
+
+                renderBillsTable(allBills);
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading bills:', error);
+                showError('Failed to load bills: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function renderBillsTable(bills) {
+            const tbody = document.getElementById('billsTableBody');
+            tbody.innerHTML = '';
+
+            if (bills && bills.length > 0) {
+                bills.forEach(bill => {
+                    const billingDate = new Date(bill.billingDate).toLocaleDateString('en-IN');
+                    const period = `${bill.billingMonth}/${bill.billingYear}`;
+
+                    let statusBadge;
+                    switch(bill.billStatus) {
+                        case 'Paid':
+                            statusBadge = '<span class="badge bg-success">Paid</span>';
+                            break;
+                        case 'Overdue':
+                            statusBadge = '<span class="badge bg-danger">Overdue</span>';
+                            break;
+                        case 'Cancelled':
+                            statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
+                            break;
+                        default:
+                            statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
+                    }
+
+                    // Show 'view' and 'pay' for pending bills, only 'view' for paid bills
+                    let actionButtons;
+                    if (bill.billStatus === 'Pending' || bill.billStatus === 'Overdue') {
+                        actionButtons = `
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="viewBillDetails(${bill.billId})" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="showPaymentNotification()" title="Pay Bill">
+                                <i class="bi bi-credit-card"></i>
+                            </button>
+                        `;
+                    } else {
+                        actionButtons = `
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewBillDetails(${bill.billId})" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        `;
+                    }
+
+                    const rowHtml = `
+                        <tr>
+                            <td><strong>${bill.billId}</strong></td>
+                            <td>${bill.meterId}</td>
+                            <td>${period}</td>
+                            <td>${billingDate}</td>
+                            <td>${bill.totalConsumptionKwh.toFixed(2)}</td>
+                            <td>₹${bill.totalAmount.toFixed(2)}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                ${actionButtons}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-file-earmark-x display-4"></i>
+                                <p class="mt-3">No bills found for your account.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function viewBillDetails(billId) {
+            const bill = allBills.find(b => b.billId === billId);
+            if (!bill) {
+                showError('Bill not found');
+                return;
+            }
+
+            const billingDate = new Date(bill.billingDate).toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const period = `${getMonthName(bill.billingMonth)} ${bill.billingYear}`;
+
+            let statusBadge;
+            switch(bill.billStatus) {
+                case 'Paid':
+                    statusBadge = '<span class="badge bg-success"><i class="bi bi-check-circle"></i> PAID</span>';
+                    break;
+                case 'Overdue':
+                    statusBadge = '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> OVERDUE</span>';
+                    break;
+                case 'Cancelled':
+                    statusBadge = '<span class="badge bg-secondary"><i class="bi bi-x-circle"></i> CANCELLED</span>';
+                    break;
+                default:
+                    statusBadge = '<span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> PENDING</span>';
+            }
+
+            document.getElementById('viewBillId').textContent = bill.billId;
+            document.getElementById('viewMeterId').textContent = bill.meterId;
+            document.getElementById('viewBillingPeriod').textContent = period;
+            document.getElementById('viewBillingDate').textContent = billingDate;
+            document.getElementById('viewStatus').innerHTML = statusBadge;
+            document.getElementById('viewTotalConsumption').textContent = bill.totalConsumptionKwh.toFixed(2);
+            document.getElementById('viewTotalAmount').textContent = '₹ ' + bill.totalAmount.toFixed(2);
+
+            viewBillModal.show();
+        }
+
+        function showPaymentNotification() {
+            paymentNotificationModal.show();
+        }
+
+        function getMonthName(monthNumber) {
+            const months = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            return months[monthNumber - 1];
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            if (message) {
+                errorText.textContent = message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+    </script>
 }
