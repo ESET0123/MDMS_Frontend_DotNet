@@ -2,14 +2,14 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Daily Meter Reading";
 }
-<!DOCTYPE html>
+@* <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Meter Reading</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"> *@
     <style>
         :root {
             --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -150,8 +150,8 @@
             background-opacity: 0.1 !important;
         }
     </style>
-</head>
-<body>
+@* </head>
+<body> *@
     <div class="container-fluid">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -498,7 +498,7 @@
                 const consumerName = meter.consumerName || meter.consumer?.name || 'Unknown';
                 const latestReading = meter.latestReading || 0;
                 const meterId = meter.meterId;
-                const tariffId = meter.tariffId ;
+                const tariffId = meter.tariffId || meter.tariff?.tariffId;
 
                 const option = `<option value="${meterId}"
                             data-meter-number="${meterId}"
@@ -1056,5 +1056,5 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@* </body>
+</html> *@

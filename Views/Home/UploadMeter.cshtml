@@ -3,373 +3,564 @@
     ViewData["Title"] = "Upload Meter Data";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Meter Data</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-            padding: 0;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        --danger-gradient: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        --warning-gradient: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    }
+
+    .upload-container {
+        background: #f8f9fa;
+        width:100%;
+        padding: 20px 0;
+    }
+
+    .page-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .upload-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: white;
+    }
+
+        .upload-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
 
-        .upload-zone {
-            border: 2px dashed #dee2e6;
-            border-radius: 8px;
-            padding: 40px 20px;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            background-color: #fff;
-        }
+    .upload-zone {
+        border: 3px dashed #dee2e6;
+        border-radius: 12px;
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: #fafbfc;
+        position: relative;
+        overflow: hidden;
+    }
 
-            .upload-zone:hover {
-                border-color: #0d6efd;
-                background-color: #f8f9ff;
-            }
-
-            .upload-zone.drag-over {
-                border-color: #0d6efd;
-                background-color: #e7f1ff;
-            }
-
-        .file-info {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #e7f1ff;
-            border-radius: 8px;
-            border-left: 4px solid #0d6efd;
-        }
-
-        .validation-container {
-            display: none;
-        }
-
-        .validation-loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .spinner-custom {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0d6efd;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @@keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .data-table-container {
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .table-actions {
-            position: sticky;
+        .upload-zone::before {
+            content: '';
+            position: absolute;
             top: 0;
-            background: white;
-            z-index: 10;
-            padding: 15px 0;
-            border-bottom: 2px solid #dee2e6;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s ease;
         }
 
-        .row-error {
-            background-color: #f8d7da !important;
+        .upload-zone:hover::before {
+            left: 100%;
         }
 
-        .row-valid {
-            background-color: #d1e7dd !important;
+        .upload-zone:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            transform: scale(1.02);
         }
 
-        .error-container {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
-            border: 1px solid #f5c6cb;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.1);
+        .upload-zone.drag-over {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #e7f1ff 0%, #dce7ff 100%);
+            transform: scale(1.02);
         }
 
-        .error-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f5c6cb;
+    .upload-icon {
+        font-size: 4rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .upload-zone:hover .upload-icon {
+        transform: scale(1.1) translateY(-5px);
+    }
+
+    .file-info-card {
+        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+        border: none;
+        border-radius: 12px;
+        border-left: 5px solid #667eea;
+        padding: 1.5rem;
+        margin-top: 1rem;
+        animation: slideIn 0.5s ease;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
         }
 
-        .error-icon {
-            font-size: 24px;
-            color: #dc3545;
-            margin-right: 10px;
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stats-card {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 15px;
+        border: none;
+        transition: transform 0.3s ease;
+    }
+
+        .stats-card:hover {
+            transform: translateY(-3px);
         }
 
-        .error-summary {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #dc3545;
+    .stats-icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+    }
+
+    .validation-loading {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    }
+
+    .spinner-custom {
+        width: 60px;
+        height: 60px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1.5rem;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
         }
 
-        .error-details {
-            max-height: 200px;
-            overflow-y: auto;
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #dee2e6;
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .data-table-container {
+        max-height: 600px;
+        overflow-y: auto;
+        border-radius: 12px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+    }
+
+    .table-actions {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        padding: 1.5rem 0;
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .row-valid {
+        background-color: rgba(40, 167, 69, 0.05) !important;
+        border-left: 4px solid #28a745;
+        transition: background-color 0.3s ease;
+    }
+
+    .row-error {
+        background-color: rgba(220, 53, 69, 0.05) !important;
+        border-left: 4px solid #dc3545;
+        transition: background-color 0.3s ease;
+    }
+
+        .row-valid:hover, .row-error:hover {
+            background-color: rgba(0,0,0,0.02) !important;
         }
 
-        .error-item {
-            padding: 8px 12px;
-            margin-bottom: 5px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            border-left: 3px solid #dc3545;
+    .error-container {
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+        border: 2px solid #f5c6cb;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(220, 53, 69, 0.1);
+        animation: shake 0.5s ease;
+    }
+
+    @@keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
         }
 
-            .error-item:last-child {
-                margin-bottom: 0;
-            }
-
-        .progress-item {
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-            transition: all 0.3s;
+        25% {
+            transform: translateX(-5px);
         }
 
-            .progress-item.success {
-                background-color: #d1e7dd;
-                border-color: #198754;
-            }
+        75% {
+            transform: translateX(5px);
+        }
+    }
 
-            .progress-item.failed {
-                background-color: #f8d7da;
-                border-color: #dc3545;
-            }
+    .error-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f5c6cb;
+    }
 
-        .alert-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            max-width: 400px;
+    .error-icon {
+        font-size: 2rem;
+        color: #dc3545;
+        margin-right: 1rem;
+    }
+
+    .error-summary {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 5px solid #dc3545;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .error-details {
+        max-height: 300px;
+        overflow-y: auto;
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 2px solid #dee2e6;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .error-item {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
+        transition: transform 0.2s ease;
+    }
+
+        .error-item:hover {
+            transform: translateX(5px);
         }
 
-        .history-item {
-            cursor: pointer;
-            transition: background-color 0.2s;
+    .progress-item {
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-radius: 10px;
+        border: 2px solid #dee2e6;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+        .progress-item.success {
+            background: linear-gradient(135deg, #d1e7dd 0%, #c3e6cb 100%);
+            border-color: #28a745;
         }
 
-            .history-item:hover {
-                background-color: #f8f9fa;
-            }
-
-        /* Enhanced Error Display Styles */
-        .error-container {
-            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
-            border: 1px solid #f5c6cb;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(220, 53, 69, 0.1);
+        .progress-item.failed {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-color: #dc3545;
         }
 
-        .error-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f5c6cb;
-        }
+    .alert-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 400px;
+    }
 
-        .error-icon {
-            font-size: 24px;
-            color: #dc3545;
-            margin-right: 10px;
-        }
+    .btn-gradient {
+        background: var(--primary-gradient);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
 
-        .error-summary {
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #dc3545;
-        }
-
-        .error-details {
-            max-height: 200px;
-            overflow-y: auto;
-            background: white;
-            border-radius: 8px;
-            padding: 15px;
-            border: 1px solid #dee2e6;
-        }
-
-        .error-item {
-            padding: 8px 12px;
-            margin-bottom: 5px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            border-left: 3px solid #dc3545;
-        }
-
-            .error-item:last-child {
-                margin-bottom: 0;
-            }
-
-        /* Modal Styles */
-        .modal-content {
-            border-radius: 10px;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
             color: white;
-            border-radius: 10px 10px 0 0;
-            border-bottom: none;
         }
 
-        .history-modal-table {
-            max-height: 400px;
-            overflow-y: auto;
+    .btn-success-gradient {
+        background: var(--success-gradient);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+        .btn-success-gradient:hover {
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
         }
-    </style>
-</head>
-<body>
+
+    .btn-danger-gradient {
+        background: var(--danger-gradient);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+        .btn-danger-gradient:hover {
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        }
+
+    .file-type-badge {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .step {
+        display: flex;
+        align-items: center;
+        margin: 0 1rem;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+    }
+
+        .step.active {
+            opacity: 1;
+        }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #dee2e6;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .step.active .step-number {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .step-text {
+        font-weight: 600;
+        color: #6c757d;
+    }
+
+    .step.active .step-text {
+        color: #667eea;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-item {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+        }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .validation-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+   
+</style>
+
+<div class="upload-container">
     <div class="alert-container" id="alertContainer"></div>
 
-    <!-- History Data Modal -->
-    <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="bi bi-clock-history me-2"></i>
-                        Upload History Details
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>File Name:</strong> <span id="modalFileName"></span>
-                        </div>
-                        <div class="col-md-3">
-                            <strong>Upload Date:</strong> <span id="modalUploadDate"></span>
-                        </div>
-                        <div class="col-md-3">
-                            <strong>Records:</strong> <span id="modalRecordCount"></span>
-                        </div>
-                    </div>
-                    <div class="history-modal-table">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-success">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Consumer ID</th>
-                                    <th>DTR ID</th>
-                                    <th>IP Address</th>
-                                    <th>ICCID</th>
-                                    <th>IMSI</th>
-                                    <th>Manufacturer ID</th>
-                                    <th>Firmware</th>
-                                    <th>Tariff ID</th>
-                                    <th>Install Date</th>
-                                    <th>Status ID</th>
-                                    <th>Latest Reading</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header text-center">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="bi bi-cloud-upload-fill me-3"></i>
+                Upload Meter Data
+            </h1>
+            <p class="lead mb-0">Upload CSV or Excel files containing meter information for bulk processing</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-text">Upload File</div>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-text">Validate Data</div>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-text">Import Data</div>
             </div>
         </div>
-    </div>
-
-    <div class="container-fluid">
-        <h2 class="mb-4">Upload Meter Data</h2>
 
         <!-- Upload Section -->
         <div id="uploadSection">
             <div class="row">
-                <div class="col-md-8">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
+                <div class="col-lg-8 mb-4">
+                    <div class="upload-card">
+                        <div class="card-body p-4">
+                            <h4 class="card-title mb-4">
+                                <i class="bi bi-file-earmark-arrow-up text-primary me-2"></i>
+                                Select Your Data File
+                            </h4>
+
                             <form id="uploadForm">
-                                <div class="mb-3">
-                                    <label for="fileType" class="form-label">File Type</label>
-                                    <select class="form-select" id="fileType" required>
-                                        <option value="csv">CSV</option>
-                                        <option value="excel">Excel</option>
-                                    </select>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label for="fileType" class="form-label fw-semibold">File Format</label>
+                                        <select class="form-select form-select-lg" id="fileType" required>
+                                            <option value="csv">CSV Format</option>
+                                            <option value="excel">Excel Format</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Current Selection</label>
+                                        <div class="file-type-badge" id="currentFileType">
+                                            CSV Format
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">Select File</label>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Upload File</label>
                                     <div class="upload-zone" id="uploadZone">
-                                        <i class="bi bi-cloud-upload" style="font-size: 3rem; color: #6c757d;"></i>
-                                        <p class="mb-2 mt-3">Drag and drop your file here or click to browse</p>
+                                        <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                        <h5 class="mb-3">Drag & Drop Your File Here</h5>
+                                        <p class="text-muted mb-3">Supported formats: .csv, .xlsx, .xls</p>
+                                        <p class="text-muted mb-3">Maximum file size: 10MB</p>
                                         <input class="form-control d-none" type="file" id="meterFile" accept=".csv,.xlsx,.xls">
-                                        <button type="button" class="btn btn-outline-success btn-sm mt-2" onclick="document.getElementById('meterFile').click()">
-                                            Browse Files
+                                        <button type="button" class="btn btn-gradient btn-lg" onclick="document.getElementById('meterFile').click()">
+                                            <i class="bi bi-folder2-open me-2"></i>Browse Files
                                         </button>
                                     </div>
-                                    <div id="fileInfo" class="file-info d-none">
+                                    <div id="fileInfo" class="file-info-card d-none">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <i class="bi bi-file-earmark-text text-success"></i>
-                                                <strong id="fileName"></strong>
-                                                <span id="fileSize" class="text-muted ms-2"></span>
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-file-earmark-text text-success me-3" style="font-size: 2rem;"></i>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold" id="fileName"></h6>
+                                                    <span id="fileSize" class="text-muted"></span>
+                                                </div>
                                             </div>
-                                            <button type="button" class="btn btn-sm btn-danger" id="removeFile">
-                                                <i class="bi bi-x-circle"></i> Remove
+                                            <button type="button" class="btn btn-outline-danger btn-sm" id="removeFile">
+                                                <i class="bi bi-trash me-1"></i> Remove
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-success" id="validateBtn" disabled>
-                                    <i class="bi bi-check-circle"></i> Validate & Preview
-                                </button>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success-gradient btn-lg" id="validateBtn" disabled>
+                                        <i class="bi bi-shield-check me-2"></i>Validate & Preview Data
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">Statistics</h5>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>File Selected:</span>
-                                <strong id="fileStatus">No</strong>
+                <div class="col-lg-4">
+                    <!-- Quick Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value text-primary" id="fileStatus">No</div>
+                            <div class="stat-label">File Selected</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value text-success" id="fileSizeStat">0 KB</div>
+                            <div class="stat-label">File Size</div>
+                        </div>
+                    </div>
+
+                    <!-- Information Card -->
+                    <div class="upload-card">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-info-circle text-primary me-2"></i>
+                                Upload Guidelines
+                            </h5>
+                            <div class="mb-3">
+                                <h6 class="text-success mb-2">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    Required Columns
+                                </h6>
+                                <ul class="list-unstyled small">
+                                    <li><i class="bi bi-arrow-right text-muted me-2"></i>ConsumerId</li>
+                                    <li><i class="bi bi-arrow-right text-muted me-2"></i>DtrId</li>
+                                    <li><i class="bi bi-arrow-right text-muted me-2"></i>IpAddress</li>
+                                    <li><i class="bi bi-arrow-right text-muted me-2"></i>ManufacturerId</li>
+                                    <li><i class="bi bi-arrow-right text-muted me-2"></i>TariffId</li>
+                                    <li><i class="bi bi-arrow-right text-muted me-2"></i>InstallDate</li>
+                                    <li><i class="bi bi-arrow-right text-muted me-2"></i>StatusId</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h6 class="text-info mb-2">
+                                    <i class="bi bi-lightbulb me-2"></i>
+                                    Tips
+                                </h6>
+                                <ul class="list-unstyled small text-muted">
+                                    <li><i class="bi bi-dot me-1"></i>Ensure data is properly formatted</li>
+                                    <li><i class="bi bi-dot me-1"></i>Check for duplicate entries</li>
+                                    <li><i class="bi bi-dot me-1"></i>Verify numeric fields contain numbers</li>
+                                    <li><i class="bi bi-dot me-1"></i>Dates should be in YYYY-MM-DD format</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -378,34 +569,61 @@
         </div>
 
         <!-- Validation Section -->
-        <div id="validationSection" class="validation-container">
+        <div id="validationSection" class="validation-container" style="display: none;">
             <!-- Validation Loading -->
             <div id="validationLoading" class="validation-loading">
-                <div class="spinner-custom mx-auto"></div>
-                <p class="mt-3 text-muted">Validating data...</p>
+                <div class="spinner-custom"></div>
+                <h4 class="text-primary mb-3">Validating Your Data</h4>
+                <p class="text-muted">Please wait while we validate your meter data...</p>
+                <div class="progress mt-4" style="height: 6px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                </div>
             </div>
 
             <!-- Validation Results -->
             <div id="validationResults" style="display: none;">
-                <div class="card shadow-sm">
-                    <div class="card-body">
+                <div class="upload-card">
+                    <div class="card-body p-4">
                         <!-- Enhanced Error Display -->
                         <div id="errorDisplayContainer" style="display: none;">
                             <div class="error-container">
                                 <div class="error-header">
-                                    <i class="bi bi-exclamation-triangle error-icon"></i>
-                                    <h4 class="mb-0 text-danger">Validation Failed</h4>
+                                    <i class="bi bi-exclamation-triangle-fill error-icon"></i>
+                                    <div>
+                                        <h4 class="mb-1 text-danger">Validation Failed</h4>
+                                        <p class="mb-0 text-muted">Please fix the errors below before proceeding</p>
+                                    </div>
                                 </div>
                                 <div class="error-summary">
-                                    <p class="mb-2"><strong>We found some issues with your data that need to be fixed before uploading:</strong></p>
-                                    <div class="d-flex gap-4">
-                                        <span><i class="bi bi-x-circle-fill text-danger"></i> <strong id="errorCount">0</strong> records with errors</span>
-                                        <span><i class="bi bi-check-circle-fill text-success"></i> <strong id="validCount">0</strong> valid records</span>
-                                        <span><i class="bi bi-file-text"></i> <strong id="totalCount">0</strong> total records</span>
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="text-danger">
+                                                <i class="bi bi-x-circle-fill display-6 mb-2"></i>
+                                                <h3 id="errorCount">0</h3>
+                                                <p class="mb-0">Records with Errors</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-success">
+                                                <i class="bi bi-check-circle-fill display-6 mb-2"></i>
+                                                <h3 id="validCount">0</h3>
+                                                <p class="mb-0">Valid Records</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="text-primary">
+                                                <i class="bi bi-file-text display-6 mb-2"></i>
+                                                <h3 id="totalCount">0</h3>
+                                                <p class="mb-0">Total Records</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="error-details">
-                                    <h6 class="mb-3">Error Details:</h6>
+                                    <h6 class="mb-3 text-danger">
+                                        <i class="bi bi-list-ul me-2"></i>
+                                        Error Details
+                                    </h6>
                                     <div id="errorList"></div>
                                 </div>
                             </div>
@@ -414,26 +632,27 @@
                         <div class="table-actions">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h4 class="mb-0">
+                                    <h3 class="mb-1">
+                                        <i class="bi bi-table text-primary me-2"></i>
                                         <span id="dataTitle">Data Preview</span>
-                                        <span id="validationBadge"></span>
-                                    </h4>
+                                        <span id="validationBadge" class="validation-badge"></span>
+                                    </h3>
                                     <p class="text-muted mb-0" id="validationSummary"></p>
                                 </div>
-                                <div>
-                                    <button class="btn btn-secondary me-2" id="goBackBtn">
-                                        <i class="bi bi-arrow-left"></i> Go Back
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-secondary btn-lg" id="goBackBtn">
+                                        <i class="bi bi-arrow-left me-2"></i>Back to Upload
                                     </button>
-                                    <button class="btn btn-success" id="uploadDataBtn" style="display: none;">
-                                        <i class="bi bi-upload"></i> Upload to Database
+                                    <button class="btn btn-success-gradient btn-lg" id="uploadDataBtn" style="display: none;">
+                                        <i class="bi bi-cloud-upload me-2"></i>Upload to Database
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="data-table-container mt-3">
-                            <table class="table table-striped table-hover" id="dataTable">
-                                <thead class="table-light">
+                        <div class="data-table-container mt-4">
+                            <table class="table table-hover" id="dataTable">
+                                <thead class="table-success">
                                     <tr>
                                         <th>#</th>
                                         <th>Consumer ID</th>
@@ -455,15 +674,21 @@
                 </div>
 
                 <!-- Upload Progress -->
-                <div id="uploadProgressSection" class="upload-progress mt-3" style="display: none;">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5>Upload Progress</h5>
-                            <div class="progress mb-3">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated" id="overallProgress" role="progressbar" style="width: 0%">
-                                    0%
+                <div id="uploadProgressSection" class="upload-progress mt-4" style="display: none;">
+                    <div class="upload-card">
+                        <div class="card-body p-4">
+                            <h4 class="card-title mb-4">
+                                <i class="bi bi-cloud-upload text-primary me-2"></i>
+                                Upload Progress
+                            </h4>
+
+                            <div class="progress mb-4" style="height: 12px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                                     id="overallProgress" role="progressbar" style="width: 0%">
+                                    <span class="progress-text">0%</span>
                                 </div>
                             </div>
+
                             <div id="progressList"></div>
                         </div>
                     </div>
@@ -471,371 +696,410 @@
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let selectedFile = null;
-        let parsedData = [];
-        let validationResult = null;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // JavaScript code remains the same as in your original version
+    // Only the UI has been enhanced
+    let selectedFile = null;
+    let parsedData = [];
+    let validationResult = null;
 
-        const uploadZone = document.getElementById('uploadZone');
-        const fileInput = document.getElementById('meterFile');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const validateBtn = document.getElementById('validateBtn');
-        const uploadForm = document.getElementById('uploadForm');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('meterFile');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const validateBtn = document.getElementById('validateBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const fileTypeSelect = document.getElementById('fileType');
+    const currentFileType = document.getElementById('currentFileType');
 
-        // File input handler
-        fileInput.addEventListener('change', (e) => {
-            console.log('File selected:', e.target.files[0]);
-            handleFile(e.target.files[0]);
-        });
+    // Update file type badge
+    fileTypeSelect.addEventListener('change', function() {
+        currentFileType.textContent = this.options[this.selectedIndex].text;
+    });
 
-        // Drag and drop handlers
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('drag-over');
-        });
+    // File input handler
+    fileInput.addEventListener('change', (e) => {
+        console.log('File selected:', e.target.files[0]);
+        handleFile(e.target.files[0]);
+    });
 
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('drag-over');
-        });
+    // Drag and drop handlers
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('drag-over');
+    });
 
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('drag-over');
-            handleFile(e.dataTransfer.files[0]);
-        });
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('drag-over');
+    });
 
-        // Remove file handler
-        document.getElementById('removeFile').addEventListener('click', () => {
-            resetFileSelection();
-        });
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('drag-over');
+        handleFile(e.dataTransfer.files[0]);
+    });
 
-        function handleFile(file) {
-            if (!file) return;
+    // Remove file handler
+    document.getElementById('removeFile').addEventListener('click', () => {
+        resetFileSelection();
+    });
 
-            const fileType = document.getElementById('fileType').value;
-            const validExtensions = {
-                csv: ['.csv'],
-                excel: ['.xlsx', '.xls']
-            };
+    function handleFile(file) {
+        if (!file) return;
 
-            const ext = '.' + file.name.split('.').pop().toLowerCase();
-            if (!validExtensions[fileType].includes(ext)) {
-                showAlert('Invalid file type. Please select a ' + fileType.toUpperCase() + ' file.', 'danger');
-                return;
+        const fileType = document.getElementById('fileType').value;
+        const validExtensions = {
+            csv: ['.csv'],
+            excel: ['.xlsx', '.xls']
+        };
+
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (!validExtensions[fileType].includes(ext)) {
+            showAlert('Invalid file type. Please select a ' + fileType.toUpperCase() + ' file.', 'danger');
+            return;
+        }
+
+        selectedFile = file;
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.classList.remove('d-none');
+        validateBtn.disabled = false;
+        document.getElementById('fileStatus').textContent = 'Yes';
+        document.getElementById('fileSizeStat').textContent = formatFileSize(file.size);
+        console.log('File handled successfully:', file.name);
+    }
+
+    function resetFileSelection() {
+        selectedFile = null;
+        fileInput.value = '';
+        fileInfo.classList.add('d-none');
+        validateBtn.disabled = true;
+        parsedData = [];
+        document.getElementById('fileStatus').textContent = 'No';
+        document.getElementById('fileSizeStat').textContent = '0 KB';
+    }
+
+    // Validate form submission
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!selectedFile) return;
+
+        // Update step indicator
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+
+        await parseAndValidate();
+    });
+
+    async function parseAndValidate() {
+        const fileType = document.getElementById('fileType').value;
+
+        // Show validation section
+        document.getElementById('uploadSection').style.display = 'none';
+        document.getElementById('validationSection').style.display = 'block';
+        document.getElementById('validationLoading').style.display = 'block';
+        document.getElementById('validationResults').style.display = 'none';
+        document.getElementById('errorDisplayContainer').style.display = 'none';
+
+        try {
+            // Parse file
+            if (fileType === 'csv') {
+                parsedData = await parseCSV(selectedFile);
+            } else if (fileType === 'excel') {
+                parsedData = await parseExcel(selectedFile);
             }
 
-            selectedFile = file;
-            fileName.textContent = file.name;
-            fileSize.textContent = formatFileSize(file.size);
-            fileInfo.classList.remove('d-none');
-            validateBtn.disabled = false;
-            document.getElementById('fileStatus').textContent = 'Yes';
-            console.log('File handled successfully:', file.name);
-        }
+            console.log('Parsed data:', parsedData);
 
-        function resetFileSelection() {
-            selectedFile = null;
-            fileInput.value = '';
-            fileInfo.classList.add('d-none');
-            validateBtn.disabled = true;
-            parsedData = [];
-            document.getElementById('fileStatus').textContent = 'No';
-        }
+            // Convert parsed data to MeterDTO format
+            const meterData = parsedData.map(row => ({
+                consumerId: parseInt(row.ConsumerId || row.consumerId),
+                dtrid: parseInt(row.Dtrid || row.dtrid || row.DtrId),
+                ipaddress: row.Ipaddress || row.ipaddress || row.IPAddress,
+                iccid: row.Iccid || row.iccid || row.ICCID || null,
+                imsi: row.Imsi || row.imsi || row.IMSI || null,
+                manufacturerId: parseInt(row.ManufacturerId || row.manufacturerId),
+                firmware: row.Firmware || row.firmware || null,
+                tariffId: parseInt(row.TariffId || row.tariffId),
+                installDate: row.InstallDate || row.installDate,
+                statusId: parseInt(row.StatusId || row.statusId),
+                latestReading: parseFloat(row.LatestReading || row.latestReading || 0)
+            }));
 
-        // Validate form submission
-        uploadForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!selectedFile) return;
-            await parseAndValidate();
+            console.log('Converted meter data:', meterData);
+
+            // Validate data
+            const response = await fetch(`${API_BASE_URL}/api/Meter/ValidateBulk`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(meterData)
+            });
+
+            console.log('Validation response status:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Validation error response:', errorText);
+                throw new Error(`Validation failed: ${response.status} - ${errorText}`);
+            }
+
+            validationResult = await response.json();
+            console.log('Validation result:', validationResult);
+            displayValidationResults(validationResult, meterData);
+
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('Error processing file: ' + error.message, 'danger');
+            goBack();
+        }
+    }
+
+    function parseCSV(file) {
+        return new Promise((resolve, reject) => {
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    resolve(results.data);
+                },
+                error: (error) => {
+                    reject(error);
+                }
+            });
         });
+    }
 
-        async function parseAndValidate() {
-            const fileType = document.getElementById('fileType').value;
+    function parseExcel(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    resolve(jsonData);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = reject;
+            reader.readAsArrayBuffer(file);
+        });
+    }
 
-            // Show validation section
-            document.getElementById('uploadSection').style.display = 'none';
-            document.getElementById('validationSection').style.display = 'block';
-            document.getElementById('validationLoading').style.display = 'block';
-            document.getElementById('validationResults').style.display = 'none';
+    function displayValidationResults(result, originalData) {
+        document.getElementById('validationLoading').style.display = 'none';
+        document.getElementById('validationResults').style.display = 'block';
+
+        const isValid = result.isValid;
+        const summary = `Total: ${result.totalRecords} | Valid: ${result.validCount} | Invalid: ${result.invalidCount}`;
+
+        document.getElementById('validationSummary').textContent = summary;
+
+        const badge = document.getElementById('validationBadge');
+        if (isValid) {
+            badge.innerHTML = '<span class="badge bg-success">All Valid</span>';
+            document.getElementById('uploadDataBtn').style.display = 'inline-block';
             document.getElementById('errorDisplayContainer').style.display = 'none';
 
+            // Update step indicator
+            document.getElementById('step3').classList.add('active');
+        } else {
+            badge.innerHTML = '<span class="badge bg-danger">Validation Failed</span>';
+            document.getElementById('uploadDataBtn').style.display = 'none';
+            showEnhancedErrorDisplay(result);
+        }
+
+        // Display table
+        const tbody = document.getElementById('dataTableBody');
+        tbody.innerHTML = '';
+
+        const allRecords = [
+            ...result.validRecords.map((r, i) => ({ data: r, valid: true, errors: [] })),
+            ...result.invalidRecords.map(r => ({ data: r.meterData, valid: false, errors: r.errors }))
+        ];
+
+        allRecords.forEach((record, index) => {
+            const row = document.createElement('tr');
+            row.className = record.valid ? 'row-valid' : 'row-error';
+
+            const statusCell = record.valid ?
+                '<span class="badge bg-success">Valid</span>' :
+                `<span class="badge bg-danger">Invalid</span><small class="d-block text-danger mt-1">${record.errors.join(', ')}</small>`;
+
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${record.data.consumerId}</td>
+                <td>${record.data.dtrid}</td>
+                <td>${record.data.ipaddress}</td>
+                <td>${record.data.manufacturerId}</td>
+                <td>${record.data.tariffId}</td>
+                <td>${new Date(record.data.installDate).toLocaleDateString()}</td>
+                <td>${record.data.statusId}</td>
+                <td>${record.data.latestReading}</td>
+                <td>${statusCell}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function showEnhancedErrorDisplay(result) {
+        const errorContainer = document.getElementById('errorDisplayContainer');
+        const errorCount = document.getElementById('errorCount');
+        const validCount = document.getElementById('validCount');
+        const totalCount = document.getElementById('totalCount');
+        const errorList = document.getElementById('errorList');
+
+        errorCount.textContent = result.invalidCount;
+        validCount.textContent = result.validCount;
+        totalCount.textContent = result.totalRecords;
+
+        errorList.innerHTML = '';
+
+        if (result.invalidRecords.length > 0) {
+            result.invalidRecords.forEach((record, index) => {
+                const errorItem = document.createElement('div');
+                errorItem.className = 'error-item';
+                errorItem.innerHTML = `<strong>Record ${index + 1}:</strong> ${record.errors.join(', ')}`;
+                errorList.appendChild(errorItem);
+            });
+        }
+
+        errorContainer.style.display = 'block';
+    }
+
+    document.getElementById('goBackBtn').addEventListener('click', goBack);
+
+    function goBack() {
+        document.getElementById('uploadSection').style.display = 'block';
+        document.getElementById('validationSection').style.display = 'none';
+        document.getElementById('uploadProgressSection').style.display = 'none';
+        validationResult = null;
+
+        // Reset step indicator
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step3').classList.remove('active');
+    }
+
+    document.getElementById('uploadDataBtn').addEventListener('click', async () => {
+        if (!validationResult || !validationResult.validRecords.length) return;
+
+        document.getElementById('uploadDataBtn').disabled = true;
+        document.getElementById('goBackBtn').disabled = true;
+        document.getElementById('uploadProgressSection').style.display = 'block';
+
+        const progressList = document.getElementById('progressList');
+        progressList.innerHTML = '';
+
+        let successCount = 0;
+        const total = validationResult.validRecords.length;
+
+        for (let i = 0; i < validationResult.validRecords.length; i++) {
+            const meter = validationResult.validRecords[i];
+            const progressItem = document.createElement('div');
+            progressItem.className = 'progress-item';
+            progressItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-hdd-network text-primary me-2"></i>
+                        <span>Consumer ID ${meter.consumerId}</span>
+                    </div>
+                    <div>
+                        <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+                        <span class="text-muted">Processing...</span>
+                    </div>
+                </div>
+            `;
+            progressList.appendChild(progressItem);
+
             try {
-                // Parse file
-                if (fileType === 'csv') {
-                    parsedData = await parseCSV(selectedFile);
-                } else if (fileType === 'excel') {
-                    parsedData = await parseExcel(selectedFile);
-                }
-
-                console.log('Parsed data:', parsedData);
-
-                // Convert parsed data to MeterDTO format
-                const meterData = parsedData.map(row => ({
-                    consumerId: parseInt(row.ConsumerId || row.consumerId),
-                    dtrid: parseInt(row.Dtrid || row.dtrid || row.DtrId),
-                    ipaddress: row.Ipaddress || row.ipaddress || row.IPAddress,
-                    iccid: row.Iccid || row.iccid || row.ICCID || null,
-                    imsi: row.Imsi || row.imsi || row.IMSI || null,
-                    manufacturerId: parseInt(row.ManufacturerId || row.manufacturerId),
-                    firmware: row.Firmware || row.firmware || null,
-                    tariffId: parseInt(row.TariffId || row.tariffId),
-                    installDate: row.InstallDate || row.installDate,
-                    statusId: parseInt(row.StatusId || row.statusId),
-                    latestReading: parseFloat(row.LatestReading || row.latestReading || 0)
-                }));
-
-                console.log('Converted meter data:', meterData);
-
-                // Validate data
-                const response = await fetch(`${API_BASE_URL}/api/Meter/ValidateBulk`, {
+                const response = await fetch(`${API_BASE_URL}/api/Meter/Create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(meterData)
+                    body: JSON.stringify(meter)
                 });
 
-                console.log('Validation response status:', response.status);
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Validation error response:', errorText);
-                    throw new Error(`Validation failed: ${response.status} - ${errorText}`);
-                }
-
-                validationResult = await response.json();
-                console.log('Validation result:', validationResult);
-                displayValidationResults(validationResult, meterData);
-
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('Error processing file: ' + error.message, 'danger');
-                goBack();
-            }
-        }
-
-        function parseCSV(file) {
-            return new Promise((resolve, reject) => {
-                Papa.parse(file, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (results) => {
-                        resolve(results.data);
-                    },
-                    error: (error) => {
-                        reject(error);
-                    }
-                });
-            });
-        }
-
-        function parseExcel(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                        resolve(jsonData);
-                    } catch (error) {
-                        reject(error);
-                    }
-                };
-                reader.onerror = reject;
-                reader.readAsArrayBuffer(file);
-            });
-        }
-
-        function displayValidationResults(result, originalData) {
-            document.getElementById('validationLoading').style.display = 'none';
-            document.getElementById('validationResults').style.display = 'block';
-
-            const isValid = result.isValid;
-            const summary = `Total: ${result.totalRecords} | Valid: ${result.validCount} | Invalid: ${result.invalidCount}`;
-
-            document.getElementById('validationSummary').textContent = summary;
-
-            const badge = document.getElementById('validationBadge');
-            if (isValid) {
-                badge.innerHTML = '<span class="badge bg-success ms-2">All Valid</span>';
-                document.getElementById('uploadDataBtn').style.display = 'inline-block';
-                document.getElementById('errorDisplayContainer').style.display = 'none';
-            } else {
-                badge.innerHTML = '<span class="badge bg-danger ms-2">Validation Failed</span>';
-                document.getElementById('uploadDataBtn').style.display = 'none';
-                showEnhancedErrorDisplay(result);
-            }
-
-            // Display table
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '';
-
-            const allRecords = [
-                ...result.validRecords.map((r, i) => ({ data: r, valid: true, errors: [] })),
-                ...result.invalidRecords.map(r => ({ data: r.meterData, valid: false, errors: r.errors }))
-            ];
-
-            allRecords.forEach((record, index) => {
-                const row = document.createElement('tr');
-                row.className = record.valid ? 'row-valid' : 'row-error';
-
-                const statusCell = record.valid ?
-                    '<span class="badge bg-success">Valid</span>' :
-                    `<span class="badge bg-danger">Invalid</span><small class="d-block text-danger mt-1">${record.errors.join(', ')}</small>`;
-
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${record.data.consumerId}</td>
-                    <td>${record.data.dtrid}</td>
-                    <td>${record.data.ipaddress}</td>
-                    <td>${record.data.manufacturerId}</td>
-                    <td>${record.data.tariffId}</td>
-                    <td>${new Date(record.data.installDate).toLocaleDateString()}</td>
-                    <td>${record.data.statusId}</td>
-                    <td>${record.data.latestReading}</td>
-                    <td>${statusCell}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function showEnhancedErrorDisplay(result) {
-            const errorContainer = document.getElementById('errorDisplayContainer');
-            const errorCount = document.getElementById('errorCount');
-            const validCount = document.getElementById('validCount');
-            const totalCount = document.getElementById('totalCount');
-            const errorList = document.getElementById('errorList');
-
-            errorCount.textContent = result.invalidCount;
-            validCount.textContent = result.validCount;
-            totalCount.textContent = result.totalRecords;
-
-            errorList.innerHTML = '';
-
-            if (result.invalidRecords.length > 0) {
-                result.invalidRecords.forEach((record, index) => {
-                    const errorItem = document.createElement('div');
-                    errorItem.className = 'error-item';
-                    errorItem.innerHTML = `<strong>Record ${index + 1}:</strong> ${record.errors.join(', ')}`;
-                    errorList.appendChild(errorItem);
-                });
-            }
-
-            errorContainer.style.display = 'block';
-        }
-
-        document.getElementById('goBackBtn').addEventListener('click', goBack);
-
-        function goBack() {
-            document.getElementById('uploadSection').style.display = 'block';
-            document.getElementById('validationSection').style.display = 'none';
-            document.getElementById('uploadProgressSection').style.display = 'none';
-            validationResult = null;
-        }
-
-        document.getElementById('uploadDataBtn').addEventListener('click', async () => {
-            if (!validationResult || !validationResult.validRecords.length) return;
-
-            document.getElementById('uploadDataBtn').disabled = true;
-            document.getElementById('goBackBtn').disabled = true;
-            document.getElementById('uploadProgressSection').style.display = 'block';
-
-            const progressList = document.getElementById('progressList');
-            progressList.innerHTML = '';
-
-            let successCount = 0;
-            const total = validationResult.validRecords.length;
-
-            for (let i = 0; i < validationResult.validRecords.length; i++) {
-                const meter = validationResult.validRecords[i];
-                const progressItem = document.createElement('div');
-                progressItem.className = 'progress-item';
-                progressItem.innerHTML = `
-                    <div class="d-flex justify-content-between">
-                        <span>Row ${i + 1}: Consumer ID ${meter.consumerId}</span>
-                        <span class="spinner-border spinner-border-sm"></span>
-                    </div>
-                `;
-                progressList.appendChild(progressItem);
-
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/Meter/Create`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(meter)
-                    });
-
-                    if (response.ok) {
-                        progressItem.className = 'progress-item success';
-                        progressItem.innerHTML = `
-                            <div class="d-flex justify-content-between">
-                                <span>Row ${i + 1}: Consumer ID ${meter.consumerId}</span>
-                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Success</span>
-                            </div>
-                        `;
-                        successCount++;
-                    } else {
-                        throw new Error('Upload failed');
-                    }
-                } catch (error) {
-                    progressItem.className = 'progress-item failed';
+                if (response.ok) {
+                    progressItem.className = 'progress-item success';
                     progressItem.innerHTML = `
-                        <div class="d-flex justify-content-between">
-                            <span>Row ${i + 1}: Consumer ID ${meter.consumerId}</span>
-                            <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Failed</span>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Consumer ID ${meter.consumerId}</span>
+                            </div>
+                            <span class="text-success fw-bold">Success</span>
                         </div>
                     `;
+                    successCount++;
+                } else {
+                    throw new Error('Upload failed');
                 }
-
-                const progress = ((i + 1) / total) * 100;
-                document.getElementById('overallProgress').style.width = progress + '%';
-                document.getElementById('overallProgress').textContent = Math.round(progress) + '%';
-
-                await new Promise(resolve => setTimeout(resolve, 200));
+            } catch (error) {
+                progressItem.className = 'progress-item failed';
+                progressItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                            <span>Consumer ID ${meter.consumerId}</span>
+                        </div>
+                        <span class="text-danger fw-bold">Failed</span>
+                    </div>
+                `;
             }
 
-            showAlert(`Upload complete! Success: ${successCount}/${total}`, successCount === total ? 'success' : 'warning');
+            const progress = ((i + 1) / total) * 100;
+            document.getElementById('overallProgress').style.width = progress + '%';
+            document.getElementById('overallProgress').textContent = Math.round(progress) + '%';
 
-            setTimeout(() => {
-                document.getElementById('uploadDataBtn').disabled = false;
-                document.getElementById('goBackBtn').disabled = false;
-            }, 2000);
-        });
-
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            await new Promise(resolve => setTimeout(resolve, 200));
         }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
+        showAlert(`Upload complete! Successfully imported ${successCount} out of ${total} records.`,
+                 successCount === total ? 'success' : 'warning');
 
-        function showAlert(message, type) {
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type} alert-dismissible fade show`;
-            alert.innerHTML = `
-                        ${message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    `;
+        setTimeout(() => {
+            document.getElementById('uploadDataBtn').disabled = false;
+            document.getElementById('goBackBtn').disabled = false;
+        }, 2000);
+    });
 
-            document.getElementById('alertContainer').appendChild(alert);
+    function generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
 
-            setTimeout(() => {
-                alert.remove();
-            }, 5000);
-        }
-    </script>
-</body>
-</html>
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function showAlert(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : type === 'danger' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'} me-2"></i>
+                <div>${message}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.getElementById('alertContainer').appendChild(alert);
+
+        setTimeout(() => {
+            alert.remove();
+        }, 5000);
+    }
+</script>
