@@ -129,7 +129,7 @@
 
 <!-- Add/Edit Tariff Modal -->
 <div class="modal fade" id="tariffModal" tabindex="-1" aria-labelledby="tariffModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="tariffModalLabel">
@@ -218,10 +218,36 @@
     </div>
 </div>
 
+<!-- Tariff Details View Modal -->
+<div class="modal fade" id="tariffDetailsModal" tabindex="-1" aria-labelledby="tariffDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tariffDetailsModalLabel">
+                    <i class="bi bi-receipt me-2"></i>Tariff Plan Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="tariffDetailsContent" class="row g-3 text-dark text-start">
+                    <div class="text-center text-muted">Loading details...</div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="editFromDetailsBtn">
+                    <i class="bi bi-pencil me-2"></i>Edit Tariff
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         const TARIFF_API_URL = `${API_BASE_URL}/api/Tariff`;
         let allTariffs = [];
+        let activeDropdown = null;
 
         document.addEventListener('DOMContentLoaded', (event) => {
             fetchTariffPlans();
@@ -229,7 +255,75 @@
             // Add event listeners for rate preview
             document.getElementById('baseRate')?.addEventListener('input', updateRatePreview);
             document.getElementById('taxRate')?.addEventListener('input', updateRatePreview);
+
+            // Global click handler to close dropdowns
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.tariff-dropdown')) {
+                    closeAllDropdowns();
+                }
+            });
+
+            // Close dropdowns on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeAllDropdowns();
+                }
+            });
+
+            // Close dropdowns on scroll
+            window.addEventListener('scroll', closeAllDropdowns, true);
         });
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.tariff-dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+                const btn = menu.previousElementSibling;
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            });
+            activeDropdown = null;
+        }
+
+        function toggleDropdown(event, tariffId) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const button = event.currentTarget;
+            const dropdown = button.nextElementSibling;
+            const isCurrentlyOpen = dropdown.classList.contains('show');
+
+            // Close all dropdowns first
+            closeAllDropdowns();
+
+            // If it wasn't open, open it
+            if (!isCurrentlyOpen) {
+                dropdown.classList.add('show');
+                button.setAttribute('aria-expanded', 'true');
+                activeDropdown = dropdown;
+                adjustDropdownPosition(dropdown);
+            }
+        }
+
+        function adjustDropdownPosition(menu) {
+            const rect = menu.getBoundingClientRect();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            // Adjust horizontal position
+            if (rect.right > vw - 4) {
+                menu.style.left = 'auto';
+                menu.style.right = '0';
+            } else {
+                menu.style.left = '';
+                menu.style.right = '';
+            }
+
+            // Adjust vertical position if needed
+            if (rect.bottom > vh - 4) {
+                menu.style.top = 'auto';
+                menu.style.bottom = '100%';
+                menu.style.marginBottom = '0.5rem';
+            }
+        }
 
         function updateRatePreview() {
             const baseRate = parseFloat(document.getElementById('baseRate')?.value) || 0;
@@ -344,39 +438,54 @@
                     const cardHtml = `
                         <div class="col-xl-4 col-lg-6 mb-4">
                             <div class="card tariff-card border-0 shadow-sm h-100">
-                                <div class="card-header bg-transparent border-0 pt-4 pb-0">
-                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="px-4 bg-transparent border-0 pt-4 pb-0">
+                                    <div class="d-flex justify-content-between align-items-start">
                                         <div class="d-flex align-items-center gap-2 flex-grow-1">
-                                            <h5 class="card-title fw-bold text-dark mb-1">${plan.name}</h5>
+                                            <h5 class="card-title fw-bold text-dark mb-0">${plan.name}</h5>
                                             <span class="badge ${statusClass}">
                                                 <i class="bi ${statusIcon} me-1"></i>${statusText}
                                             </span>
                                         </div>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown">
+                                        <div class="tariff-dropdown position-relative">
+                                            <button class="btn btn-sm btn-light rounded-circle tariff-dropdown-toggle"
+                                                    type="button"
+                                                    onclick="toggleDropdown(event, ${plan.tariffId})"
+                                                    aria-haspopup="true"
+                                                    aria-expanded="false"
+                                                    style="width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;">
                                                 <i class="bi bi-three-dots-vertical"></i>
                                             </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#" onclick="viewTariffDetails(${plan.tariffId})">
-                                                    <i class="bi bi-pencil me-2"></i>Edit
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="viewTariffSlabs(${plan.tariffId}, '${plan.name}')">
-                                                    <i class="bi bi-layers me-2"></i>Manage Slabs
-                                                </a></li>
+                                            <ul class="tariff-dropdown-menu shadow-sm position-absolute end-0 mt-2">
+                                                <li>
+                                                    <a class="dropdown-item d-flex align-items-center" href="#" onclick="viewTariffDetailsModal(event, ${plan.tariffId})">
+                                                        <i class="bi bi-eye me-2"></i>View Details
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item d-flex align-items-center" href="#" onclick="editTariffFromDropdown(event, ${plan.tariffId})">
+                                                        <i class="bi bi-pencil me-2"></i>Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item d-flex align-items-center" href="#" onclick="viewTariffSlabsFromDropdown(event, ${plan.tariffId}, '${plan.name}')">
+                                                        <i class="bi bi-layers me-2"></i>Manage Slabs
+                                                    </a>
+                                                </li>
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteTariff(${plan.tariffId}, '${plan.name}')">
-                                                    <i class="bi bi-trash me-2"></i>Delete
-                                                </a></li>
+                                                <li>
+                                                    <a class="dropdown-item d-flex align-items-center text-danger" href="#" onclick="deleteTariffFromDropdown(event, ${plan.tariffId}, '${plan.name}')">
+                                                        <i class="bi bi-trash me-2"></i>Delete
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body">
+                                <div class="px-4">
                                     <!-- Effective Period -->
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between align-items-center text-muted small mb-1">
-                                            <span>Effective Period</span>
-                                            <i class="bi bi-calendar"></i>
+                                            <span><i class="bi bi-calendar me-1"></i>Effective Period</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <small class="fw-semibold">From</small>
@@ -423,6 +532,93 @@
                 container.innerHTML = '';
                 emptyState.style.display = 'block';
             }
+        }
+
+        function viewTariffDetailsModal(event, tariffId) {
+            event.preventDefault();
+            closeAllDropdowns();
+
+            const plan = allTariffs.find(t => t.tariffId === tariffId);
+            if (!plan) {
+                showError('Tariff not found.');
+                return;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('tariffDetailsModal'));
+            const detailsContent = document.getElementById('tariffDetailsContent');
+
+            const isActive = plan.effectiveTo ? new Date(plan.effectiveTo) > new Date() : true;
+            const statusClass = isActive ? 'bg-success' : 'bg-secondary';
+            const statusText = isActive ? 'Active' : 'Expired';
+
+            const html = `
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Tariff ID</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">${plan.tariffId}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Tariff Name</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">${plan.name ?? '—'}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Base Rate (₹/kWh)</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">₹${plan.baseRate.toFixed(4)}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Tax Rate</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">${plan.taxRate}%</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Effective From</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">${formatDate(plan.effectiveFrom)}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Effective To</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">${plan.effectiveTo ? formatDate(plan.effectiveTo) : 'No Expiration'}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Status</label>
+                        <p class="form-control-plaintext">
+                            <span class="badge ${statusClass}">${statusText}</span>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-primary">Total Rate (with tax)</label>
+                        <p class="form-control-plaintext border rounded p-2 bg-light">₹${(plan.baseRate * (1 + plan.taxRate / 100)).toFixed(4)}/kWh</p>
+                    </div>
+                </div>
+            `;
+
+            detailsContent.innerHTML = html;
+
+            // Set up edit button
+            document.getElementById('editFromDetailsBtn').onclick = () => {
+                modal.hide();
+                viewTariffDetails(tariffId);
+            };
+
+            modal.show();
+        }
+
+        function editTariffFromDropdown(event, tariffId) {
+            event.preventDefault();
+            closeAllDropdowns();
+            viewTariffDetails(tariffId);
+        }
+
+        function viewTariffSlabsFromDropdown(event, tariffId, tariffName) {
+            event.preventDefault();
+            closeAllDropdowns();
+            viewTariffSlabs(tariffId, tariffName);
+        }
+
+        function deleteTariffFromDropdown(event, tariffId, tariffName) {
+            event.preventDefault();
+            closeAllDropdowns();
+            deleteTariff(tariffId, tariffName);
         }
 
         function viewTariffSlabs(tariffId, tariffName) {
@@ -581,25 +777,110 @@
         padding: 0.35em 0.65em;
     }
 
-    .dropdown-toggle::after {
-        display: none;
+    /* Custom Dropdown Styling - Similar to Profile Header */
+    .tariff-dropdown {
+        position: relative;
     }
 
-    .dropdown-menu {
-        border-radius: 8px;
-        z-index:1400;
-        border: 1px solid #e9ecef;
-        box-shadow: var(--card-shadow);
+    .tariff-dropdown-toggle {
+        border: 1px solid #dee2e6;
+        background-color: #fff;
+        transition: all 0.2s ease;
     }
 
-    .dropdown-item {
-        border-radius: 6px;
-        margin: 0.125rem;
-    }
-
-        .dropdown-item:hover {
+        .tariff-dropdown-toggle:hover {
             background-color: #f8f9fa;
+            border-color: #198754;
         }
+
+    .tariff-dropdown-menu {
+        display: none;
+        list-style: none;
+        padding: 0.5rem 0;
+        margin: 0;
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        min-width: 180px;
+        z-index: 1000;
+        font-size: 0.9rem;
+    }
+
+        .tariff-dropdown-menu.show {
+            display: block;
+        }
+
+        .tariff-dropdown-menu li {
+            padding: 0;
+        }
+
+        .tariff-dropdown-menu .dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            color: #212529;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 6px;
+            margin: 0 0.25rem;
+        }
+
+            .tariff-dropdown-menu .dropdown-item:hover {
+                background-color: #f8f9fa;
+                color: #0d6efd;
+            }
+
+            .tariff-dropdown-menu .dropdown-item.text-danger:hover {
+                background-color: #f8d7da;
+                color: #dc3545;
+            }
+
+            .tariff-dropdown-menu .dropdown-item i {
+                width: 16px;
+                text-align: center;
+            }
+
+        .tariff-dropdown-menu .dropdown-divider {
+            height: 0;
+            margin: 0.5rem 0;
+            overflow: hidden;
+            border-top: 1px solid #e9ecef;
+        }
+
+    /* Modal styling */
+    .modal-content {
+        border-radius: 1rem;
+        border: none;
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    }
+
+    .modal-body p {
+        background: #f8f9fa;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+    }
+
+    .form-label {
+        color: #0d6efd;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Alert styling */
+    .alert {
+        border-radius: 8px;
+    }
+
+    /* Stats cards styling */
+    .bg-opacity-10 {
+        background-opacity: 0.1 !important;
+    }
+
+    /* Loading animation */
+    .spinner-border {
+        animation-duration: 0.75s;
+    }
 
     /* Button hover effects */
     .btn {
@@ -617,21 +898,5 @@
 
     .modal-footer {
         border-radius: 0 0 12px 12px;
-    }
-
-    /* Alert styling */
-    .alert {
-        border-radius: 8px;
-    }
-
-
-    /* Stats cards styling */
-    .bg-opacity-10 {
-        background-opacity: 0.1 !important;
-    }
-
-    /* Loading animation */
-    .spinner-border {
-        animation-duration: 0.75s;
     }
 </style>
