@@ -13,9 +13,6 @@
             <button class="btn btn-primary" onclick="showBillGenerationSection()">
                 <i class="bi bi-lightning-charge"></i> Generate Bills
             </button>
-            <button class="btn btn-info" onclick="testAPIs()">
-                <i class="bi bi-wrench"></i> Test APIs
-            </button>
         </div>
     </div>
 
@@ -27,7 +24,7 @@
 
     <!-- Bill Generation Section -->
     <div id="billGenerationSection" class="card shadow-sm mb-4" style="display: none;">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-info text-white">
             <h5 class="mb-0"><i class="bi bi-gear"></i> Generate Monthly Bills</h5>
         </div>
         <div class="card-body">
@@ -147,7 +144,7 @@
 
     <!-- Consumer Bills View Section -->
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-info text-white">
+        <div class="card-header bg-success text-white">
             <h5 class="mb-0"><i class="bi bi-person"></i> View Bills by Consumer</h5>
         </div>
         <div class="card-body">
@@ -410,38 +407,7 @@
         }
 
         // Test API connections
-        async function testAPIs() {
-            console.log('Testing API connections...');
-            const testResults = document.getElementById('apiTestResults');
-            const testContent = document.getElementById('apiTestContent');
-
-            testContent.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> Testing APIs...';
-            testResults.style.display = 'block';
-
-            const tests = [
-                { name: 'Monthly Bills', url: BILL_API_URL + '/AllMonthlyBills' },
-                { name: 'Consumers', url: CONSUMER_API_URL + '/AllConsumers' },
-                { name: 'Meters', url: METER_API_URL + '/AllMeters' },
-                { name: 'Daily Readings', url: DAILY_READING_API_URL + '/ByMeter/1' }
-            ];
-
-            let results = '';
-
-            for (const test of tests) {
-                try {
-                    const response = await fetch(test.url);
-                    if (response.ok) {
-                        results += `<div class="text-success">✅ ${test.name}: Connected successfully</div>`;
-                    } else {
-                        results += `<div class="text-danger">❌ ${test.name}: Failed (Status: ${response.status})</div>`;
-                    }
-                } catch (error) {
-                    results += `<div class="text-danger">❌ ${test.name}: Error - ${error.message}</div>`;
-                }
-            }
-
-            testContent.innerHTML = results;
-        }
+        
 
         function showBillGenerationSection() {
             const section = document.getElementById('billGenerationSection');

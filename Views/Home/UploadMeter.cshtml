@@ -8,15 +8,16 @@
 
 <style>
     :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --primary-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         --success-gradient: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         --danger-gradient: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
         --warning-gradient: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        --info-gradient: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
     }
 
     .upload-container {
         background: #f8f9fa;
-        width:100%;
+        width: 100%;
         padding: 20px 0;
     }
 
@@ -61,7 +62,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(40, 167, 69, 0.1), transparent);
             transition: left 0.5s ease;
         }
 
@@ -70,20 +71,20 @@
         }
 
         .upload-zone:hover {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            border-color: #28a745;
+            background: linear-gradient(135deg, #f8fff9 0%, #f0fff4 100%);
             transform: scale(1.02);
         }
 
         .upload-zone.drag-over {
-            border-color: #667eea;
-            background: linear-gradient(135deg, #e7f1ff 0%, #dce7ff 100%);
+            border-color: #28a745;
+            background: linear-gradient(135deg, #e7ffe9 0%, #dcffe1 100%);
             transform: scale(1.02);
         }
 
     .upload-icon {
         font-size: 4rem;
-        color: #667eea;
+        color: #28a745;
         margin-bottom: 1rem;
         transition: transform 0.3s ease;
     }
@@ -93,10 +94,10 @@
     }
 
     .file-info-card {
-        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+        background: linear-gradient(135deg, #e8f5e9 0%, #e0f2e1 100%);
         border: none;
         border-radius: 12px;
-        border-left: 5px solid #667eea;
+        border-left: 5px solid #28a745;
         padding: 1.5rem;
         margin-top: 1rem;
         animation: slideIn 0.5s ease;
@@ -143,7 +144,7 @@
         width: 60px;
         height: 60px;
         border: 4px solid #f3f3f3;
-        border-top: 4px solid #667eea;
+        border-top: 4px solid #28a745;
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin: 0 auto 1.5rem;
@@ -297,12 +298,12 @@
         border-radius: 10px;
         font-weight: 600;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
     }
 
         .btn-gradient:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
             color: white;
         }
 
@@ -367,7 +368,7 @@
     .step.active .step-number {
         background: var(--primary-gradient);
         color: white;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
     }
 
     .step-text {
@@ -376,7 +377,7 @@
     }
 
     .step.active .step-text {
-        color: #667eea;
+        color: #28a745;
     }
 
     .stats-grid {
@@ -417,7 +418,227 @@
         font-weight: 600;
     }
 
-   
+    .text-success {
+        color: #28a745 !important;
+    }
+
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    .table-success {
+        background-color: rgba(40, 167, 69, 0.1) !important;
+    }
+
+    .text-primary {
+        color: #28a745 !important;
+    }
+
+    .border-success {
+        border-color: #28a745 !important;
+    }
+
+    .progress-bar {
+        background-color: #28a745;
+    }
+
+    /* Enhanced Error Handling Styles */
+    .error-category {
+        margin-bottom: 1.5rem;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .error-category-header {
+        padding: 1rem 1.5rem;
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        cursor: pointer;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+    }
+
+        .error-category-header.critical {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left: 5px solid #dc3545;
+        }
+
+        .error-category-header.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left: 5px solid #ffc107;
+        }
+
+        .error-category-header.info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border-left: 5px solid #17a2b8;
+        }
+
+    .error-category-content {
+        background: white;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+        .error-category-content.expanded {
+            max-height: 500px;
+        }
+
+    .error-category-count {
+        background: #dc3545;
+        color: white;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+        .error-category-count.warning {
+            background: #ffc107;
+        }
+
+        .error-category-count.info {
+            background: #17a2b8;
+        }
+
+    .error-detail-row {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f1f1;
+        display: flex;
+        align-items: flex-start;
+    }
+
+        .error-detail-row:last-child {
+            border-bottom: none;
+        }
+
+    .error-row-number {
+        background: #6c757d;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        font-weight: bold;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .error-message {
+        flex: 1;
+    }
+
+    .error-field {
+        font-weight: 600;
+        color: #dc3545;
+    }
+
+    .error-suggestion {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+        font-style: italic;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+        .error-actions button {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+        }
+
+    .validation-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .validation-stat {
+        text-align: center;
+        padding: 1.5rem 1rem;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+        .validation-stat.critical {
+            border-top: 4px solid #dc3545;
+        }
+
+        .validation-stat.warning {
+            border-top: 4px solid #ffc107;
+        }
+
+        .validation-stat.info {
+            border-top: 4px solid #17a2b8;
+        }
+
+        .validation-stat.success {
+            border-top: 4px solid #28a745;
+        }
+
+    .validation-stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .validation-stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .download-error-btn {
+        background: var(--danger-gradient);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+
+        .download-error-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+            color: white;
+        }
+
+    .filter-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #dee2e6;
+        background: white;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+    }
+
+        .filter-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: #28a745;
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: #f8f9fa;
+        }
 </style>
 
 <div class="upload-container">
@@ -456,7 +677,7 @@
                     <div class="upload-card">
                         <div class="card-body p-4">
                             <h4 class="card-title mb-4">
-                                <i class="bi bi-file-earmark-arrow-up text-primary me-2"></i>
+                                <i class="bi bi-file-earmark-arrow-up text-success me-2"></i>
                                 Select Your Data File
                             </h4>
 
@@ -519,7 +740,7 @@
                     <!-- Quick Stats -->
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-value text-primary" id="fileStatus">No</div>
+                            <div class="stat-value text-success" id="fileStatus">No</div>
                             <div class="stat-label">File Selected</div>
                         </div>
                         <div class="stat-item">
@@ -532,7 +753,7 @@
                     <div class="upload-card">
                         <div class="card-body p-4">
                             <h5 class="card-title mb-3">
-                                <i class="bi bi-info-circle text-primary me-2"></i>
+                                <i class="bi bi-info-circle text-success me-2"></i>
                                 Upload Guidelines
                             </h5>
                             <div class="mb-3">
@@ -551,7 +772,7 @@
                                 </ul>
                             </div>
                             <div>
-                                <h6 class="text-info mb-2">
+                                <h6 class="text-success mb-2">
                                     <i class="bi bi-lightbulb me-2"></i>
                                     Tips
                                 </h6>
@@ -573,7 +794,7 @@
             <!-- Validation Loading -->
             <div id="validationLoading" class="validation-loading">
                 <div class="spinner-custom"></div>
-                <h4 class="text-primary mb-3">Validating Your Data</h4>
+                <h4 class="text-success mb-3">Validating Your Data</h4>
                 <p class="text-muted">Please wait while we validate your meter data...</p>
                 <div class="progress mt-4" style="height: 6px;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
@@ -594,37 +815,38 @@
                                         <p class="mb-0 text-muted">Please fix the errors below before proceeding</p>
                                     </div>
                                 </div>
-                                <div class="error-summary">
-                                    <div class="row text-center">
-                                        <div class="col-md-4">
-                                            <div class="text-danger">
-                                                <i class="bi bi-x-circle-fill display-6 mb-2"></i>
-                                                <h3 id="errorCount">0</h3>
-                                                <p class="mb-0">Records with Errors</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="text-success">
-                                                <i class="bi bi-check-circle-fill display-6 mb-2"></i>
-                                                <h3 id="validCount">0</h3>
-                                                <p class="mb-0">Valid Records</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="text-primary">
-                                                <i class="bi bi-file-text display-6 mb-2"></i>
-                                                <h3 id="totalCount">0</h3>
-                                                <p class="mb-0">Total Records</p>
-                                            </div>
-                                        </div>
+
+                                <!-- Validation Statistics -->
+                                <div class="validation-stats" id="validationStats">
+                                    <div class="validation-stat success">
+                                        <div class="validation-stat-value" id="validCountStat">0</div>
+                                        <div class="validation-stat-label">Valid Records</div>
+                                    </div>
+                                    <div class="validation-stat critical">
+                                        <div class="validation-stat-value" id="criticalCountStat">0</div>
+                                        <div class="validation-stat-label">Critical Errors</div>
+                                    </div>
+                                    <div class="validation-stat warning">
+                                        <div class="validation-stat-value" id="warningCountStat">0</div>
+                                        <div class="validation-stat-label">Warnings</div>
+                                    </div>
+                                    <div class="validation-stat info">
+                                        <div class="validation-stat-value" id="infoCountStat">0</div>
+                                        <div class="validation-stat-label">Information</div>
                                     </div>
                                 </div>
-                                <div class="error-details">
-                                    <h6 class="mb-3 text-danger">
-                                        <i class="bi bi-list-ul me-2"></i>
-                                        Error Details
-                                    </h6>
-                                    <div id="errorList"></div>
+
+                                <!-- Error Categories -->
+                                <div id="errorCategories"></div>
+
+                                <!-- Error Actions -->
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button class="btn btn-outline-secondary" id="downloadErrorReport">
+                                        <i class="bi bi-download me-2"></i>Download Error Report
+                                    </button>
+                                    <button class="btn btn-success-gradient" id="fixAndRetry">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Fix Errors & Retry
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -633,7 +855,7 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h3 class="mb-1">
-                                        <i class="bi bi-table text-primary me-2"></i>
+                                        <i class="bi bi-table text-success me-2"></i>
                                         <span id="dataTitle">Data Preview</span>
                                         <span id="validationBadge" class="validation-badge"></span>
                                     </h3>
@@ -647,6 +869,15 @@
                                         <i class="bi bi-cloud-upload me-2"></i>Upload to Database
                                     </button>
                                 </div>
+                            </div>
+
+                            <!-- Data Filtering -->
+                            <div class="filter-buttons mt-3" id="dataFilter" style="display: none;">
+                                <button class="filter-btn active" data-filter="all">All Records</button>
+                                <button class="filter-btn" data-filter="valid">Valid Only</button>
+                                <button class="filter-btn" data-filter="errors">With Errors</button>
+                                <button class="filter-btn" data-filter="critical">Critical Errors</button>
+                                <button class="filter-btn" data-filter="warning">Warnings</button>
                             </div>
                         </div>
 
@@ -678,7 +909,7 @@
                     <div class="upload-card">
                         <div class="card-body p-4">
                             <h4 class="card-title mb-4">
-                                <i class="bi bi-cloud-upload text-primary me-2"></i>
+                                <i class="bi bi-cloud-upload text-success me-2"></i>
                                 Upload Progress
                             </h4>
 
@@ -700,11 +931,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // JavaScript code remains the same as in your original version
-    // Only the UI has been enhanced
+    // Enhanced validation error handling
     let selectedFile = null;
     let parsedData = [];
     let validationResult = null;
+    let categorizedErrors = {
+        critical: [],
+        warning: [],
+        info: []
+    };
 
     const uploadZone = document.getElementById('uploadZone');
     const fileInput = document.getElementById('meterFile');
@@ -846,11 +1081,14 @@
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error('Validation error response:', errorText);
-                throw new Error(`Validation failed: ${response.status} - ${errorText}`);
+                throw new Error(`Validation failed`);
             }
 
             validationResult = await response.json();
             console.log('Validation result:', validationResult);
+
+            // Enhanced error categorization
+            categorizeErrors(validationResult);
             displayValidationResults(validationResult, meterData);
 
         } catch (error) {
@@ -858,6 +1096,91 @@
             showAlert('Error processing file: ' + error.message, 'danger');
             goBack();
         }
+    }
+
+    function categorizeErrors(validationResult) {
+        // Reset categories
+        categorizedErrors = {
+            critical: [],
+            warning: [],
+            info: []
+        };
+
+        if (!validationResult.invalidRecords) return;
+
+        validationResult.invalidRecords.forEach(record => {
+            record.errors.forEach(error => {
+                const errorDetail = {
+                    rowNumber: record.rowNumber || 'Unknown',
+                    field: getFieldFromError(error),
+                    message: error,
+                    suggestion: getSuggestionForError(error),
+                    severity: getErrorSeverity(error),
+                    recordData: record.meterData
+                };
+
+                categorizedErrors[errorDetail.severity].push(errorDetail);
+            });
+        });
+
+        console.log('Categorized errors:', categorizedErrors);
+    }
+
+    function getFieldFromError(error) {
+        const fieldMap = {
+            'ConsumerId': 'Consumer ID',
+            'DtrId': 'DTR ID',
+            'IpAddress': 'IP Address',
+            'ManufacturerId': 'Manufacturer ID',
+            'TariffId': 'Tariff ID',
+            'InstallDate': 'Install Date',
+            'StatusId': 'Status ID',
+            'LatestReading': 'Latest Reading'
+        };
+
+        for (const [field, displayName] of Object.entries(fieldMap)) {
+            if (error.toLowerCase().includes(field.toLowerCase())) {
+                return displayName;
+            }
+        }
+
+        return 'Unknown Field';
+    }
+
+    function getErrorSeverity(error) {
+        const criticalKeywords = ['required', 'missing', 'invalid', 'duplicate', 'not found'];
+        const warningKeywords = ['format', 'suggestion', 'recommend', 'optional'];
+
+        const lowerError = error.toLowerCase();
+
+        if (criticalKeywords.some(keyword => lowerError.includes(keyword))) {
+            return 'critical';
+        } else if (warningKeywords.some(keyword => lowerError.includes(keyword))) {
+            return 'warning';
+        } else {
+            return 'info';
+        }
+    }
+
+    function getSuggestionForError(error) {
+        const suggestions = {
+            'required': 'This field is mandatory and cannot be empty',
+            'invalid format': 'Please check the format of this field',
+            'duplicate': 'This value already exists in the system',
+            'not found': 'The referenced value does not exist in the system',
+            'date format': 'Please use YYYY-MM-DD format for dates',
+            'numeric': 'This field should contain only numbers',
+            'ip address': 'Please provide a valid IP address format'
+        };
+
+        const lowerError = error.toLowerCase();
+        for (const [key, suggestion] of Object.entries(suggestions)) {
+            if (lowerError.includes(key)) {
+                return suggestion;
+            }
+        }
+
+        return 'Please review this field and ensure it meets the required criteria';
     }
 
     function parseCSV(file) {
@@ -908,31 +1231,49 @@
             badge.innerHTML = '<span class="badge bg-success">All Valid</span>';
             document.getElementById('uploadDataBtn').style.display = 'inline-block';
             document.getElementById('errorDisplayContainer').style.display = 'none';
+            document.getElementById('dataFilter').style.display = 'none';
 
             // Update step indicator
             document.getElementById('step3').classList.add('active');
         } else {
             badge.innerHTML = '<span class="badge bg-danger">Validation Failed</span>';
             document.getElementById('uploadDataBtn').style.display = 'none';
+            document.getElementById('dataFilter').style.display = 'flex';
             showEnhancedErrorDisplay(result);
         }
 
         // Display table
+        displayDataTable(result, originalData);
+    }
+
+    function displayDataTable(result, originalData) {
         const tbody = document.getElementById('dataTableBody');
         tbody.innerHTML = '';
 
         const allRecords = [
-            ...result.validRecords.map((r, i) => ({ data: r, valid: true, errors: [] })),
-            ...result.invalidRecords.map(r => ({ data: r.meterData, valid: false, errors: r.errors }))
+            ...result.validRecords.map((r, i) => ({
+                data: r,
+                valid: true,
+                errors: [],
+                severity: 'valid'
+            })),
+            ...result.invalidRecords.map(r => ({
+                data: r.meterData,
+                valid: false,
+                errors: r.errors,
+                severity: getHighestSeverity(r.errors)
+            }))
         ];
 
         allRecords.forEach((record, index) => {
             const row = document.createElement('tr');
-            row.className = record.valid ? 'row-valid' : 'row-error';
+            row.className = `data-row ${record.valid ? 'row-valid' : 'row-error'}`;
+            row.dataset.severity = record.severity;
+            row.dataset.valid = record.valid;
 
             const statusCell = record.valid ?
                 '<span class="badge bg-success">Valid</span>' :
-                `<span class="badge bg-danger">Invalid</span><small class="d-block text-danger mt-1">${record.errors.join(', ')}</small>`;
+                `<span class="badge bg-danger">${record.errors.length} Error(s)</span>`;
 
             row.innerHTML = `
                 <td>${index + 1}</td>
@@ -948,31 +1289,206 @@
             `;
             tbody.appendChild(row);
         });
+
+        // Add filter functionality
+        setupDataFiltering();
+    }
+
+    function getHighestSeverity(errors) {
+        if (errors.some(error => getErrorSeverity(error) === 'critical')) return 'critical';
+        if (errors.some(error => getErrorSeverity(error) === 'warning')) return 'warning';
+        return 'info';
+    }
+
+    function setupDataFiltering() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active button
+                filterButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                // Filter rows
+                const filter = this.dataset.filter;
+                const rows = document.querySelectorAll('.data-row');
+
+                rows.forEach(row => {
+                    switch (filter) {
+                        case 'all':
+                            row.style.display = '';
+                            break;
+                        case 'valid':
+                            row.style.display = row.dataset.valid === 'true' ? '' : 'none';
+                            break;
+                        case 'errors':
+                            row.style.display = row.dataset.valid === 'false' ? '' : 'none';
+                            break;
+                        case 'critical':
+                            row.style.display = row.dataset.severity === 'critical' ? '' : 'none';
+                            break;
+                        case 'warning':
+                            row.style.display = row.dataset.severity === 'warning' ? '' : 'none';
+                            break;
+                    }
+                });
+            });
+        });
     }
 
     function showEnhancedErrorDisplay(result) {
         const errorContainer = document.getElementById('errorDisplayContainer');
-        const errorCount = document.getElementById('errorCount');
-        const validCount = document.getElementById('validCount');
-        const totalCount = document.getElementById('totalCount');
-        const errorList = document.getElementById('errorList');
 
-        errorCount.textContent = result.invalidCount;
-        validCount.textContent = result.validCount;
-        totalCount.textContent = result.totalRecords;
+        // Update statistics
+        document.getElementById('validCountStat').textContent = result.validCount;
+        document.getElementById('criticalCountStat').textContent = categorizedErrors.critical.length;
+        document.getElementById('warningCountStat').textContent = categorizedErrors.warning.length;
+        document.getElementById('infoCountStat').textContent = categorizedErrors.info.length;
 
-        errorList.innerHTML = '';
-
-        if (result.invalidRecords.length > 0) {
-            result.invalidRecords.forEach((record, index) => {
-                const errorItem = document.createElement('div');
-                errorItem.className = 'error-item';
-                errorItem.innerHTML = `<strong>Record ${index + 1}:</strong> ${record.errors.join(', ')}`;
-                errorList.appendChild(errorItem);
-            });
-        }
+        // Display error categories
+        displayErrorCategories();
 
         errorContainer.style.display = 'block';
+
+        // Add event listeners for error actions
+        document.getElementById('downloadErrorReport').addEventListener('click', downloadErrorReport);
+        document.getElementById('fixAndRetry').addEventListener('click', fixAndRetry);
+    }
+
+    function displayErrorCategories() {
+        const container = document.getElementById('errorCategories');
+        container.innerHTML = '';
+
+        // Critical Errors
+        if (categorizedErrors.critical.length > 0) {
+            container.appendChild(createErrorCategory('critical', 'Critical Errors', categorizedErrors.critical));
+        }
+
+        // Warnings
+        if (categorizedErrors.warning.length > 0) {
+            container.appendChild(createErrorCategory('warning', 'Warnings', categorizedErrors.warning));
+        }
+
+        // Information
+        if (categorizedErrors.info.length > 0) {
+            container.appendChild(createErrorCategory('info', 'Information', categorizedErrors.info));
+        }
+    }
+
+    function createErrorCategory(type, title, errors) {
+        const category = document.createElement('div');
+        category.className = 'error-category';
+
+        const header = document.createElement('div');
+        header.className = `error-category-header ${type}`;
+        header.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <div>
+                    <i class="bi ${getErrorIcon(type)} me-2"></i>
+                    <strong>${title}</strong>
+                </div>
+                <span class="error-category-count ${type}">${errors.length}</span>
+            </div>
+        `;
+
+        const content = document.createElement('div');
+        content.className = 'error-category-content';
+
+        errors.forEach(error => {
+            const errorRow = document.createElement('div');
+            errorRow.className = 'error-detail-row';
+            errorRow.innerHTML = `
+                <div class="error-row-number">${error.rowNumber}</div>
+                <div class="error-message">
+                    <div>
+                        <span class="error-field">${error.field}:</span>
+                        ${error.message}
+                    </div>
+                    <div class="error-suggestion">${error.suggestion}</div>
+                    <div class="error-actions">
+                        <button class="btn btn-outline-primary btn-sm" onclick="highlightRow(${error.rowNumber})">
+                            <i class="bi bi-eye me-1"></i>View Row
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="suggestFix('${error.field}', ${error.rowNumber})">
+                            <i class="bi bi-magic me-1"></i>Suggest Fix
+                        </button>
+                    </div>
+                </div>
+            `;
+            content.appendChild(errorRow);
+        });
+
+        header.addEventListener('click', () => {
+            content.classList.toggle('expanded');
+        });
+
+        category.appendChild(header);
+        category.appendChild(content);
+
+        return category;
+    }
+
+    function getErrorIcon(type) {
+        switch (type) {
+            case 'critical': return 'bi-exclamation-triangle-fill';
+            case 'warning': return 'bi-exclamation-circle-fill';
+            case 'info': return 'bi-info-circle-fill';
+            default: return 'bi-question-circle';
+        }
+    }
+
+    function highlightRow(rowNumber) {
+        const rows = document.querySelectorAll('.data-row');
+        rows.forEach(row => {
+            row.style.backgroundColor = '';
+            if (parseInt(row.cells[0].textContent) === rowNumber) {
+                row.style.backgroundColor = '#fff3cd';
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    function suggestFix(field, rowNumber) {
+        const suggestions = {
+            'Consumer ID': 'Ensure this is a unique numeric identifier',
+            'DTR ID': 'Verify this DTR exists in the system',
+            'IP Address': 'Use format: XXX.XXX.XXX.XXX',
+            'Manufacturer ID': 'Check manufacturer reference table',
+            'Tariff ID': 'Verify tariff configuration',
+            'Install Date': 'Use YYYY-MM-DD format',
+            'Status ID': 'Check valid status codes (1-5)',
+            'Latest Reading': 'Must be a positive number'
+        };
+
+        const suggestion = suggestions[field] || 'Please review the field format and requirements';
+        showAlert(`Fix suggestion for Row ${rowNumber}, ${field}: ${suggestion}`, 'info');
+    }
+
+    function downloadErrorReport() {
+        const errorReport = {
+            fileName: selectedFile.name,
+            validationDate: new Date().toISOString(),
+            summary: {
+                totalRecords: validationResult.totalRecords,
+                validRecords: validationResult.validCount,
+                invalidRecords: validationResult.invalidCount
+            },
+            errors: categorizedErrors
+        };
+
+        const blob = new Blob([JSON.stringify(errorReport, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `error-report-${selectedFile.name}-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function fixAndRetry() {
+        showAlert('Please fix the highlighted errors in your source file and re-upload.', 'info');
+        // In a real application, you might provide an inline editor or download a corrected template
     }
 
     document.getElementById('goBackBtn').addEventListener('click', goBack);
@@ -982,6 +1498,7 @@
         document.getElementById('validationSection').style.display = 'none';
         document.getElementById('uploadProgressSection').style.display = 'none';
         validationResult = null;
+        categorizedErrors = { critical: [], warning: [], info: [] };
 
         // Reset step indicator
         document.getElementById('step1').classList.add('active');
@@ -1009,11 +1526,11 @@
             progressItem.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <i class="bi bi-hdd-network text-primary me-2"></i>
+                        <i class="bi bi-hdd-network text-success me-2"></i>
                         <span>Consumer ID ${meter.consumerId}</span>
                     </div>
                     <div>
-                        <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+                        <span class="spinner-border spinner-border-sm text-success me-2"></span>
                         <span class="text-muted">Processing...</span>
                     </div>
                 </div>
