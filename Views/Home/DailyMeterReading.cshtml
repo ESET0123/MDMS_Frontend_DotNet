@@ -422,7 +422,6 @@
             const meterId = selectedOption.dataset.meterNumber;
             const baseRate = parseFloat(selectedOption.dataset.baseRate) || 0;
             const consumerName = selectedOption.dataset.consumerName || 'Unknown';
-            // FIX: Ensure tariffId is parsed as integer
             const tariffId = parseInt(selectedOption.dataset.tariffId);
             currentMeterLatestReading = parseFloat(selectedOption.dataset.latestReading) || 0;
 
@@ -445,12 +444,10 @@
                 `Meter: #${meterId} | Consumer: ${consumerName} | Tariff: ${tariffName} | Base Rate: ₹${baseRate.toFixed(4)}/kWh | Latest Reading: ${currentMeterLatestReading.toFixed(2)} kWh`;
             document.getElementById('meterInfoDisplay').style.display = 'block';
 
-            // FIX: Filter TOD rules with proper type comparison
             console.log('Filtering rules...');
             console.log('Before filter - All rules:', allTodRules.map(r => `ID:${r.todRuleId} TariffID:${r.tariffId} Name:${r.ruleName}`));
 
             currentMeterApplicableRules = allTodRules.filter(rule => {
-                // Convert both to numbers for comparison to avoid type mismatch
                 const ruleTariffId = parseInt(rule.tariffId);
                 const meterTariffId = parseInt(tariffId);
 

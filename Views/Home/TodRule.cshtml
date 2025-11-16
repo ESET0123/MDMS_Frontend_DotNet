@@ -599,7 +599,7 @@
             todRuleModal.show();
         }
 
-        async function saveTodRule() {
+                async function saveTodRule() {
             const isEdit = document.getElementById('todRuleId').value !== '0';
             const ruleName = document.getElementById('ruleName').value.trim();
             const tariffId = document.getElementById('tariffId').value;
@@ -641,6 +641,12 @@
             const method = isEdit ? 'PUT' : 'POST';
 
             try {
+                // Show loading state on the save button
+                const saveButton = document.querySelector('#todRuleModal .btn-success');
+                const originalText = saveButton.innerHTML;
+                saveButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Saving...';
+                saveButton.disabled = true;
+
                 const response = await fetch(endpoint, {
                     method: method,
                     headers: {
@@ -649,8 +655,23 @@
                     body: JSON.stringify(ruleData),
                 });
 
+                // Restore button state
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
+
                 if (response.ok) {
+                    // Properly hide the modal
                     todRuleModal.hide();
+
+                    // Force remove any backdrop
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(backdrop => backdrop.remove());
+
+                    // Remove modal-open class from body
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+
                     showSuccess(isEdit ? 'TOD rule updated successfully!' : 'TOD rule created successfully!');
                     await fetchTodRules();
                 } else {
@@ -660,6 +681,11 @@
             } catch (error) {
                 console.error('Error saving TOD rule:', error);
                 showError('An error occurred while saving the TOD rule.');
+
+                // Restore button state on error
+                const saveButton = document.querySelector('#todRuleModal .btn-success');
+                saveButton.innerHTML = '<i class="bi bi-save me-2"></i> Save Rule';
+                saveButton.disabled = false;
             }
         }
 
