@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MDMS_Frontend.Filters;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MDMS_Frontend.Controllers
 {
+    [AuthorizeRole("consumer")]
     public class ConsumerController : Controller
     {
         public IActionResult Dashboard()

@@ -186,6 +186,11 @@
                 localStorage.setItem('userType', 'admin');
                 localStorage.setItem('userId', response.userId);
                 localStorage.setItem('username', response.username);
+
+                // store in cookie for server-side access
+                document.cookie = `jwtToken=${response.token}; path=/; max-age=3600; SameSite=Strict`;
+                document.cookie = `userType=admin; path=/; max-age=3600; SameSite=Strict`; // ADD THIS
+
                 showMsg('#admin-msg', 'Login successful!', 'text-success');
                 
                 setTimeout(() => {
@@ -254,6 +259,10 @@
                 localStorage.setItem('consumerId', response.consumerId);
                 localStorage.setItem('consumerName', response.name);
                 localStorage.setItem('consumerEmail', response.email);
+
+                // store in cookie for server - side access
+                document.cookie = `jwtToken=${response.token}; path=/; max-age=3600; SameSite=Strict`;
+                document.cookie = `userType=consumer; path=/; max-age=3600; SameSite=Strict`; // ADD THIS
 
                 showMsg('#consumer-msg', 'Login successful!', 'text-success');
                 
