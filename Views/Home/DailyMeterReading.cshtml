@@ -436,7 +436,8 @@
 
             // Get tariff name for display
             const selectedMeter = allMeters.find(m => m.meterId == meterId);
-            const tariffName = selectedMeter?.tariffName || 'Unknown';
+            console.log("my meter: ",selectedMeter);
+            const tariffName = selectedMeter.tariffName || 'Unknown';
 
             console.log('Tariff Name:', tariffName);
 
@@ -552,7 +553,7 @@
             } else if (index === 0) {
                 previousReadingValue = currentMeterLatestReading.toFixed(2);
             }
-
+            console.log(rule);
             const row = `
                         <tr>
                             <td>
@@ -680,10 +681,15 @@
 
         for (const row of rows) {
             const todRuleId = parseInt(row.querySelector('.tod-rule-id')?.value);
+            console.log(todRuleId);
             const startTime = row.querySelector('.start-time')?.value;
+            console.log(startTime);
             const endTime = row.querySelector('.end-time')?.value;
+            console.log(endTime);
             const previousReading = parseFloat(row.querySelector('.previous-reading')?.value);
+            console.log(previousReading);
             const currentReading = parseFloat(row.querySelector('.current-reading')?.value);
+            console.log(currentReading);
 
             if (!todRuleId || !startTime || !endTime || isNaN(previousReading) || isNaN(currentReading)) {
                 showError('Please fill in all fields for each reading row');
