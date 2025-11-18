@@ -355,8 +355,8 @@
         const METER_API_URL = `${API_BASE_URL}/api/Meter`;
         const DAILY_READING_API_URL = `${API_BASE_URL}/api/DailyMeterReading`;
 
-        console.log('API Base URL:', API_BASE_URL);
-        console.log('Bill API URL:', BILL_API_URL);
+        // console.log('API Base URL:', API_BASE_URL);
+        // console.log('Bill API URL:', BILL_API_URL);
 
         // Global variables
         let allBills = [];
@@ -367,7 +367,7 @@
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, initializing...');
+            // console.log('Page loaded, initializing...');
 
             // Initialize modals
             billModal = new bootstrap.Modal(document.getElementById('billModal'));
@@ -493,15 +493,15 @@
         }
 
         async function fetchBills() {
-            console.log('Fetching bills...');
+            // console.log('Fetching bills...');
             try {
                 showLoading(true);
                 const response = await fetch(`${BILL_API_URL}/AllMonthlyBills`);
-                console.log('Bills response status:', response.status);
+                // console.log('Bills response status:', response.status);
 
                 if (response.ok) {
                     allBills = await response.json();
-                    console.log('Bills loaded:', allBills.length);
+                    // console.log('Bills loaded:', allBills.length);
                     filteredBills = [...allBills];
                     renderBillsTable(filteredBills);
                     updateFilterStats();
@@ -517,14 +517,14 @@
         }
 
         async function fetchConsumers() {
-            console.log('Fetching consumers...');
+            // console.log('Fetching consumers...');
             try {
                 const response = await fetch(`${CONSUMER_API_URL}/AllConsumers`);
-                console.log('Consumers response status:', response.status);
+                // console.log('Consumers response status:', response.status);
 
                 if (response.ok) {
                     allConsumers = await response.json();
-                    console.log('Consumers loaded:', allConsumers.length);
+                    // console.log('Consumers loaded:', allConsumers.length);
                     populateConsumersDropdown();
                     populateConsumerFilter();
                     populateFilterConsumers();
@@ -537,14 +537,14 @@
         }
 
         async function fetchMeters() {
-            console.log('Fetching meters...');
+            // console.log('Fetching meters...');
             try {
                 const response = await fetch(`${METER_API_URL}/AllMeters`);
-                console.log('Meters response status:', response.status);
+                // console.log('Meters response status:', response.status);
 
                 if (response.ok) {
                     allMeters = await response.json();
-                    console.log('Meters loaded:', allMeters.length);
+                    // console.log('Meters loaded:', allMeters.length);
                     populateMetersDropdown();
                     populateFilterMeters();
                 } else {
@@ -803,7 +803,7 @@
         }
 
         function prepareAddBill() {
-            console.log('Preparing to add new bill');
+            // console.log('Preparing to add new bill');
             document.getElementById('billModalLabel').textContent = 'Add Monthly Bill';
             document.getElementById('billForm').reset();
             document.getElementById('isEdit').value = 'false';
@@ -816,7 +816,7 @@
         }
 
         async function editBill(billId) {
-            console.log('Editing bill:', billId);
+            // console.log('Editing bill:', billId);
             const bill = allBills.find(b => b.billId === billId);
             if (!bill) {
                 showError('Bill not found');
@@ -913,7 +913,7 @@
         }
 
         async function deleteBill(billId) {
-            console.log('Deleting bill:', billId);
+            // console.log('Deleting bill:', billId);
             if (!confirm('Are you sure you want to delete this bill?')) {
                 return;
             }
@@ -974,6 +974,6 @@
             }
         }
 
-        console.log('Monthly Bills JavaScript loaded successfully');
+        // console.log('Monthly Bills JavaScript loaded successfully');
     </script>
 }

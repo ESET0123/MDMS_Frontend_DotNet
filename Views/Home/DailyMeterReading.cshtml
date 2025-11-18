@@ -436,7 +436,7 @@
 
             // Get tariff name for display
             const selectedMeter = allMeters.find(m => m.meterId == meterId);
-            const tariffName = selectedMeter?.tariff?.name || 'Unknown';
+            const tariffName = selectedMeter?.tariffName || 'Unknown';
 
             console.log('Tariff Name:', tariffName);
 
@@ -687,6 +687,9 @@
 
             if (!todRuleId || !startTime || !endTime || isNaN(previousReading) || isNaN(currentReading)) {
                 showError('Please fill in all fields for each reading row');
+                console.log(todRuleId);
+                console.log(startTime);
+                console.log(endTime);
                 return;
             }
 
