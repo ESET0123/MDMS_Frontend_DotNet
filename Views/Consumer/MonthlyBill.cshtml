@@ -98,6 +98,61 @@
         margin-bottom: 2rem;
     }
 
+    .pay-btn {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        color: white;
+    }
+
+        .pay-btn:hover {
+            background: linear-gradient(135deg, #219e3e, #1ba87e);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .pay-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .payment-processing {
+        position: relative;
+    }
+
+        .payment-processing::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px 0 0 -8px;
+            border: 2px solid transparent;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .validation-alert {
+        border-left: 4px solid #dc3545;
+        background: #f8d7da;
+    }
+
+    .payment-success {
+        border-left: 4px solid #28a745;
+        background: #d4edda;
+    }
 </style>
 
 <div class="container-fluid">
@@ -230,6 +285,15 @@
             <span id="errorText"></span>
         </div>
         <button type="button" class="btn-close" onclick="showError('')"></button>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span id="successText"></span>
+        </div>
+        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
     </div>
 
     <!-- Main Bills Table -->
@@ -387,34 +451,143 @@
                 <button type="button" class="btn btn-primary" onclick="downloadCurrentBillPDF()">
                     <i class="bi bi-file-pdf me-1"></i>Download PDF
                 </button>
+                <button type="button" class="btn pay-btn" id="payBillBtn" onclick="payCurrentBill()">
+                    <i class="bi bi-credit-card me-1"></i>Pay Now
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Payment Notification Modal -->
-<div class="modal fade" id="paymentNotificationModal" tabindex="-1" aria-labelledby="paymentNotificationModalLabel" aria-hidden="true">
+<!-- Payment Confirmation Modal -->
+<div class="modal fade" id="paymentConfirmationModal" tabindex="-1" aria-labelledby="paymentConfirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="paymentNotificationModalLabel">
-                    <i class="bi bi-tools me-2"></i>Payment Feature
+                <h5 class="modal-title" id="paymentConfirmationModalLabel">
+                    <i class="bi bi-credit-card me-2"></i>Confirm Payment
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body text-center py-4">
-                <div class="mb-3">
-                    <i class="bi bi-tools display-1 text-warning"></i>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="bi bi-credit-card-2-front display-1 text-warning"></i>
                 </div>
-                <h4 class="text-dark mb-3">Payment Feature Coming Soon</h4>
-                <p class="text-muted mb-3">We're working hard to bring you a seamless online payment experience.</p>
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <small>Please visit our office or contact customer service for payment assistance.</small>
+                <h5 class="text-center mb-3">Confirm Bill Payment</h5>
+
+                <div class="alert alert-info mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>Bill ID:</strong>
+                        <span id="confirmBillId"></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <strong>Amount:</strong>
+                        <span id="confirmBillAmount"></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <strong>Period:</strong>
+                        <span id="confirmBillPeriod"></span>
+                    </div>
+                </div>
+
+                <!-- Payment Validation Result -->
+                <div id="paymentValidationResult" style="display: none;">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+
+                <!-- Payment Method Selection -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Payment Method</label>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="credit" checked>
+                        <label class="form-check-label" for="creditCard">
+                            <i class="bi bi-credit-card me-1"></i>Credit/Debit Card
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="netBanking" value="netbanking">
+                        <label class="form-check-label" for="netBanking">
+                            <i class="bi bi-bank me-1"></i>Net Banking
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="upi" value="upi">
+                        <label class="form-check-label" for="upi">
+                            <i class="bi bi-phone me-1"></i>UPI Payment
+                        </label>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <small>By proceeding, you agree to pay the bill amount. This action cannot be undone.</small>
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">Got It</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn pay-btn" id="confirmPaymentBtn" onclick="processPayment()">
+                    <i class="bi bi-credit-card me-1"></i>Confirm Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Processing Modal -->
+<div class="modal fade" id="paymentProcessingModal" tabindex="-1" aria-labelledby="paymentProcessingModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title" id="paymentProcessingModalLabel">
+                    <i class="bi bi-arrow-repeat me-2"></i>Processing Payment
+                </h5>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Processing...</span>
+                </div>
+                <h5 class="text-primary mb-2">Processing Your Payment</h5>
+                <p class="text-muted mb-0">Please wait while we process your payment. Do not close this window.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Success Modal -->
+<div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-labelledby="paymentSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title" id="paymentSuccessModalLabel">
+                    <i class="bi bi-check-circle me-2"></i>Payment Successful
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-check-circle-fill display-1 text-success"></i>
+                </div>
+                <h4 class="text-success mb-3">Payment Completed Successfully!</h4>
+                <div class="alert alert-success">
+                    <div class="d-flex justify-content-between">
+                        <strong>Bill ID:</strong>
+                        <span id="successBillId"></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <strong>Amount Paid:</strong>
+                        <span id="successBillAmount"></span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <strong>Transaction Date:</strong>
+                        <span id="successTransactionDate"></span>
+                    </div>
+                </div>
+                <p class="text-muted">Your bill has been marked as paid. A receipt has been generated for your records.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-success w-100" onclick="handlePaymentSuccess()">
+                    <i class="bi bi-download me-1"></i>Download Receipt & Close
+                </button>
             </div>
         </div>
     </div>
@@ -433,12 +606,18 @@
         let currentConsumerId = null;
         let currentConsumerData = null;
         let currentBillForDetails = null;
+        let currentBillForPayment = null;
+
         let viewBillModal;
-        let paymentNotificationModal;
+        let paymentConfirmationModal;
+        let paymentProcessingModal;
+        let paymentSuccessModal;
 
         document.addEventListener('DOMContentLoaded', function () {
             viewBillModal = new bootstrap.Modal(document.getElementById('viewBillModal'));
-            paymentNotificationModal = new bootstrap.Modal(document.getElementById('paymentNotificationModal'));
+            paymentConfirmationModal = new bootstrap.Modal(document.getElementById('paymentConfirmationModal'));
+            paymentProcessingModal = new bootstrap.Modal(document.getElementById('paymentProcessingModal'));
+            paymentSuccessModal = new bootstrap.Modal(document.getElementById('paymentSuccessModal'));
 
             // Setup filter event listeners
             document.getElementById('statusFilter').addEventListener('change', applyFilters);
@@ -533,6 +712,10 @@
                 console.error('Error loading bills:', error);
                 showError('Failed to load bills: ' + error.message);
                 showLoading(false);
+
+                // Ensure table is hidden on error
+                document.getElementById('billsTableCard').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
             }
         }
 
@@ -594,8 +777,10 @@
             billCountElement.textContent = `${count} bill${count !== 1 ? 's' : ''}`;
         }
 
-                function renderBillsTable(bills) {
+        function renderBillsTable(bills) {
             const tbody = document.getElementById('billsTableBody');
+            const billsTableCard = document.getElementById('billsTableCard');
+            const emptyState = document.getElementById('emptyState');
 
             if (!tbody) {
                 console.error('Bills table body not found!');
@@ -611,43 +796,62 @@
                     let statusBadge;
                     switch(bill.billStatus) {
                         case 'Paid':
-                            statusBadge = '<span class="badge bg-success">Paid</span>';
+                            statusBadge = '<span class="badge bg-success status-badge">Paid</span>';
                             break;
                         case 'Overdue':
-                            statusBadge = '<span class="badge bg-danger">Overdue</span>';
+                            statusBadge = '<span class="badge bg-danger status-badge">Overdue</span>';
                             break;
                         case 'Cancelled':
-                            statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
+                            statusBadge = '<span class="badge bg-secondary status-badge">Cancelled</span>';
                             break;
                         default:
-                            statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
+                            statusBadge = '<span class="badge bg-warning text-dark status-badge">Pending</span>';
                     }
+
+                    // Determine if pay button should be enabled
+                    const isPayable = (bill.billStatus === 'Pending' || bill.billStatus === 'Overdue');
+                    const payButton = isPayable
+                        ? `<button class="btn btn-sm pay-btn action-btn" onclick="payBill(${bill.billId})" title="Pay Bill">
+                                <i class="bi bi-credit-card"></i>
+                           </button>`
+                        : `<button class="btn btn-sm pay-btn action-btn" disabled title="Already Paid">
+                                <i class="bi bi-credit-card"></i>
+                           </button>`;
 
                     tableHtml += `
                         <tr>
-                            <td><strong>${bill.billId}</strong></td>
-                            <td>${bill.consumerName || 'N/A'}</td>
+                            <td class="ps-4"><strong>${bill.billId}</strong></td>
                             <td>${bill.meterId}</td>
-                            <td><span class="badge bg-info">${bill.tariffName || 'N/A'}</span></td>
                             <td>${period}</td>
                             <td>${billingDate}</td>
                             <td>${(bill.totalConsumptionKwh || 0).toFixed(2)}</td>
-                            <td>₹${(bill.totalAmount || 0).toFixed(2)}</td>
+                            <td class="amount-display">₹${(bill.totalAmount || 0).toFixed(2)}</td>
                             <td>${statusBadge}</td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="editBill(${bill.billId})" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBill(${bill.billId})" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button class="btn btn-sm btn-outline-primary action-btn" onclick="viewBillDetails(${bill.billId})" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success action-btn" onclick="downloadBillPDF(${bill.billId})" title="Download PDF">
+                                        <i class="bi bi-file-pdf"></i>
+                                    </button>
+                                    ${payButton}
+                                </div>
                             </td>
                         </tr>
                     `;
                 });
                 tbody.innerHTML = tableHtml;
+
+                // Show table, hide empty state
+                billsTableCard.style.display = 'block';
+                emptyState.style.display = 'none';
             } else {
-                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">No bills found matching the criteria.</td></tr>';
+                tbody.innerHTML = '';
+
+                // Show empty state, hide table
+                billsTableCard.style.display = 'none';
+                emptyState.style.display = 'block';
             }
         }
 
@@ -696,12 +900,300 @@
             document.getElementById('viewTotalAmount').textContent = '₹' + (bill.totalAmount || 0).toFixed(2);
             document.getElementById('viewTotalAmountModal').textContent = '₹' + (bill.totalAmount || 0).toFixed(2);
 
+            // Update pay button state in modal
+            const payBillBtn = document.getElementById('payBillBtn');
+            const isPayable = (bill.billStatus === 'Pending' || bill.billStatus === 'Overdue');
+            if (isPayable) {
+                payBillBtn.disabled = false;
+                payBillBtn.onclick = () => payCurrentBill();
+            } else {
+                payBillBtn.disabled = true;
+                payBillBtn.onclick = null;
+            }
+
             // Update consumption progress (example: assuming 1000 kWh is high consumption)
             const consumption = bill.totalConsumptionKwh || 0;
             const progressWidth = Math.min((consumption / 1000) * 100, 100);
             document.getElementById('consumptionProgress').style.width = progressWidth + '%';
 
             viewBillModal.show();
+        }
+
+        async function payBill(billId) {
+            const bill = allBills.find(b => b.billId === billId);
+            if (!bill) {
+                showError('Bill not found');
+                return;
+            }
+
+            currentBillForPayment = bill;
+            await showPaymentConfirmation();
+        }
+
+        async function payCurrentBill() {
+            if (currentBillForDetails) {
+                currentBillForPayment = currentBillForDetails;
+                await showPaymentConfirmation();
+            }
+        }
+
+        async function showPaymentConfirmation() {
+            if (!currentBillForPayment) return;
+
+            // Reset validation result
+            document.getElementById('paymentValidationResult').style.display = 'none';
+            document.getElementById('paymentValidationResult').innerHTML = '';
+
+            // Update confirmation modal content
+            document.getElementById('confirmBillId').textContent = currentBillForPayment.billId;
+            document.getElementById('confirmBillAmount').textContent = '₹' + (currentBillForPayment.totalAmount || 0).toFixed(2);
+            document.getElementById('confirmBillPeriod').textContent = `${getMonthName(currentBillForPayment.billingMonth)} ${currentBillForPayment.billingYear}`;
+
+            // Validate sequential payment first
+            try {
+                const validationResult = await validateSequentialPayment(currentBillForPayment.billId);
+
+                if (!validationResult.isValid) {
+                    // Show validation error
+                    document.getElementById('paymentValidationResult').innerHTML = `
+                        <div class="alert alert-danger validation-alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Payment Validation Failed:</strong>
+                            <div class="mt-1">${validationResult.errorMessage}</div>
+                            ${validationResult.unpaidBillId ?
+                                `<button class="btn btn-sm btn-outline-danger mt-2" onclick="viewUnpaidBill(${validationResult.unpaidBillId})">
+                                    <i class="bi bi-eye me-1"></i>View Unpaid Bill
+                                </button>` : ''
+                            }
+                        </div>
+                    `;
+                    document.getElementById('paymentValidationResult').style.display = 'block';
+                    document.getElementById('confirmPaymentBtn').disabled = true;
+                } else {
+                    document.getElementById('confirmPaymentBtn').disabled = false;
+                }
+            } catch (error) {
+                console.error('Error validating payment:', error);
+                document.getElementById('confirmPaymentBtn').disabled = false;
+            }
+
+            paymentConfirmationModal.show();
+        }
+
+        async function validateSequentialPayment(billId) {
+            try {
+                const response = await fetch(`${BILL_API_URL}/ValidateSequentialPayment/${billId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Validation failed: ${response.status}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('Error validating sequential payment:', error);
+                return { isValid: false, errorMessage: 'Unable to validate payment sequence' };
+            }
+        }
+
+        function viewUnpaidBill(billId) {
+            paymentConfirmationModal.hide();
+            viewBillDetails(billId);
+        }
+
+        async function processPayment() {
+            if (!currentBillForPayment) return;
+
+            // Show processing modal
+            paymentConfirmationModal.hide();
+            paymentProcessingModal.show();
+
+            try {
+                // Update bill status to "Paid"
+                const updateRequest = {
+                    billStatus: "Paid"
+                };
+
+                const response = await fetch(`${BILL_API_URL}/UpdateBillStatus/${currentBillForPayment.billId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateRequest)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Payment failed: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                // Simulate payment processing delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Show success modal
+                paymentProcessingModal.hide();
+                showPaymentSuccess(result);
+
+            } catch (error) {
+                console.error('Payment processing error:', error);
+                paymentProcessingModal.hide();
+                showError('Payment failed: ' + error.message);
+            }
+        }
+
+        function showPaymentSuccess(result) {
+            document.getElementById('successBillId').textContent = currentBillForPayment.billId;
+            document.getElementById('successBillAmount').textContent = '₹' + (currentBillForPayment.totalAmount || 0).toFixed(2);
+            document.getElementById('successTransactionDate').textContent = new Date().toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            paymentSuccessModal.show();
+        }
+
+        function handlePaymentSuccess() {
+            // Close all modals
+            paymentSuccessModal.hide();
+            viewBillModal.hide();
+
+            // Show success message
+            showSuccess(`Bill #${currentBillForPayment.billId} paid successfully!`);
+
+            // Refresh bills data
+            fetchConsumerBills();
+
+            // Generate and download receipt
+            generatePaymentReceipt();
+        }
+
+        function generatePaymentReceipt() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const bill = currentBillForPayment;
+                const consumption = parseFloat(bill.totalConsumptionKwh) || 0;
+                const amount = parseFloat(bill.totalAmount) || 0;
+
+                const billingDate = new Date(bill.billingDate).toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const period = `${getMonthName(bill.billingMonth)} ${bill.billingYear}`;
+                const paymentDate = new Date().toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Header
+                doc.setFillColor(40, 167, 69);
+                doc.rect(0, 0, 210, 40, 'F');
+
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(24);
+                doc.setFont(undefined, 'bold');
+                doc.text('PAYMENT RECEIPT', 105, 20, { align: 'center' });
+
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                doc.text('Meter Data Management System', 105, 30, { align: 'center' });
+
+                // Reset text color
+                doc.setTextColor(0, 0, 0);
+
+                // Consumer Information
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('Consumer Information', 20, 55);
+
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                let yPos = 65;
+
+                if (currentConsumerData) {
+                    doc.text('Name: ' + String(currentConsumerData.name || 'N/A'), 20, yPos);
+                    yPos += 7;
+                    doc.text('Consumer ID: ' + String(currentConsumerData.consumerId || 'N/A'), 20, yPos);
+                    yPos += 7;
+                    doc.text('Address: ' + String(currentConsumerData.address || 'N/A'), 20, yPos);
+                    yPos += 7;
+                    doc.text('Phone: ' + String(currentConsumerData.phone || 'N/A'), 20, yPos);
+                    yPos += 7;
+                    doc.text('Email: ' + String(currentConsumerData.email || 'N/A'), 20, yPos);
+                } else {
+                    doc.text('Consumer ID: ' + String(bill.consumerId), 20, yPos);
+                }
+
+                // Payment Details
+                yPos += 15;
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('Payment Details', 20, yPos);
+
+                yPos += 10;
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                doc.text('Bill ID: ' + String(bill.billId), 20, yPos);
+                yPos += 7;
+                doc.text('Meter ID: ' + String(bill.meterId), 20, yPos);
+                yPos += 7;
+                doc.text('Billing Period: ' + period, 20, yPos);
+                yPos += 7;
+                doc.text('Billing Date: ' + billingDate, 20, yPos);
+                yPos += 7;
+                doc.text('Payment Date: ' + paymentDate, 20, yPos);
+
+                // Payment Amount Box
+                yPos += 15;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(20, yPos, 170, 25, 'F');
+                doc.setDrawColor(40, 167, 69);
+                doc.setLineWidth(0.5);
+                doc.rect(20, yPos, 170, 25);
+
+                yPos += 10;
+                doc.setFontSize(16);
+                doc.setFont(undefined, 'bold');
+                doc.setTextColor(40, 167, 69);
+                doc.text('Amount Paid:', 30, yPos);
+                doc.text('Rs. ' + amount.toFixed(2), 160, yPos, { align: 'right' });
+
+                // Status
+                yPos += 15;
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(12);
+                doc.text('Status: PAID', 20, yPos);
+
+                // Footer
+                doc.setTextColor(128, 128, 128);
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                doc.text('This is an electronic payment receipt. For queries, please contact customer service.', 105, 280, { align: 'center' });
+                doc.text('Generated on: ' + new Date().toLocaleString('en-IN'), 105, 286, { align: 'center' });
+
+                // Save PDF
+                const fileName = `Payment_Receipt_${bill.billId}_${new Date().getTime()}.pdf`;
+                doc.save(fileName);
+
+            } catch (error) {
+                console.error('Error generating receipt:', error);
+                // Don't show error for receipt generation failure
+            }
         }
 
         function downloadCurrentBillPDF() {
@@ -721,7 +1213,6 @@
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
-                // PDF generation code remains the same as before
                 const consumption = parseFloat(bill.totalConsumptionKwh) || 0;
                 const amount = parseFloat(bill.totalAmount) || 0;
 
@@ -827,10 +1318,6 @@
             }
         }
 
-        function showPaymentNotification() {
-            paymentNotificationModal.show();
-        }
-
         function getMonthName(monthNumber) {
             const months = [
                 'January', 'February', 'March', 'April', 'May', 'June',
@@ -852,6 +1339,18 @@
                 setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
             } else {
                 errorDiv.style.display = 'none';
+            }
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            if (message) {
+                successText.textContent = message;
+                successDiv.style.display = 'block';
+                setTimeout(() => { successDiv.style.display = 'none'; }, 5000);
+            } else {
+                successDiv.style.display = 'none';
             }
         }
     </script>

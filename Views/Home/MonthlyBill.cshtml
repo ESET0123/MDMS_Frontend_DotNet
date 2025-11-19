@@ -4,28 +4,32 @@
 }
 
 <div class="container-fluid">
+    <!-- Toaster Container -->
+    <div id="toaster" class="position-fixed top-0 end-0 p-3" style="z-index: 1050;"></div>
+
+    <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-file-earmark-text"></i> Monthly Bills Management</h2>
+        <h2 class="text-gray-800 fw-normal"><i class="bi bi-file-earmark-text me-2 text-success"></i>Monthly Bills</h2>
         <div>
-            <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#billModal" onclick="prepareAddBill()">
-                <i class="bi bi-plus-circle"></i> Add Monthly Bill
+            <button class="btn btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#billModal" onclick="prepareAddBill()">
+                <i class="bi bi-plus-circle me-1"></i> Add Bill
             </button>
-            <button class="btn btn-primary" onclick="showBillGenerationSection()">
-                <i class="bi bi-lightning-charge"></i> Generate Bills
+            <button class="btn btn-outline-secondary" onclick="showBillGenerationSection()">
+                <i class="bi bi-lightning-charge me-1"></i> Generate Bills
             </button>
         </div>
     </div>
 
     <!-- Bill Generation Section -->
-    <div id="billGenerationSection" class="card shadow-sm mb-4" style="display: none;">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0"><i class="bi bi-gear"></i> Generate Monthly Bills</h5>
+    <div id="billGenerationSection" class="card border-0 shadow-sm mb-4 bg-gray-50" style="display: none;">
+        <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="mb-0 text-gray-700"><i class="bi bi-gear me-2 text-success"></i>Generate Monthly Bills</h5>
         </div>
         <div class="card-body">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label for="genMonth" class="form-label">Month</label>
-                    <select class="form-select" id="genMonth">
+                    <label for="genMonth" class="form-label text-gray-700">Month</label>
+                    <select class="form-select border-gray-300" id="genMonth">
                         <option value="1">January</option>
                         <option value="2">February</option>
                         <option value="3">March</option>
@@ -41,12 +45,12 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="genYear" class="form-label">Year</label>
-                    <input type="number" class="form-control" id="genYear" min="2000" max="2100" value="@DateTime.Now.Year">
+                    <label for="genYear" class="form-label text-gray-700">Year</label>
+                    <input type="number" class="form-control border-gray-300" id="genYear" min="2000" max="2100" value="@DateTime.Now.Year">
                 </div>
                 <div class="col-md-6">
                     <button class="btn btn-success" onclick="generateBillsFromReadings()">
-                        <i class="bi bi-calculator"></i> Generate from Daily Readings
+                        <i class="bi bi-calculator me-1"></i> Generate from Daily Readings
                     </button>
                 </div>
             </div>
@@ -54,21 +58,21 @@
     </div>
 
     <!-- Generate Bill for Specific Meter Section -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Generate Bill for Specific Meter</h5>
+    <div class="card border-0 shadow-sm mb-4 bg-gray-50">
+        <div class="card-header bg-success border-0 py-3">
+            <h5 class="mb-0 text-gray-900"><i class="bi bi-speedometer2 me-2 text-gray-900"></i>Generate Bill for Specific Meter</h5>
         </div>
         <div class="card-body">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label for="singleMeter" class="form-label">Select Meter</label>
-                    <select class="form-select" id="singleMeter">
+                    <label for="singleMeter" class="form-label text-gray-700">Select Meter</label>
+                    <select class="form-select border-gray-300" id="singleMeter">
                         <option value="">-- Select Meter --</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="singleMeterMonth" class="form-label">Month</label>
-                    <select class="form-select" id="singleMeterMonth">
+                    <label for="singleMeterMonth" class="form-label text-gray-700">Month</label>
+                    <select class="form-select border-gray-300" id="singleMeterMonth">
                         <option value="1">January</option>
                         <option value="2">February</option>
                         <option value="3">March</option>
@@ -84,12 +88,12 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="singleMeterYear" class="form-label">Year</label>
-                    <input type="number" class="form-control" id="singleMeterYear" min="2000" max="2100">
+                    <label for="singleMeterYear" class="form-label text-gray-700">Year</label>
+                    <input type="number" class="form-control border-gray-300" id="singleMeterYear" min="2000" max="2100">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-primary w-100" onclick="generateBillForMeter()">
-                        <i class="bi bi-file-earmark-plus"></i> Generate Bill
+                    <button class="btn btn-outline-success w-100" onclick="generateBillForMeter()">
+                        <i class="bi bi-file-earmark-plus me-1"></i> Generate Bill
                     </button>
                 </div>
             </div>
@@ -97,15 +101,15 @@
     </div>
 
     <!-- Advanced Filters Section -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter Bills</h5>
+    <div class="card border-0 shadow-sm mb-4 bg-gray-50">
+        <div class="card-header bg-success border-0 py-3">
+            <h5 class="mb-0 text-gray-900"><i class="bi bi-funnel me-2 text-gray-900"></i>Filter Bills</h5>
         </div>
         <div class="card-body">
             <div class="row g-3 align-items-end">
                 <div class="col-md-2">
-                    <label for="filterMonth" class="form-label">Month</label>
-                    <select class="form-select" id="filterMonth">
+                    <label for="filterMonth" class="form-label text-gray-700">Month</label>
+                    <select class="form-select border-gray-300" id="filterMonth">
                         <option value="0">All Months</option>
                         <option value="1">January</option>
                         <option value="2">February</option>
@@ -122,24 +126,24 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="filterYear" class="form-label">Year</label>
-                    <input type="number" class="form-control" id="filterYear" min="2000" max="2100" value="@DateTime.Now.Year">
+                    <label for="filterYear" class="form-label text-gray-700">Year</label>
+                    <input type="number" class="form-control border-gray-300" id="filterYear" min="2000" max="2100" value="@DateTime.Now.Year">
                 </div>
                 <div class="col-md-2">
-                    <label for="filterConsumer" class="form-label">Consumer</label>
-                    <select class="form-select" id="filterConsumer">
+                    <label for="filterConsumer" class="form-label text-gray-700">Consumer</label>
+                    <select class="form-select border-gray-300" id="filterConsumer">
                         <option value="0">All Consumers</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="filterMeter" class="form-label">Meter</label>
-                    <select class="form-select" id="filterMeter">
+                    <label for="filterMeter" class="form-label text-gray-700">Meter</label>
+                    <select class="form-select border-gray-300" id="filterMeter">
                         <option value="0">All Meters</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="filterStatus" class="form-label">Status</label>
-                    <select class="form-select" id="filterStatus">
+                    <label for="filterStatus" class="form-label text-gray-700">Status</label>
+                    <select class="form-select border-gray-300" id="filterStatus">
                         <option value="">All Status</option>
                         <option value="Pending">Pending</option>
                         <option value="Paid">Paid</option>
@@ -148,8 +152,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="filterAmountRange" class="form-label">Amount Range</label>
-                    <select class="form-select" id="filterAmountRange">
+                    <label for="filterAmountRange" class="form-label text-gray-700">Amount Range</label>
+                    <select class="form-select border-gray-300" id="filterAmountRange">
                         <option value="0">All Amounts</option>
                         <option value="1">0 - 500</option>
                         <option value="2">501 - 1000</option>
@@ -162,14 +166,14 @@
                 <div class="col-md-12">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <button class="btn btn-outline-primary me-2" onclick="applyFilters()">
-                                <i class="bi bi-funnel"></i> Apply Filters
+                            <button class="btn btn-outline-secondary me-2" onclick="applyFilters()">
+                                <i class="bi bi-funnel me-1"></i> Apply Filters
                             </button>
                             <button class="btn btn-outline-secondary" onclick="clearFilters()">
-                                <i class="bi bi-x-circle"></i> Clear Filters
+                                <i class="bi bi-x-circle me-1"></i> Clear Filters
                             </button>
                         </div>
-                        <div class="text-muted">
+                        <div class="text-gray-700">
                             <span id="filteredCount">0</span> bills found |
                             Total: ₹<span id="filteredAmount">0.00</span>
                         </div>
@@ -179,30 +183,20 @@
         </div>
     </div>
 
-    <!-- Status Messages -->
+    <!-- Loading Indicator -->
     <div id="loadingIndicator" class="text-center my-4" style="display: none;">
         <div class="spinner-border text-success" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2">Loading bills...</p>
-    </div>
-
-    <div id="errorMessage" class="alert alert-danger alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showError('')"></button>
-        <span id="errorText"></span>
-    </div>
-
-    <div id="successMessage" class="alert alert-success alert-dismissible fade show" style="display: none;">
-        <button type="button" class="btn-close" onclick="showSuccess('')"></button>
-        <span id="successText"></span>
+        <p class="mt-2 text-gray-600">Loading bills...</p>
     </div>
 
     <!-- Main Bills Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-success border-0 py-3">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-list"></i> All Monthly Bills</h5>
-                <div class="text-light">
+                <h5 class="mb-0 text-gray-900"><i class="bi bi-list me-2 text-gray-900"></i>All Monthly Bills</h5>
+                <div class="text-gray-900">
                     <small>
                         Total: <span id="totalBillsCount">0</span> bills |
                         Amount: ₹<span id="totalBillsAmount">0.00</span> |
@@ -213,23 +207,23 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                    <thead class="table-dark">
+                <table class="table table-hover">
+                    <thead class="bg-gray-200 text-gray-800">
                         <tr>
-                            <th>Bill ID</th>
-                            <th>Consumer</th>
-                            <th>Meter</th>
-                            <th>Period</th>
-                            <th>Billing Date</th>
-                            <th>Consumption (kWh)</th>
-                            <th>Amount (₹)</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th class="border-0">Bill ID</th>
+                            <th class="border-0">Consumer</th>
+                            <th class="border-0">Meter</th>
+                            <th class="border-0">Period</th>
+                            <th class="border-0">Billing Date</th>
+                            <th class="border-0">Consumption (kWh)</th>
+                            <th class="border-0">Amount (₹)</th>
+                            <th class="border-0">Status</th>
+                            <th class="border-0">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="billsTableBody">
                         <tr>
-                            <td colspan="9" class="text-center text-muted">Loading bills...</td>
+                            <td colspan="9" class="text-center text-gray-600 py-4">Loading bills...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -241,9 +235,9 @@
 <!-- Add/Edit Modal -->
 <div class="modal fade" id="billModal" tabindex="-1" aria-labelledby="billModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="billModalLabel">Add Monthly Bill</h5>
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-gray-100 border-0">
+                <h5 class="modal-title text-gray-800" id="billModalLabel">Add Monthly Bill</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -253,25 +247,25 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="consumerId" class="form-label">Consumer <span class="text-danger">*</span></label>
-                            <select class="form-select" id="consumerId" required onchange="updateMetersByConsumer()">
+                            <label for="consumerId" class="form-label text-gray-700">Consumer <span class="text-success">*</span></label>
+                            <select class="form-select border-gray-300" id="consumerId" required onchange="updateMetersByConsumer()">
                                 <option value="">-- Select Consumer --</option>
                             </select>
-                            <div class="form-text" id="consumerInfo"></div>
+                            <div class="form-text text-gray-600" id="consumerInfo"></div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="meterId" class="form-label">Meter <span class="text-danger">*</span></label>
-                            <select class="form-select" id="meterId" required>
+                            <label for="meterId" class="form-label text-gray-700">Meter <span class="text-success">*</span></label>
+                            <select class="form-select border-gray-300" id="meterId" required>
                                 <option value="">-- Select Meter --</option>
                             </select>
-                            <div class="form-text" id="meterInfo"></div>
+                            <div class="form-text text-gray-600" id="meterInfo"></div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="billingMonth" class="form-label">Billing Month <span class="text-danger">*</span></label>
-                            <select class="form-select" id="billingMonth" required>
+                            <label for="billingMonth" class="form-label text-gray-700">Billing Month <span class="text-success">*</span></label>
+                            <select class="form-select border-gray-300" id="billingMonth" required>
                                 <option value="">-- Select Month --</option>
                                 <option value="1">January</option>
                                 <option value="2">February</option>
@@ -288,33 +282,33 @@
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="billingYear" class="form-label">Billing Year <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="billingYear" min="2000" max="2100" required>
+                            <label for="billingYear" class="form-label text-gray-700">Billing Year <span class="text-success">*</span></label>
+                            <input type="number" class="form-control border-gray-300" id="billingYear" min="2000" max="2100" required>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="billingDate" class="form-label">Billing Date <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="billingDate" required>
+                            <label for="billingDate" class="form-label text-gray-700">Billing Date <span class="text-success">*</span></label>
+                            <input type="date" class="form-control border-gray-300" id="billingDate" required>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="totalConsumptionKwh" class="form-label">Total Consumption (kWh) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" class="form-control" id="totalConsumptionKwh" required
+                            <label for="totalConsumptionKwh" class="form-label text-gray-700">Total Consumption (kWh) <span class="text-success">*</span></label>
+                            <input type="number" step="0.01" class="form-control border-gray-300" id="totalConsumptionKwh" required
                                    onchange="calculateEstimatedAmount()">
-                            <div class="form-text">Based on consumption and rate</div>
+                            <div class="form-text text-gray-600">Based on consumption and rate</div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="totalAmount" class="form-label">Total Amount (₹) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" class="form-control" id="totalAmount" required>
-                            <div class="form-text" id="amountInfo"></div>
+                            <label for="totalAmount" class="form-label text-gray-700">Total Amount (₹) <span class="text-success">*</span></label>
+                            <input type="number" step="0.01" class="form-control border-gray-300" id="totalAmount" required>
+                            <div class="form-text text-gray-600" id="amountInfo"></div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label for="billStatus" class="form-label">Bill Status <span class="text-danger">*</span></label>
-                            <select class="form-select" id="billStatus" required>
+                            <label for="billStatus" class="form-label text-gray-700">Bill Status <span class="text-success">*</span></label>
+                            <select class="form-select border-gray-300" id="billStatus" required>
                                 <option value="">-- Select Status --</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Paid">Paid</option>
@@ -325,15 +319,50 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <div class="modal-footer bg-gray-100 border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-success" onclick="saveBill()">
-                    <i class="bi bi-save"></i> Save Bill
+                    <i class="bi bi-save me-1"></i> Save Bill
                 </button>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    /* Custom gray tones with green highlights */
+    .bg-gray-50 { background-color: #f9fafb; }
+    .bg-gray-100 { background-color: #f3f4f6; }
+    .bg-gray-200 { background-color: #e5e7eb; }
+    .text-gray-600 { color: #6b7280; }
+    .text-gray-700 { color: #374151; }
+    .text-gray-800 { color: #1f2937; }
+    .border-gray-300 { border-color: #d1d5db; }
+    
+    /* Table styling */
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Toaster styling */
+    .toast-item {
+        min-width: 300px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-radius: 0.375rem;
+        overflow: hidden;
+        margin-bottom: 0.75rem;
+    }
+    
+    .toast-success {
+        background-color: #10b981;
+        color: white;
+    }
+    
+    .toast-error {
+        background-color: #ef4444;
+        color: white;
+    }
+</style>
 
 @section Scripts {
     <script>
@@ -380,6 +409,42 @@
             // Initialize filters
             initializeFilters();
         });
+
+        // Toaster function
+        function showToast(message, type = 'success') {
+            const toaster = document.getElementById('toaster');
+            const toastId = 'toast-' + Date.now();
+            
+            const toastHtml = `
+                <div id="${toastId}" class="toast-item toast-${type}">
+                    <div class="d-flex justify-content-between align-items-center p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi ${type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle'} me-2"></i>
+                            <span>${message}</span>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" onclick="document.getElementById('${toastId}').remove()"></button>
+                    </div>
+                </div>
+            `;
+            
+            toaster.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                const toastElement = document.getElementById(toastId);
+                if (toastElement) {
+                    toastElement.remove();
+                }
+            }, 3000);
+        }
+
+        function showError(message) {
+            showToast(message, 'error');
+        }
+
+        function showSuccess(message) {
+            showToast(message, 'success');
+        }
 
         function initializeFilters() {
             document.getElementById('filterMonth').addEventListener('change', applyFilters);
@@ -631,22 +696,22 @@
 
                     tableHtml += `
                         <tr>
-                            <td><strong>${bill.billId}</strong></td>
-                            <td>${bill.consumerName || 'N/A'}</td>
-                            <td>Meter #${bill.meterId}</td>
-                            <td>${period}</td>
-                            <td>${billingDate}</td>
-                            <td>${(bill.totalConsumptionKwh || 0).toFixed(2)}</td>
-                            <td><strong>₹${(bill.totalAmount || 0).toFixed(2)}</strong></td>
+                            <td class="text-gray-700"><strong>${bill.billId}</strong></td>
+                            <td class="text-gray-700">${bill.consumerName || 'N/A'}</td>
+                            <td class="text-gray-700">Meter #${bill.meterId}</td>
+                            <td class="text-gray-700">${period}</td>
+                            <td class="text-gray-700">${billingDate}</td>
+                            <td class="text-gray-700">${(bill.totalConsumptionKwh || 0).toFixed(2)}</td>
+                            <td class="text-gray-700"><strong>₹${(bill.totalAmount || 0).toFixed(2)}</strong></td>
                             <td>${statusBadge}</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-info me-1" onclick="viewBillDetails(${bill.billId})" title="View Details">
+                                <button class="btn btn-sm btn-outline-secondary me-1" onclick="viewBillDetails(${bill.billId})" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-success me-1" onclick="editBill(${bill.billId})" title="Edit">
+                                <button class="btn btn-sm btn-outline-secondary me-1" onclick="editBill(${bill.billId})" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBill(${bill.billId})" title="Delete">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="deleteBill(${bill.billId})" title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -655,7 +720,7 @@
                 });
                 tbody.innerHTML = tableHtml;
             } else {
-                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No bills found matching the criteria.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-600 py-4">No bills found matching the criteria.</td></tr>';
             }
         }
 
@@ -860,33 +925,33 @@
             const monthName = new Date(bill.billingYear, bill.billingMonth - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
             const detailsHtml = `
-                <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">Bill Details - ${monthName}</h5>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-gray-100 border-0 py-3">
+                        <h5 class="mb-0 text-gray-800">Bill Details - ${monthName}</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <p><strong>Bill ID:</strong> ${bill.billId}</p>
-                                <p><strong>Consumer:</strong> ${bill.consumerName}</p>
-                                <p><strong>Meter:</strong> #${bill.meterId}</p>
-                                <p><strong>Tariff:</strong> ${bill.tariffName}</p>
+                                <p class="text-gray-700"><strong>Bill ID:</strong> ${bill.billId}</p>
+                                <p class="text-gray-700"><strong>Consumer:</strong> ${bill.consumerName}</p>
+                                <p class="text-gray-700"><strong>Meter:</strong> #${bill.meterId}</p>
+                                <p class="text-gray-700"><strong>Tariff:</strong> ${bill.tariffName}</p>
                             </div>
                             <div class="col-md-6">
-                                <p><strong>Billing Period:</strong> ${monthName}</p>
-                                <p><strong>Billing Date:</strong> ${new Date(bill.billingDate).toLocaleDateString('en-IN')}</p>
-                                <p><strong>Status:</strong> <span class="badge bg-${bill.billStatus === 'Paid' ? 'success' : bill.billStatus === 'Overdue' ? 'danger' : 'warning'}">${bill.billStatus}</span></p>
+                                <p class="text-gray-700"><strong>Billing Period:</strong> ${monthName}</p>
+                                <p class="text-gray-700"><strong>Billing Date:</strong> ${new Date(bill.billingDate).toLocaleDateString('en-IN')}</p>
+                                <p class="text-gray-700"><strong>Status:</strong> <span class="badge bg-${bill.billStatus === 'Paid' ? 'success' : bill.billStatus === 'Overdue' ? 'danger' : 'warning'}">${bill.billStatus}</span></p>
                             </div>
                         </div>
                         <hr>
                         <div class="row">
                             <div class="col-md-6">
-                                <h6>Consumption Details</h6>
-                                <p><strong>Total Consumption:</strong> ${(bill.totalConsumptionKwh || 0).toFixed(2)} kWh</p>
+                                <h6 class="text-gray-800">Consumption Details</h6>
+                                <p class="text-gray-700"><strong>Total Consumption:</strong> ${(bill.totalConsumptionKwh || 0).toFixed(2)} kWh</p>
                             </div>
                             <div class="col-md-6">
-                                <h6>Billing Amount</h6>
-                                <p><strong>Total Amount:</strong> <span class="text-success fs-4">₹${(bill.totalAmount || 0).toFixed(2)}</span></p>
+                                <h6 class="text-gray-800">Billing Amount</h6>
+                                <p class="text-gray-700"><strong>Total Amount:</strong> <span class="text-success fs-4">₹${(bill.totalAmount || 0).toFixed(2)}</span></p>
                             </div>
                         </div>
                     </div>
@@ -897,16 +962,16 @@
             const modalHtml = `
                 <div class="modal fade" id="billDetailsModal" tabindex="-1">
                     <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Bill Details</h5>
+                        <div class="modal-content border-0 shadow">
+                            <div class="modal-header bg-gray-100 border-0">
+                                <h5 class="modal-title text-gray-800">Bill Details</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 ${detailsHtml}
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <div class="modal-footer bg-gray-100 border-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
@@ -929,34 +994,6 @@
             const indicator = document.getElementById('loadingIndicator');
             if (indicator) {
                 indicator.style.display = show ? 'block' : 'none';
-            }
-        }
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            const errorText = document.getElementById('errorText');
-            if (errorDiv && errorText) {
-                if (message) {
-                    errorText.textContent = message;
-                    errorDiv.style.display = 'block';
-                    setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
-                } else {
-                    errorDiv.style.display = 'none';
-                }
-            }
-        }
-
-        function showSuccess(message) {
-            const successDiv = document.getElementById('successMessage');
-            const successText = document.getElementById('successText');
-            if (successDiv && successText) {
-                if (message) {
-                    successText.textContent = message;
-                    successDiv.style.display = 'block';
-                    setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
-                } else {
-                    successDiv.style.display = 'none';
-                }
             }
         }
     </script>
