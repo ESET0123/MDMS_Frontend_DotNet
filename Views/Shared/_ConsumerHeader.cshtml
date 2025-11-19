@@ -58,7 +58,15 @@
 
         document.getElementById('logoutBtn').addEventListener('click', function (e) {
             e.preventDefault();
+
+            // Clear localStorage
             localStorage.clear();
+
+            // Clear cookies
+            document.cookie = "jwtToken=; path=/; max-age=0; SameSite=Strict";
+            document.cookie = "userType=; path=/; max-age=0; SameSite=Strict";
+
+            // Redirect to login
             window.location.href = '/Auth/Login';
         });
 
@@ -87,26 +95,26 @@
 
                 const data = await response.json();
                 const html = `
-                        <div class="col-md-6">
-                            <div class="mb-3"><label class="form-label fw-semibold">Consumer ID</label>
-                                <p class="form-control-plaintext">${data.consumerId}</p></div>
-                            <div class="mb-3"><label class="form-label fw-semibold">Name</label>
-                                <p class="form-control-plaintext">${data.name}</p></div>
-                            <div class="mb-3"><label class="form-label fw-semibold">Email</label>
-                                <p class="form-control-plaintext">${data.email}</p></div>
-                            <div class="mb-3"><label class="form-label fw-semibold">Phone</label>
-                                <p class="form-control-plaintext">${data.phone}</p></div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3"><label class="form-label fw-semibold">Address</label>
-                                <p class="form-control-plaintext">${data.address}</p></div>
-                            <div class="mb-3"><label class="form-label fw-semibold">Status</label>
-                                <p class="form-control-plaintext">${data.statusName}</p></div>
-                            <div class="mb-3"><label class="form-label fw-semibold">Meters Linked</label>
-                                <p class="form-control-plaintext">${data.meterCount}</p></div>
-                            <div class="mb-3"><label class="form-label fw-semibold">Created At</label>
-                                <p class="form-control-plaintext">${new Date(data.createdAt).toLocaleString()}</p></div>
-                        </div>`;
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label fw-semibold">Consumer ID</label>
+                                    <p class="form-control-plaintext">${data.consumerId}</p></div>
+                                <div class="mb-3"><label class="form-label fw-semibold">Name</label>
+                                    <p class="form-control-plaintext">${data.name}</p></div>
+                                <div class="mb-3"><label class="form-label fw-semibold">Email</label>
+                                    <p class="form-control-plaintext">${data.email}</p></div>
+                                <div class="mb-3"><label class="form-label fw-semibold">Phone</label>
+                                    <p class="form-control-plaintext">${data.phone}</p></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3"><label class="form-label fw-semibold">Address</label>
+                                    <p class="form-control-plaintext">${data.address}</p></div>
+                                <div class="mb-3"><label class="form-label fw-semibold">Status</label>
+                                    <p class="form-control-plaintext">${data.statusName}</p></div>
+                                <div class="mb-3"><label class="form-label fw-semibold">Meters Linked</label>
+                                    <p class="form-control-plaintext">${data.meterCount}</p></div>
+                                <div class="mb-3"><label class="form-label fw-semibold">Created At</label>
+                                    <p class="form-control-plaintext">${new Date(data.createdAt).toLocaleString()}</p></div>
+                            </div>`;
                 document.getElementById('profileContent').innerHTML = html;
             } catch (error) {
                 console.error(error);

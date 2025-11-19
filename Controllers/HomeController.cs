@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using MDMS_Frontend.Filters;
 using MDMS_Frontend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MDMS_Frontend.Controllers
 {
+    [AuthorizeRole("admin")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

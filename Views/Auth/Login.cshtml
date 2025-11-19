@@ -137,7 +137,48 @@
 <script>
     const API_BASE_URL = '@Configuration["ApiBaseUrl"]';
 
-    // Flip logic
+    // ==========================================
+    // CHECK EXISTING SESSION ON PAGE LOAD
+    // ==========================================
+    $(document).ready(function() {
+        checkExistingSession();
+    });
+
+    function checkExistingSession() {
+        // Helper function to get cookie value
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) {
+                return parts.pop().split(';').shift();
+            }
+            return null;
+        }
+
+        // Check cookie first (server-accessible), then localStorage as fallback
+        const userTypeFromCookie = getCookie('userType');
+        const userTypeFromStorage = localStorage.getItem('userType');
+        const tokenFromCookie = getCookie('jwtToken');
+        const tokenFromStorage = localStorage.getItem('jwtToken');
+        
+        // Use cookie value if available, otherwise use localStorage
+        const userType = userTypeFromCookie || userTypeFromStorage;
+        const token = tokenFromCookie || tokenFromStorage;
+        
+        // If token and userType exist, redirect to appropriate dashboard
+        if (token && userType) {
+            // Priority: admin first
+            if (userType.toLowerCase() === 'admin') {
+                window.location.href = '/Home/Dashboard';
+            } else if (userType.toLowerCase() === 'consumer') {
+                window.location.href = '/Consumer/Dashboard';
+            }
+        }
+    }
+
+    // ==========================================
+    // FLIP CARD LOGIC
+    // ==========================================
     $(document).on('click', '#goUser', function () {
         $('#flipCard').addClass('flipped');
     });
@@ -149,6 +190,9 @@
         $(selector).hide().text(msg).removeClass("text-danger text-success").addClass(cls).fadeIn(180);
     }
 
+    // ==========================================
+    // ADMIN LOGIN
+    // ==========================================
     // Admin Login - Enter key
     $('#admin-username, #admin-password').on('keypress', function (e) {
         if (e.which === 13) {
@@ -186,6 +230,11 @@
                 localStorage.setItem('userType', 'admin');
                 localStorage.setItem('userId', response.userId);
                 localStorage.setItem('username', response.username);
+
+                // Store in cookie for server-side access
+                document.cookie = `jwtToken=${response.token}; path=/; max-age=3600; SameSite=Strict`;
+                document.cookie = `userType=admin; path=/; max-age=3600; SameSite=Strict`;
+
                 showMsg('#admin-msg', 'Login successful!', 'text-success');
                 
                 setTimeout(() => {
@@ -209,6 +258,9 @@
         });
     });
 
+    // ==========================================
+    // CONSUMER LOGIN
+    // ==========================================
     // Consumer Login - Enter key
     $('#consumer-email, #consumer-password').on('keypress', function (e) {
         if (e.which === 13) {
@@ -254,6 +306,10 @@
                 localStorage.setItem('consumerId', response.consumerId);
                 localStorage.setItem('consumerName', response.name);
                 localStorage.setItem('consumerEmail', response.email);
+
+                // Store in cookie for server-side access
+                document.cookie = `jwtToken=${response.token}; path=/; max-age=3600; SameSite=Strict`;
+                document.cookie = `userType=consumer; path=/; max-age=3600; SameSite=Strict`;
 
                 showMsg('#consumer-msg', 'Login successful!', 'text-success');
                 
