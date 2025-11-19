@@ -166,13 +166,14 @@
                             <th class="ps-4">Slab ID</th>
                             <th>Consumption Range</th>
                             <th>Rate</th>
+                            <th>Validity Period</th>
                             <th>Slab Width</th>
                             <th class="text-center pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="tariffSlabsTableBody">
                         <tr>
-                            <td colspan="5" class="text-center py-5">
+                            <td colspan="6" class="text-center py-5">
                                 <div class="text-muted">
                                     <i class="bi bi-funnel display-6 text-light"></i>
                                     <p class="mt-3">Please select a tariff plan to view slabs</p>
@@ -270,6 +271,25 @@
                         </div>
                     </div>
 
+                    <!-- Validity Period -->
+                    <div class="mb-4">
+                        <h6 class="fw-semibold text-muted mb-3 border-bottom pb-2">
+                            <i class="bi bi-calendar-range me-2"></i>Validity Period
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fromDate" class="form-label fw-semibold">From Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="fromDate" required>
+                                <small class="form-text text-muted">Start date for this slab</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="toDate" class="form-label fw-semibold">To Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="toDate" required>
+                                <small class="form-text text-muted">End date for this slab</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Slab Preview -->
                     <div class="alert alert-info border-0">
                         <div class="d-flex align-items-center">
@@ -321,11 +341,18 @@
                             <small class="text-muted d-block">(Range: <span id="viewRange">0</span> kWh)</small>
                         </div>
                     </div>
-                    <div class="detail-item">
+                    <div class="detail-item mb-3">
                         <div class="detail-label small text-muted">RATE</div>
                         <div class="detail-value">
                             <h4 class="text-success mb-0" id="viewRatePerKwh">₹0.0000</h4>
                             <small class="text-muted">per kWh</small>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label small text-muted">VALIDITY PERIOD</div>
+                        <div class="detail-value fw-bold">
+                            <i class="bi bi-calendar-event text-success me-2"></i>
+                            <span id="viewFromDate">-</span> to <span id="viewToDate">-</span>
                         </div>
                     </div>
                 </div>
@@ -337,7 +364,7 @@
     </div>
 </div>
 
-@section Scripts {
+@* @section Scripts {
     <script>
         const TARIFF_API_URL = `${API_BASE_URL}/api/Tariff`;
         const SLAB_API_URL = `${API_BASE_URL}/api/TariffSlab`;
@@ -364,24 +391,46 @@
             document.getElementById('fromKwh')?.addEventListener('input', updateSlabPreview);
             document.getElementById('toKwh')?.addEventListener('input', updateSlabPreview);
             document.getElementById('ratePerKwh')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('fromDate')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('toDate')?.addEventListener('input', updateSlabPreview);
         });
 
         function updateSlabPreview() {
             const fromKwh = parseFloat(document.getElementById('fromKwh')?.value) || 0;
             const toKwh = parseFloat(document.getElementById('toKwh')?.value) || 0;
             const ratePerKwh = parseFloat(document.getElementById('ratePerKwh')?.value) || 0;
+            const fromDate = document.getElementById('fromDate')?.value;
+            const toDate = document.getElementById('toDate')?.value;
             const range = toKwh - fromKwh;
 
             const preview = document.getElementById('slabPreview');
             if (preview) {
+                let errorMessages = [];
+
                 if (fromKwh >= toKwh) {
-                    preview.innerHTML = '<span class="text-danger">To (kWh) must be greater than From (kWh)</span>';
+                    errorMessages.push('To (kWh) must be greater than From (kWh)');
+                }
+
+                if (fromDate && toDate && new Date(toDate) <= new Date(fromDate)) {
+                    errorMessages.push('To Date must be greater than From Date');
+                }
+
+                if (errorMessages.length > 0) {
+                    preview.innerHTML = `<span class="text-danger">${errorMessages.join('<br>')}</span>`;
                 } else {
-                    preview.innerHTML = `
+                    let previewText = `
                         Consumption: <strong>${fromKwh.toFixed(2)} - ${toKwh.toFixed(2)} kWh</strong>
                         (Range: <strong>${range.toFixed(2)} kWh</strong>)<br>
                         Rate: <strong class="text-success">₹${ratePerKwh.toFixed(4)}/kWh</strong>
                     `;
+
+                    if (fromDate && toDate) {
+                        const fromDateFormatted = new Date(fromDate).toLocaleDateString();
+                        const toDateFormatted = new Date(toDate).toLocaleDateString();
+                        previewText += `<br>Valid: <strong>${fromDateFormatted} - ${toDateFormatted}</strong>`;
+                    }
+
+                    preview.innerHTML = previewText;
                 }
             }
         }
@@ -484,6 +533,9 @@
 
                 slabs.forEach(slab => {
                     const range = slab.toKwh - slab.fromKwh;
+                    const fromDateFormatted = new Date(slab.fromDate).toLocaleDateString();
+                    const toDateFormatted = new Date(slab.toDate).toLocaleDateString();
+
                     const rowHtml = `
                         <tr>
                             <td class="ps-4">
@@ -499,6 +551,13 @@
                                 <div class="rate-display">
                                     <h6 class="text-success mb-0">₹${slab.ratePerKwh.toFixed(4)}</h6>
                                     <small class="text-muted">per kWh</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-range">
+                                    <i class="bi bi-calendar-event text-success me-1"></i>
+                                    <small class="d-block">${fromDateFormatted}</small>
+                                    <small class="d-block">to ${toDateFormatted}</small>
                                 </div>
                             </td>
                             <td>
@@ -607,6 +666,11 @@
             document.getElementById('fromKwh').value = slab.fromKwh;
             document.getElementById('toKwh').value = slab.toKwh;
             document.getElementById('ratePerKwh').value = slab.ratePerKwh;
+
+            // Set date fields - convert from DateOnly format (YYYY-MM-DD)
+            document.getElementById('fromDate').value = slab.fromDate;
+            document.getElementById('toDate').value = slab.toDate;
+
             updateSlabPreview();
 
             tariffSlabModal.show();
@@ -618,8 +682,10 @@
             const fromKwh = document.getElementById('fromKwh').value;
             const toKwh = document.getElementById('toKwh').value;
             const ratePerKwh = document.getElementById('ratePerKwh').value;
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
 
-            if (!tariffId || !fromKwh || !toKwh || !ratePerKwh) {
+            if (!tariffId || !fromKwh || !toKwh || !ratePerKwh || !fromDate || !toDate) {
                 showError('Please fill in all required fields');
                 return;
             }
@@ -629,12 +695,19 @@
                 return;
             }
 
+            if (new Date(toDate) <= new Date(fromDate)) {
+                showError('To Date must be greater than From Date');
+                return;
+            }
+
             const slabData = {
                 slabId: slabId ? parseInt(slabId) : null,
                 tariffId: parseInt(tariffId),
                 fromKwh: parseFloat(fromKwh),
                 toKwh: parseFloat(toKwh),
-                ratePerKwh: parseFloat(ratePerKwh)
+                ratePerKwh: parseFloat(ratePerKwh),
+                fromDate: fromDate,
+                toDate: toDate
             };
 
             const isUpdate = slabId && parseInt(slabId) > 0;
@@ -672,7 +745,10 @@
                 return;
             }
 
-            if (!confirm(`Are you sure you want to delete the slab for consumption range ${slab.fromKwh.toFixed(2)} - ${slab.toKwh.toFixed(2)} kWh?\n\nRate: ₹${slab.ratePerKwh.toFixed(4)}/kWh`)) {
+            const fromDateFormatted = new Date(slab.fromDate).toLocaleDateString();
+            const toDateFormatted = new Date(slab.toDate).toLocaleDateString();
+
+            if (!confirm(`Are you sure you want to delete the slab for consumption range ${slab.fromKwh.toFixed(2)} - ${slab.toKwh.toFixed(2)} kWh?\n\nRate: ₹${slab.ratePerKwh.toFixed(4)}/kWh\nValid: ${fromDateFormatted} - ${toDateFormatted}`)) {
                 return;
             }
 
@@ -703,6 +779,8 @@
             }
 
             const range = slab.toKwh - slab.fromKwh;
+            const fromDateFormatted = new Date(slab.fromDate).toLocaleDateString();
+            const toDateFormatted = new Date(slab.toDate).toLocaleDateString();
 
             document.getElementById('viewSlabId').textContent = slab.slabId;
             document.getElementById('viewTariffName').textContent = slab.tariffName;
@@ -710,6 +788,679 @@
             document.getElementById('viewToKwh').textContent = slab.toKwh.toFixed(2);
             document.getElementById('viewRange').textContent = range.toFixed(2);
             document.getElementById('viewRatePerKwh').textContent = `₹${slab.ratePerKwh.toFixed(4)}`;
+            document.getElementById('viewFromDate').textContent = fromDateFormatted;
+            document.getElementById('viewToDate').textContent = toDateFormatted;
+
+            viewSlabModal.show();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            if (message) {
+                errorText.textContent = message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
+            if (message) {
+                successText.textContent = message;
+                successDiv.style.display = 'block';
+                setTimeout(() => { successDiv.style.display = 'none'; }, 3000);
+            } else {
+                successDiv.style.display = 'none';
+            }
+        }
+    </script>
+} *@
+@section Scripts {
+    <script>
+        const TARIFF_API_URL = `${API_BASE_URL}/api/Tariff`;
+        const SLAB_API_URL = `${API_BASE_URL}/api/TariffSlab`;
+
+        let allSlabs = [];
+        let allTariffs = [];
+        let tariffSlabModal;
+        let viewSlabModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            tariffSlabModal = new bootstrap.Modal(document.getElementById('tariffSlabModal'));
+            viewSlabModal = new bootstrap.Modal(document.getElementById('viewSlabModal'));
+
+            const selectedTariffId = sessionStorage.getItem('selectedTariffId');
+
+            fetchAllData(selectedTariffId);
+
+            if (selectedTariffId) {
+                sessionStorage.removeItem('selectedTariffId');
+                sessionStorage.removeItem('selectedTariffName');
+            }
+
+            // Add event listeners for slab preview
+            document.getElementById('fromKwh')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('toKwh')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('ratePerKwh')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('fromDate')?.addEventListener('input', updateSlabPreview);
+            document.getElementById('toDate')?.addEventListener('input', updateSlabPreview);
+        });
+
+        function updateSlabPreview() {
+            const fromKwh = parseFloat(document.getElementById('fromKwh')?.value) || 0;
+            const toKwh = parseFloat(document.getElementById('toKwh')?.value) || 0;
+            const ratePerKwh = parseFloat(document.getElementById('ratePerKwh')?.value) || 0;
+            const fromDate = document.getElementById('fromDate')?.value;
+            const toDate = document.getElementById('toDate')?.value;
+            const range = toKwh - fromKwh;
+
+            const preview = document.getElementById('slabPreview');
+            if (preview) {
+                let errorMessages = [];
+
+                if (fromKwh >= toKwh) {
+                    errorMessages.push('To (kWh) must be greater than From (kWh)');
+                }
+
+                if (fromDate && toDate && new Date(toDate) <= new Date(fromDate)) {
+                    errorMessages.push('To Date must be greater than From Date');
+                }
+
+                if (errorMessages.length > 0) {
+                    preview.innerHTML = `<span class="text-danger">${errorMessages.join('<br>')}</span>`;
+                } else {
+                    let previewText = `
+                        Consumption: <strong>${fromKwh.toFixed(2)} - ${toKwh.toFixed(2)} kWh</strong>
+                        (Range: <strong>${range.toFixed(2)} kWh</strong>)<br>
+                        Rate: <strong class="text-success">₹${ratePerKwh.toFixed(4)}/kWh</strong>
+                    `;
+
+                    if (fromDate && toDate) {
+                        const fromDateFormatted = new Date(fromDate).toLocaleDateString();
+                        const toDateFormatted = new Date(toDate).toLocaleDateString();
+                        previewText += `<br>Valid: <strong>${fromDateFormatted} - ${toDateFormatted}</strong>`;
+                    }
+
+                    preview.innerHTML = previewText;
+                }
+            }
+        }
+
+        async function fetchAllData(preselectedTariffId) {
+            await fetchTariffs();
+            await fetchTariffSlabs();
+
+            if (preselectedTariffId) {
+                document.getElementById('filterTariffId').value = preselectedTariffId;
+                filterSlabsByTariff();
+            }
+        }
+
+        async function fetchTariffs() {
+            try {
+                const response = await fetch(`${TARIFF_API_URL}/AllTariffs`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                allTariffs = await response.json();
+                populateTariffDropdown();
+            } catch (error) {
+                console.error('Error loading tariffs:', error);
+                showError('Failed to load tariff plans: ' + error.message);
+            }
+        }
+
+        function populateTariffDropdown() {
+            const select = document.getElementById('tariffId');
+            const filterSelect = document.getElementById('filterTariffId');
+
+            select.innerHTML = '<option value="">-- Select Tariff Plan --</option>';
+            filterSelect.innerHTML = '<option value="">-- Select Tariff Plan --</option>';
+
+            allTariffs.forEach(tariff => {
+                const option = document.createElement('option');
+                option.value = tariff.tariffId;
+                option.textContent = `${tariff.name} - ₹${tariff.baseRate.toFixed(4)}/kWh`;
+                select.appendChild(option);
+
+                const filterOption = document.createElement('option');
+                filterOption.value = tariff.tariffId;
+                filterOption.textContent = `${tariff.name}`;
+                filterOption.dataset.name = tariff.name;
+                filterOption.dataset.baseRate = tariff.baseRate;
+                filterOption.dataset.taxRate = tariff.taxRate;
+                filterOption.dataset.effectiveFrom = tariff.effectiveFrom;
+                filterSelect.appendChild(filterOption);
+            });
+        }
+
+        async function fetchTariffSlabs() {
+            try {
+                showLoading(true);
+                showError('');
+                const response = await fetch(`${SLAB_API_URL}/AllTariffSlabs`);
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                allSlabs = await response.json();
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading tariff slabs:', error);
+                showError('Failed to load tariff slabs: ' + error.message);
+                showLoading(false);
+            }
+        }
+
+        function updateSlabsStats(slabs) {
+            if (!slabs || slabs.length === 0) {
+                document.getElementById('slabsOverview').style.display = 'none';
+                return;
+            }
+
+            const totalSlabs = slabs.length;
+            const rates = slabs.map(s => s.ratePerKwh);
+            const minRate = Math.min(...rates);
+            const maxRate = Math.max(...rates);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+
+            const consumptions = slabs.map(s => s.toKwh);
+            const maxConsumption = Math.max(...consumptions);
+
+            document.getElementById('totalSlabs').textContent = totalSlabs;
+            document.getElementById('rateRange').textContent = `₹${minRate.toFixed(4)} - ₹${maxRate.toFixed(4)}`;
+            document.getElementById('consumptionRange').textContent = `0 - ${maxConsumption.toFixed(0)} kWh`;
+            document.getElementById('avgRate').textContent = `₹${avgRate.toFixed(4)}`;
+            document.getElementById('slabsCount').textContent = `${totalSlabs} slab${totalSlabs !== 1 ? 's' : ''}`;
+
+            document.getElementById('slabsOverview').style.display = 'flex';
+        }
+
+        function renderTariffSlabsTable(slabs) {
+            const tbody = document.getElementById('tariffSlabsTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (slabs && slabs.length > 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'none';
+
+                slabs.forEach(slab => {
+                    const range = slab.toKwh - slab.fromKwh;
+                    const fromDateFormatted = new Date(slab.fromDate).toLocaleDateString();
+                    const toDateFormatted = new Date(slab.toDate).toLocaleDateString();
+
+                    const rowHtml = `
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">${slab.slabId}</div>
+                            </td>
+                            <td>
+                                <div class="consumption-range">
+                                    <div class="fw-semibold">${slab.fromKwh.toFixed(2)} - ${slab.toKwh.toFixed(2)} kWh</div>
+                                    <small class="text-muted">Range: ${range.toFixed(2)} kWh</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="rate-display">
+                                    <h6 class="text-success mb-0">₹${slab.ratePerKwh.toFixed(4)}</h6>
+                                    <small class="text-muted">per kWh</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="date-range">
+                                    <i class="bi bi-calendar-event text-success me-1"></i>
+                                    <small class="d-block">${fromDateFormatted}</small>
+                                    <small class="d-block">to ${toDateFormatted}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">${range.toFixed(2)} kWh</span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success" onclick="viewSlabDetails(${slab.slabId})" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="editTariffSlab(${slab.slabId})" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" onclick="deleteTariffSlab(${slab.slabId})" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            } else {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                document.getElementById('slabsOverview').style.display = 'none';
+            }
+        }
+
+        function filterSlabsByTariff() {
+            const filterTariffId = document.getElementById('filterTariffId').value;
+            const selectedOption = document.getElementById('filterTariffId').selectedOptions[0];
+            const infoCard = document.getElementById('selectedTariffInfo');
+            const detailsDiv = document.getElementById('selectedTariffDetails');
+
+            if (filterTariffId) {
+                const name = selectedOption.dataset.name;
+                const baseRate = parseFloat(selectedOption.dataset.baseRate).toFixed(4);
+                const taxRate = selectedOption.dataset.taxRate;
+                const effectiveFrom = new Date(selectedOption.dataset.effectiveFrom).toLocaleDateString();
+
+                detailsDiv.innerHTML = `
+                    <div class="col-md-4">
+                        <div class="detail-item">
+                            <div class="small text-muted">TARIFF NAME</div>
+                            <div class="fw-bold text-success">${name}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-item">
+                            <div class="small text-muted">BASE RATE</div>
+                            <div class="fw-bold">₹${baseRate}/kWh</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="detail-item">
+                            <div class="small text-muted">TAX RATE</div>
+                            <div class="fw-bold">${taxRate}%</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-item">
+                            <div class="small text-muted">EFFECTIVE FROM</div>
+                            <div class="fw-bold">${effectiveFrom}</div>
+                        </div>
+                    </div>
+                `;
+                infoCard.style.display = 'block';
+
+                const filteredSlabs = allSlabs.filter(slab => slab.tariffId == filterTariffId);
+                updateSlabsStats(filteredSlabs);
+                renderTariffSlabsTable(filteredSlabs);
+            } else {
+                infoCard.style.display = 'none';
+                renderTariffSlabsTable([]);
+            }
+        }
+
+        function clearSelection() {
+            document.getElementById('filterTariffId').value = '';
+            filterSlabsByTariff();
+        }
+
+        function prepareAddSlab() {
+            document.getElementById('tariffSlabModalLabel').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add Tariff Slab';
+            document.getElementById('tariffSlabForm').reset();
+            document.getElementById('slabId').value = '';
+            document.getElementById('slabPreview').textContent = 'Slab details will be displayed here';
+            hideModalError();
+            hideModalSuccess();
+
+            const filterTariffId = document.getElementById('filterTariffId').value;
+            if (filterTariffId) {
+                document.getElementById('tariffId').value = filterTariffId;
+            }
+        }
+
+        async function editTariffSlab(id) {
+            const slab = allSlabs.find(s => s.slabId === id);
+            if (!slab) {
+                showError('Slab not found');
+                return;
+            }
+
+            document.getElementById('tariffSlabModalLabel').innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Tariff Slab';
+            document.getElementById('slabId').value = slab.slabId;
+            document.getElementById('tariffId').value = slab.tariffId;
+            document.getElementById('fromKwh').value = slab.fromKwh;
+            document.getElementById('toKwh').value = slab.toKwh;
+            document.getElementById('ratePerKwh').value = slab.ratePerKwh;
+
+            // Set date fields - convert from DateOnly format (YYYY-MM-DD)
+            document.getElementById('fromDate').value = slab.fromDate;
+            document.getElementById('toDate').value = slab.toDate;
+
+            hideModalError();
+            hideModalSuccess();
+            updateSlabPreview();
+
+            tariffSlabModal.show();
+        }
+
+        async function saveTariffSlab() {
+            const slabId = document.getElementById('slabId').value;
+            const tariffId = document.getElementById('tariffId').value;
+            const fromKwh = document.getElementById('fromKwh').value;
+            const toKwh = document.getElementById('toKwh').value;
+            const ratePerKwh = document.getElementById('ratePerKwh').value;
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+
+            // Clear previous errors
+            hideModalError();
+            hideModalSuccess();
+            clearFieldErrors();
+
+            // Validation
+            let hasErrors = false;
+            let errorMessages = [];
+
+            if (!tariffId) {
+                markFieldError('tariffId', 'Please select a tariff plan');
+                hasErrors = true;
+            }
+
+            if (!fromKwh || fromKwh < 0) {
+                markFieldError('fromKwh', 'Please enter a valid starting consumption (≥ 0)');
+                hasErrors = true;
+            }
+
+            if (!toKwh || toKwh < 0) {
+                markFieldError('toKwh', 'Please enter a valid ending consumption (≥ 0)');
+                hasErrors = true;
+            }
+
+            if (parseFloat(toKwh) <= parseFloat(fromKwh)) {
+                markFieldError('toKwh', 'Ending consumption must be greater than starting consumption');
+                hasErrors = true;
+            }
+
+            if (!ratePerKwh || ratePerKwh < 0) {
+                markFieldError('ratePerKwh', 'Please enter a valid rate per kWh (≥ 0)');
+                hasErrors = true;
+            }
+
+            if (!fromDate) {
+                markFieldError('fromDate', 'Please select a start date');
+                hasErrors = true;
+            }
+
+            if (!toDate) {
+                markFieldError('toDate', 'Please select an end date');
+                hasErrors = true;
+            }
+
+            if (fromDate && toDate && new Date(toDate) <= new Date(fromDate)) {
+                markFieldError('toDate', 'End date must be after start date');
+                hasErrors = true;
+            }
+
+            if (hasErrors) {
+                showModalError('Please fix the validation errors above');
+                return;
+            }
+
+            const slabData = {
+                slabId: slabId ? parseInt(slabId) : null,
+                tariffId: parseInt(tariffId),
+                fromKwh: parseFloat(fromKwh),
+                toKwh: parseFloat(toKwh),
+                ratePerKwh: parseFloat(ratePerKwh),
+                fromDate: fromDate,
+                toDate: toDate
+            };
+
+            const isUpdate = slabId && parseInt(slabId) > 0;
+            const endpoint = isUpdate ? `${SLAB_API_URL}/Update` : `${SLAB_API_URL}/Create`;
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            try {
+                // Show loading state
+                const saveButton = document.querySelector('#tariffSlabModal .btn-success');
+                const originalText = saveButton.innerHTML;
+                saveButton.innerHTML = '<i class="bi bi-hourglass-split me-2"></i> Saving...';
+                saveButton.disabled = true;
+
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(slabData),
+                });
+
+                if (response.ok) {
+                    showModalSuccess(isUpdate ? 'Tariff slab updated successfully!' : 'Tariff slab created successfully!');
+
+                    // Close modal after success
+                    setTimeout(() => {
+                        tariffSlabModal.hide();
+                        showSuccess(isUpdate ? 'Tariff slab updated successfully!' : 'Tariff slab created successfully!');
+                        fetchTariffSlabs();
+                        filterSlabsByTariff();
+                    }, 1500);
+                } else {
+                    let errorMessage = 'Failed to save tariff slab';
+
+                    try {
+                        const errorData = await response.json();
+
+                        if (errorData.errors) {
+                            // Handle ModelState errors from ASP.NET Core
+                            const modelErrors = Object.values(errorData.errors).flat();
+                            errorMessage = modelErrors.join('<br>');
+                        } else if (errorData.title || errorData.detail) {
+                            // Handle ProblemDetails format
+                            errorMessage = errorData.detail || errorData.title;
+                        } else if (typeof errorData === 'string') {
+                            errorMessage = errorData;
+                        }
+                    } catch (parseError) {
+                        const errorText = await response.text();
+                        if (errorText) {
+                            errorMessage = this.parseServerError(errorText);
+                        }
+                    }
+
+                    showModalError(errorMessage);
+                }
+            } catch (error) {
+                console.error('Error saving slab:', error);
+                showModalError('Network error: Unable to connect to server. Please check your connection and try again.');
+            } finally {
+                // Restore button state
+                const saveButton = document.querySelector('#tariffSlabModal .btn-success');
+                saveButton.innerHTML = '<i class="bi bi-save me-2"></i> Save Slab';
+                saveButton.disabled = false;
+            }
+        }
+
+        function parseServerError(errorText) {
+            // Parse common server error patterns and return user-friendly messages
+            if (errorText.includes('overlap') || errorText.includes('Overlapping')) {
+                return 'This tariff slab overlaps with an existing slab. Please adjust the consumption range or validity period.';
+            }
+            if (errorText.includes('date') && errorText.includes('overlap')) {
+                return 'The selected date range overlaps with an existing tariff slab for the same consumption range.';
+            }
+            if (errorText.includes('consumption') && errorText.includes('overlap')) {
+                return 'The selected consumption range overlaps with an existing tariff slab for the same period.';
+            }
+            if (errorText.includes('TariffId') || errorText.includes('tariff')) {
+                return 'Invalid tariff selection. Please select a valid tariff plan.';
+            }
+            if (errorText.includes('RatePerKwh') || errorText.includes('rate')) {
+                return 'Invalid rate value. Please enter a valid positive number.';
+            }
+            if (errorText.includes('FromKwh') || errorText.includes('ToKwh')) {
+                return 'Invalid consumption values. Please check the consumption range.';
+            }
+
+            return 'An unexpected error occurred. Please try again.';
+        }
+
+        function markFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const formGroup = field.closest('.mb-3') || field.closest('.col-md-6') || field.closest('.col-md-12');
+
+            if (formGroup) {
+                formGroup.classList.add('has-error');
+
+                // Remove existing error message
+                const existingError = formGroup.querySelector('.field-error-message');
+                if (existingError) {
+                    existingError.remove();
+                }
+
+                // Add error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'field-error-message text-danger small mt-1';
+                errorDiv.innerHTML = `<i class="bi bi-exclamation-circle me-1"></i>${message}`;
+                formGroup.appendChild(errorDiv);
+
+                // Add error styling to field
+                field.classList.add('is-invalid');
+                field.classList.remove('is-valid');
+            }
+        }
+
+        function clearFieldErrors() {
+            // Clear all field error styles and messages
+            document.querySelectorAll('.has-error').forEach(el => {
+                el.classList.remove('has-error');
+            });
+
+            document.querySelectorAll('.field-error-message').forEach(el => {
+                el.remove();
+            });
+
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+        }
+
+        function showModalError(message) {
+            const modalBody = document.querySelector('#tariffSlabModal .modal-body');
+            let errorAlert = modalBody.querySelector('.modal-error-alert');
+
+            if (!errorAlert) {
+                errorAlert = document.createElement('div');
+                errorAlert.className = 'modal-error-alert alert alert-danger border-0 mb-4';
+                errorAlert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-3 fs-5"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Validation Error</h6>
+                            <span class="modal-error-text small"></span>
+                        </div>
+                    </div>
+                `;
+                modalBody.insertBefore(errorAlert, modalBody.firstChild);
+            }
+
+            const errorText = errorAlert.querySelector('.modal-error-text');
+            errorText.innerHTML = message;
+            errorAlert.style.display = 'block';
+
+            // Scroll to error message
+            errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function showModalSuccess(message) {
+            const modalBody = document.querySelector('#tariffSlabModal .modal-body');
+            let successAlert = modalBody.querySelector('.modal-success-alert');
+
+            if (!successAlert) {
+                successAlert = document.createElement('div');
+                successAlert.className = 'modal-success-alert alert alert-success border-0 mb-4';
+                successAlert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-3 fs-5"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Success</h6>
+                            <span class="modal-success-text small"></span>
+                        </div>
+                    </div>
+                `;
+                modalBody.insertBefore(successAlert, modalBody.firstChild);
+            }
+
+            const successText = successAlert.querySelector('.modal-success-text');
+            successText.textContent = message;
+            successAlert.style.display = 'block';
+
+            // Scroll to success message
+            successAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function hideModalError() {
+            const errorAlert = document.querySelector('.modal-error-alert');
+            if (errorAlert) {
+                errorAlert.style.display = 'none';
+            }
+        }
+
+        function hideModalSuccess() {
+            const successAlert = document.querySelector('.modal-success-alert');
+            if (successAlert) {
+                successAlert.style.display = 'none';
+            }
+        }
+
+        async function deleteTariffSlab(id) {
+            const slab = allSlabs.find(s => s.slabId === id);
+            if (!slab) {
+                showError('Slab not found');
+                return;
+            }
+
+            const fromDateFormatted = new Date(slab.fromDate).toLocaleDateString();
+            const toDateFormatted = new Date(slab.toDate).toLocaleDateString();
+
+            if (!confirm(`Are you sure you want to delete the slab for consumption range ${slab.fromKwh.toFixed(2)} - ${slab.toKwh.toFixed(2)} kWh?\n\nRate: ₹${slab.ratePerKwh.toFixed(4)}/kWh\nValid: ${fromDateFormatted} - ${toDateFormatted}`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${SLAB_API_URL}/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    showSuccess('Tariff slab deleted successfully!');
+                    await fetchTariffSlabs();
+                    filterSlabsByTariff();
+                } else {
+                    const errorText = await response.text();
+                    showError(`Failed to delete slab: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error deleting slab:', error);
+                showError('An error occurred while deleting the tariff slab.');
+            }
+        }
+
+        function viewSlabDetails(id) {
+            const slab = allSlabs.find(s => s.slabId === id);
+            if (!slab) {
+                showError('Slab not found');
+                return;
+            }
+
+            const range = slab.toKwh - slab.fromKwh;
+            const fromDateFormatted = new Date(slab.fromDate).toLocaleDateString();
+            const toDateFormatted = new Date(slab.toDate).toLocaleDateString();
+
+            document.getElementById('viewSlabId').textContent = slab.slabId;
+            document.getElementById('viewTariffName').textContent = slab.tariffName;
+            document.getElementById('viewFromKwh').textContent = slab.fromKwh.toFixed(2);
+            document.getElementById('viewToKwh').textContent = slab.toKwh.toFixed(2);
+            document.getElementById('viewRange').textContent = range.toFixed(2);
+            document.getElementById('viewRatePerKwh').textContent = `₹${slab.ratePerKwh.toFixed(4)}`;
+            document.getElementById('viewFromDate').textContent = fromDateFormatted;
+            document.getElementById('viewToDate').textContent = toDateFormatted;
 
             viewSlabModal.show();
         }
@@ -856,6 +1607,11 @@
         line-height: 1.4;
     }
 
+    /* Date range styling */
+    .date-range {
+        line-height: 1.4;
+    }
+
     /* Loading animation */
     .spinner-border {
         animation-duration: 0.75s;
@@ -865,5 +1621,52 @@
     .slab-details .detail-item:not(:last-child) {
         border-bottom: 1px solid #e9ecef;
         padding-bottom: 1rem;
+    }
+    /* Add to your existing CSS */
+    .has-error .form-control,
+    .has-error .form-select {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .field-error-message {
+        font-size: 0.875em;
+    }
+
+    .is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+
+    .is-valid {
+        border-color: #198754 !important;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+    }
+
+    /* Modal alert animations */
+    .modal-error-alert,
+    .modal-success-alert {
+        animation: slideInDown 0.3s ease;
+    }
+
+    @@keyframes slideInDown {
+        from
+
+    {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    }
+
+    /* Loading state for save button */
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 </style>

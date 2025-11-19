@@ -594,72 +594,60 @@
             billCountElement.textContent = `${count} bill${count !== 1 ? 's' : ''}`;
         }
 
-        function renderBillsTable(bills) {
+                function renderBillsTable(bills) {
             const tbody = document.getElementById('billsTableBody');
-            const emptyState = document.getElementById('emptyState');
-            const tableCard = document.getElementById('billsTableCard');
+
+            if (!tbody) {
+                console.error('Bills table body not found!');
+                return;
+            }
 
             if (bills && bills.length > 0) {
-                tbody.innerHTML = '';
-                tableCard.style.display = 'block';
-                emptyState.style.display = 'none';
-
+                let tableHtml = '';
                 bills.forEach(bill => {
                     const billingDate = new Date(bill.billingDate).toLocaleDateString('en-IN');
-                    const period = `${getMonthName(bill.billingMonth)} ${bill.billingYear}`;
+                    const period = bill.billingMonth + '/' + bill.billingYear;
 
                     let statusBadge;
-                    switch (bill.billStatus) {
+                    switch(bill.billStatus) {
                         case 'Paid':
-                            statusBadge = '<span class="badge bg-success status-badge"><i class="bi bi-check-circle me-1"></i>Paid</span>';
+                            statusBadge = '<span class="badge bg-success">Paid</span>';
                             break;
                         case 'Overdue':
-                            statusBadge = '<span class="badge bg-danger status-badge"><i class="bi bi-exclamation-triangle me-1"></i>Overdue</span>';
+                            statusBadge = '<span class="badge bg-danger">Overdue</span>';
                             break;
                         case 'Cancelled':
-                            statusBadge = '<span class="badge bg-secondary status-badge"><i class="bi bi-x-circle me-1"></i>Cancelled</span>';
+                            statusBadge = '<span class="badge bg-secondary">Cancelled</span>';
                             break;
                         default:
-                            statusBadge = '<span class="badge bg-warning text-dark status-badge"><i class="bi bi-clock me-1"></i>Pending</span>';
+                            statusBadge = '<span class="badge bg-warning text-dark">Pending</span>';
                     }
 
-                    let actionButtons = `
-                        <div class="d-flex justify-content-center gap-1">
-                            <button class="btn btn-sm btn-outline-primary action-btn" onclick="viewBillDetails(${bill.billId})" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger action-btn" onclick="downloadBillPDF(${bill.billId})" title="Download PDF">
-                                <i class="bi bi-file-pdf"></i>
-                            </button>
-                    `;
-
-                    if (bill.billStatus === 'Pending' || bill.billStatus === 'Overdue') {
-                        actionButtons += `
-                            <button class="btn btn-sm btn-outline-success action-btn" onclick="showPaymentNotification()" title="Pay Bill">
-                                <i class="bi bi-credit-card"></i>
-                            </button>
-                        `;
-                    }
-
-                    actionButtons += `</div>`;
-
-                    const rowHtml = `
+                    tableHtml += `
                         <tr>
-                            <td class="ps-4 fw-bold">#${bill.billId}</td>
+                            <td><strong>${bill.billId}</strong></td>
+                            <td>${bill.consumerName || 'N/A'}</td>
                             <td>${bill.meterId}</td>
-                            <td><span class="badge period-badge">${period}</span></td>
+                            <td><span class="badge bg-info">${bill.tariffName || 'N/A'}</span></td>
+                            <td>${period}</td>
                             <td>${billingDate}</td>
-                            <td class="fw-semibold">${(bill.totalConsumptionKwh || 0).toFixed(2)} kWh</td>
-                            <td class="amount-display">₹${(bill.totalAmount || 0).toFixed(2)}</td>
+                            <td>${(bill.totalConsumptionKwh || 0).toFixed(2)}</td>
+                            <td>₹${(bill.totalAmount || 0).toFixed(2)}</td>
                             <td>${statusBadge}</td>
-                            <td class="pe-4">${actionButtons}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success me-1" onclick="editBill(${bill.billId})" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteBill(${bill.billId})" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
                         </tr>
                     `;
-                    tbody.insertAdjacentHTML('beforeend', rowHtml);
                 });
+                tbody.innerHTML = tableHtml;
             } else {
-                tableCard.style.display = 'none';
-                emptyState.style.display = 'block';
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted">No bills found matching the criteria.</td></tr>';
             }
         }
 
