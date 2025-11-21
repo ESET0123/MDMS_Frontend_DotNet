@@ -120,19 +120,19 @@
         position: relative;
     }
 
-        .payment-processing::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 16px;
-            height: 16px;
-            margin: -8px 0 0 -8px;
-            border: 2px solid transparent;
-            border-top: 2px solid #ffffff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+    .payment-processing::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 16px;
+        height: 16px;
+        margin: -8px 0 0 -8px;
+        border: 2px solid transparent;
+        border-top: 2px solid #ffffff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
 
     @@keyframes spin {
         0% {
@@ -1063,18 +1063,16 @@
         }
 
         function handlePaymentSuccess() {
-            // Close all modals
-            paymentSuccessModal.hide();
-            viewBillModal.hide();
-
-            // Show success message
-            showSuccess(`Bill #${currentBillForPayment.billId} paid successfully!`);
-
-            // Refresh bills data
-            fetchConsumerBills();
-
-            // Generate and download receipt
+            // Generate receipt first
             generatePaymentReceipt();
+
+            // Close the success modal
+            paymentSuccessModal.hide();
+
+            // Wait for modal to close, then reload
+            setTimeout(() => {
+                location.reload();
+            }, 500);
         }
 
         function generatePaymentReceipt() {
